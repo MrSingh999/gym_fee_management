@@ -57,7 +57,7 @@ export default function App() {
       <Navbar />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 md:px-6 py-8">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 md:px-6 pt-6 pb-28 md:py-8">
         {activeTab === 'dashboard' ? (
           <Dashboard />
         ) : (

@@ -102,7 +102,7 @@ export default function EditMemberModal({ isOpen, onClose, member, onSuccess }) 
 
         {/* Modal Body / Form */}
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
-          <div className="p-6 space-y-5 overflow-y-auto flex-1">
+          <div className="p-4 sm:p-6 space-y-5 overflow-y-auto flex-1">
             {error && (
               <div className="flex items-start space-x-2.5 p-3 bg-red-500/[0.06] border border-red-500/15 text-red-400 rounded-xl text-sm animate-fade-in" role="alert">
                 <AlertCircle className="h-4.5 w-4.5 shrink-0 mt-0.5" />
@@ -261,18 +261,18 @@ export default function EditMemberModal({ isOpen, onClose, member, onSuccess }) 
           </div>
 
           {/* Modal Footer Actions */}
-          <div className="flex justify-end space-x-3 p-6 border-t border-gym-border shrink-0">
+          <div className="flex justify-end space-x-3 p-4 sm:p-6 border-t border-gym-border shrink-0">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 rounded-xl border border-gym-border hover:bg-gym-elevated text-sm font-semibold text-gym-text-secondary hover:text-white transition-all duration-200 cursor-pointer"
+              className="px-4 py-3 rounded-xl border border-gym-border hover:bg-gym-elevated text-sm font-semibold text-gym-text-secondary hover:text-white transition-all duration-200 cursor-pointer h-11 flex items-center justify-center"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="flex items-center space-x-2 bg-gradient-to-r from-gym-orange to-orange-500 hover:from-gym-orange-hover hover:to-orange-600 disabled:opacity-50 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-250 shadow-lg shadow-gym-orange/20 cursor-pointer"
+              className="flex items-center space-x-2 bg-gradient-to-r from-gym-orange to-orange-500 hover:from-gym-orange-hover hover:to-orange-600 disabled:opacity-50 text-white px-5 py-3 rounded-xl text-sm font-bold transition-all duration-250 shadow-lg shadow-gym-orange/20 cursor-pointer h-11"
             >
               <Save className="h-4 w-4" />
               <span>{submitting ? "Saving..." : "Save Changes"}</span>

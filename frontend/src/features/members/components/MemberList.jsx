@@ -211,102 +211,183 @@ export default function MemberList() {
             <p className="text-xs text-gym-text-muted mt-1">Try adjusting search or filter criteria.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-gym-elevated/50 border-b border-gym-border text-gym-text-muted text-[11px] uppercase tracking-wider font-bold">
-                  <th className="py-4 px-5">Member</th>
-                  <th className="py-4 px-5">Gender / DOB</th>
-                  <th className="py-4 px-5">Plan</th>
-                  <th className="py-4 px-5">Timeline</th>
-                  <th className="py-4 px-5">Fee</th>
-                  <th className="py-4 px-5 text-center">Status</th>
-                  <th className="py-4 px-5 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gym-border/30 text-sm">
-                {members.map((member, idx) => (
-                  <tr 
-                    key={member._id} 
-                    className="table-row-hover table-zebra"
-                    style={{ animationDelay: `${idx * 30}ms` }}
-                  >
-                    
-                    {/* Member Info */}
-                    <td className="py-3.5 px-5">
-                      <div className="font-semibold text-slate-800 dark:text-white">{member.name}</div>
-                      <div className="flex items-center text-xs text-gym-text-muted space-x-1.5 mt-0.5">
-                        <Phone className="h-3 w-3" />
-                        <span>{member.phone}</span>
-                      </div>
-                    </td>
-
-                    {/* Gender / DOB */}
-                    <td className="py-3.5 px-5">
-                      <div className="text-gym-text-secondary capitalize text-[13px]">{member.gender || '—'}</div>
-                      <div className="text-xs text-gym-text-muted mt-0.5">
-                        {member.dob ? formatDate(member.dob) : '—'}
-                      </div>
-                    </td>
-
-                    {/* Subscription Plan */}
-                    <td className="py-3.5 px-5">
-                      <span className="text-gym-text-secondary font-medium capitalize text-[13px]">{member.membershipType}</span>
-                    </td>
-
-                    {/* Timeline Details */}
-                    <td className="py-3.5 px-5">
-                      <div className="flex items-center text-xs text-gym-text-secondary space-x-1">
-                        <Calendar className="h-3 w-3 text-gym-text-muted shrink-0" />
-                        <span className="tabular-nums">
-                          {formatDate(member.startDate)} → {formatDate(member.endDate)}
-                        </span>
-                      </div>
-                    </td>
-
-                    {/* Fee Dues */}
-                    <td className="py-3.5 px-5 font-bold text-slate-800 dark:text-white tabular-nums">
-                      ₹{member.feeAmount.toLocaleString()}
-                    </td>
-
-                    {/* Status Badge */}
-                    <td className="py-3.5 px-5">
-                      <div className="flex justify-center">
-                        {getStatusBadge(member.status)}
-                      </div>
-                    </td>
-
-                    {/* Actions */}
-                    <td className="py-3.5 px-5">
-                      <div className="flex items-center justify-end space-x-1.5">
-                        <button
-                          onClick={() => openRenewModal(member)}
-                          className="bg-gym-orange/10 hover:bg-gym-orange text-gym-orange hover:text-white px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all duration-200 border border-gym-orange/20 hover:border-gym-orange cursor-pointer"
-                        >
-                          Renew
-                        </button>
-                        <button
-                          onClick={() => openEditModal(member)}
-                          title="Edit Details"
-                          className="p-2 border border-gym-border rounded-lg text-gym-text-secondary hover:text-white hover:bg-gym-elevated hover:border-gym-border-hover transition-all duration-200 cursor-pointer"
-                        >
-                          <Edit className="h-3.5 w-3.5" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(member._id, member.name)}
-                          title="Delete Member"
-                          className="p-2 border border-gym-border rounded-lg text-gym-text-secondary hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/20 transition-all duration-200 cursor-pointer"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
-                      </div>
-                    </td>
-
+          <>
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-gym-elevated/50 border-b border-gym-border text-gym-text-muted text-[11px] uppercase tracking-wider font-bold">
+                    <th className="py-4 px-5">Member</th>
+                    <th className="py-4 px-5">Gender / DOB</th>
+                    <th className="py-4 px-5">Plan</th>
+                    <th className="py-4 px-5">Timeline</th>
+                    <th className="py-4 px-5">Fee</th>
+                    <th className="py-4 px-5 text-center">Status</th>
+                    <th className="py-4 px-5 text-right">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-gym-border/30 text-sm">
+                  {members.map((member, idx) => (
+                    <tr 
+                      key={member._id} 
+                      className="table-row-hover table-zebra"
+                      style={{ animationDelay: `${idx * 30}ms` }}
+                    >
+                      
+                      {/* Member Info */}
+                      <td className="py-3.5 px-5">
+                        <div className="font-semibold text-slate-800 dark:text-white">{member.name}</div>
+                        <div className="flex items-center text-xs text-gym-text-muted space-x-1.5 mt-0.5">
+                          <Phone className="h-3 w-3" />
+                          <span>{member.phone}</span>
+                        </div>
+                      </td>
+
+                      {/* Gender / DOB */}
+                      <td className="py-3.5 px-5">
+                        <div className="text-gym-text-secondary capitalize text-[13px]">{member.gender || '—'}</div>
+                        <div className="text-xs text-gym-text-muted mt-0.5">
+                          {member.dob ? formatDate(member.dob) : '—'}
+                        </div>
+                      </td>
+
+                      {/* Subscription Plan */}
+                      <td className="py-3.5 px-5">
+                        <span className="text-gym-text-secondary font-medium capitalize text-[13px]">{member.membershipType}</span>
+                      </td>
+
+                      {/* Timeline Details */}
+                      <td className="py-3.5 px-5">
+                        <div className="flex items-center text-xs text-gym-text-secondary space-x-1">
+                          <Calendar className="h-3 w-3 text-gym-text-muted shrink-0" />
+                          <span className="tabular-nums">
+                            {formatDate(member.startDate)} → {formatDate(member.endDate)}
+                          </span>
+                        </div>
+                      </td>
+
+                      {/* Fee Dues */}
+                      <td className="py-3.5 px-5 font-bold text-slate-800 dark:text-white tabular-nums">
+                        ₹{member.feeAmount.toLocaleString()}
+                      </td>
+
+                      {/* Status Badge */}
+                      <td className="py-3.5 px-5">
+                        <div className="flex justify-center">
+                          {getStatusBadge(member.status)}
+                        </div>
+                      </td>
+
+                      {/* Actions */}
+                      <td className="py-3.5 px-5">
+                        <div className="flex items-center justify-end space-x-1.5">
+                          <button
+                            onClick={() => openRenewModal(member)}
+                            className="bg-gym-orange/10 hover:bg-gym-orange text-gym-orange hover:text-white px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all duration-200 border border-gym-orange/20 hover:border-gym-orange cursor-pointer"
+                          >
+                            Renew
+                          </button>
+                          <button
+                            onClick={() => openEditModal(member)}
+                            title="Edit Details"
+                            className="p-2 border border-gym-border rounded-lg text-gym-text-secondary hover:text-white hover:bg-gym-elevated hover:border-gym-border-hover transition-all duration-200 cursor-pointer"
+                          >
+                            <Edit className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(member._id, member.name)}
+                            title="Delete Member"
+                            className="p-2 border border-gym-border rounded-lg text-gym-text-secondary hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/20 transition-all duration-200 cursor-pointer"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      </td>
+
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Card List View */}
+            <div className="md:hidden divide-y divide-gym-border/30">
+              {members.map((member, idx) => (
+                <div 
+                  key={member._id}
+                  className="p-4 space-y-3.5 animate-fade-in"
+                  style={{ animationDelay: `${idx * 40}ms`, animationFillMode: 'both' }}
+                >
+                  {/* Header row: name & status */}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <h3 className="font-bold text-base text-slate-800 dark:text-white leading-snug truncate">{member.name}</h3>
+                      <div className="flex items-center text-xs text-gym-text-muted mt-1 space-x-2">
+                        <span className="capitalize">{member.gender || '—'}</span>
+                        <span>•</span>
+                        <span>{member.dob ? formatDate(member.dob) : 'DOB —'}</span>
+                      </div>
+                    </div>
+                    <div className="shrink-0">
+                      {getStatusBadge(member.status)}
+                    </div>
+                  </div>
+
+                  {/* Details block */}
+                  <div className="grid grid-cols-2 gap-3 text-xs bg-white/[0.01] border border-gym-border/40 rounded-xl p-3">
+                    <div className="space-y-1">
+                      <p className="text-[10px] text-gym-text-muted font-bold uppercase tracking-wider">Plan Type</p>
+                      <p className="font-semibold text-slate-700 dark:text-gray-200 capitalize">{member.membershipType}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-[10px] text-gym-text-muted font-bold uppercase tracking-wider">Fee Amount</p>
+                      <p className="font-bold text-gym-orange">₹{member.feeAmount.toLocaleString()}</p>
+                    </div>
+                    <div className="space-y-1 col-span-2 pt-2 border-t border-gym-border/20">
+                      <p className="text-[10px] text-gym-text-muted font-bold uppercase tracking-wider">Timeline</p>
+                      <p className="text-gym-text-secondary font-medium tabular-nums">
+                        {formatDate(member.startDate)} → {formatDate(member.endDate)}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Actions & Contact */}
+                  <div className="flex items-center justify-between pt-1">
+                    <a
+                      href={`tel:${member.phone}`}
+                      className="flex items-center space-x-1.5 text-xs text-gym-orange hover:text-orange-400 font-bold transition-all duration-200 h-9 px-1 rounded-lg"
+                    >
+                      <Phone className="h-3.5 w-3.5" />
+                      <span className="tabular-nums">{member.phone}</span>
+                    </a>
+                    
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => openRenewModal(member)}
+                        className="bg-gym-orange hover:bg-gym-orange-hover text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 shadow-sm shadow-gym-orange/15 cursor-pointer h-9"
+                      >
+                        Renew
+                      </button>
+                      <button
+                        onClick={() => openEditModal(member)}
+                        aria-label="Edit Member"
+                        className="p-2 border border-gym-border rounded-lg text-gym-text-secondary hover:text-white hover:bg-gym-elevated transition-all duration-200 cursor-pointer h-9 w-9 flex items-center justify-center"
+                      >
+                        <Edit className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(member._id, member.name)}
+                        aria-label="Delete Member"
+                        className="p-2 border border-gym-border rounded-lg text-gym-text-secondary hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/20 transition-all duration-200 cursor-pointer h-9 w-9 flex items-center justify-center"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
+          </>
         )}
       </div>
 

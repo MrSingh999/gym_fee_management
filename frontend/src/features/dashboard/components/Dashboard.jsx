@@ -168,10 +168,10 @@ export default function Dashboard() {
       
       {/* Welcome Title */}
       <div className="animate-fade-in">
-        <h1 className="font-display font-bold text-3xl md:text-4xl text-slate-800 dark:text-white tracking-tight">
+        <h1 className="font-display font-bold text-2xl sm:text-3xl md:text-4xl text-slate-800 dark:text-white tracking-tight">
           Admin <span className="gradient-text">Console</span>
         </h1>
-        <p className="text-gym-text-secondary mt-2 text-sm">Quick snapshot of gym membership statuses today.</p>
+        <p className="text-gym-text-secondary mt-1.5 text-xs sm:text-sm">Quick snapshot of gym membership statuses today.</p>
       </div>
 
       {/* KPI Cards Grid */}
@@ -184,21 +184,21 @@ export default function Dashboard() {
             <div
               key={card.label}
               onClick={card.clickable ? () => setFilterType(card.filterKey) : undefined}
-              className={`glass-card p-4 md:p-5 rounded-xl border-l-[3px] ${card.borderClass} animate-fade-in stagger-${index + 1} ${
+              className={`glass-card p-3.5 md:p-5 rounded-xl border-l-[3px] ${card.borderClass} animate-fade-in stagger-${index + 1} ${
                 card.clickable ? 'cursor-pointer hover:scale-[1.02] active:scale-[0.98]' : ''
               } ${isSelected ? 'ring-1 ring-gym-orange/30 !border-l-gym-orange' : ''} ${
                 index === 4 ? 'col-span-2 lg:col-span-1' : ''
               }`}
               style={{ animationFillMode: 'both' }}
             >
-              <div className="flex items-center space-x-3">
-                <div className={`p-2.5 rounded-lg ${card.bgClass} ${card.textClass}`}>
-                  <Icon className="h-5 w-5" />
+              <div className="flex items-center space-x-2.5 sm:space-x-3">
+                <div className={`p-2 sm:p-2.5 rounded-lg ${card.bgClass} ${card.textClass} shrink-0`}>
+                  <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-[11px] text-gym-text-muted font-semibold uppercase tracking-wider truncate">{card.label}</p>
-                  <h3 className="text-xl md:text-2xl font-bold text-slate-800 dark:text-white mt-0.5 tabular-nums">
-                    {typeof card.value === 'number' ? card.value : card.value}
+                  <p className="text-[10px] sm:text-[11px] text-gym-text-muted font-semibold uppercase tracking-wider truncate">{card.label}</p>
+                  <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-800 dark:text-white mt-0.5 tabular-nums truncate">
+                    {card.value}
                   </h3>
                 </div>
               </div>
@@ -208,13 +208,13 @@ export default function Dashboard() {
       </div>
 
       {/* Main Alert List Area */}
-      <div className="glass-panel p-5 md:p-6 rounded-2xl space-y-5 animate-fade-in" style={{ animationDelay: '200ms', animationFillMode: 'both' }}>
+      <div className="glass-panel p-4 sm:p-5 md:p-6 rounded-2xl space-y-5 animate-fade-in" style={{ animationDelay: '200ms', animationFillMode: 'both' }}>
         
         {/* List Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 border-b border-gym-border pb-5">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-gym-border pb-5">
           <div className="space-y-1.5">
-            <h2 className="font-display font-bold text-lg text-slate-800 dark:text-white">Membership Dues Tracker</h2>
-            <p className="text-sm text-gym-text-secondary">
+            <h2 className="font-display font-bold text-base sm:text-lg text-slate-800 dark:text-white">Membership Dues Tracker</h2>
+            <p className="text-xs sm:text-sm text-gym-text-secondary">
               {filterType === 'overdue' 
                 ? 'Showing memberships that have already expired.' 
                 : `Showing memberships expiring ${dueTimeframe === 0 ? 'today' : `within ${dueTimeframe} days`} or overdue.`}
@@ -222,15 +222,15 @@ export default function Dashboard() {
             
             {/* Timeframe sub-selector pills */}
             {filterType !== 'overdue' && (
-              <div className="flex items-center space-x-2 pt-1.5 animate-fade-in">
-                <span className="text-[11px] text-gym-text-muted font-bold uppercase tracking-wider">Timeframe:</span>
+              <div className="flex items-center space-x-2 pt-1 animate-fade-in">
+                <span className="text-[10px] sm:text-[11px] text-gym-text-muted font-bold uppercase tracking-wider">Timeframe:</span>
                 <div className="flex bg-gym-dark/50 border border-gym-border/50 p-0.5 rounded-lg">
                   {[{ val: 0, label: 'Today' }, { val: 3, label: '3 Days' }, { val: 7, label: '7 Days' }].map(tf => (
                     <button
                       key={tf.val}
                       type="button"
                       onClick={() => setDueTimeframe(tf.val)}
-                      className={`px-3 py-1 rounded-md text-[11px] font-bold transition-all duration-200 cursor-pointer ${
+                      className={`px-2 py-0.5 sm:px-3 sm:py-1 rounded-md text-[10px] sm:text-[11px] font-bold transition-all duration-200 cursor-pointer ${
                         dueTimeframe === tf.val 
                           ? 'bg-gym-orange text-white shadow-sm' 
                           : 'text-gym-text-secondary hover:text-white'
@@ -245,20 +245,21 @@ export default function Dashboard() {
           </div>
 
           {/* Toggle Filters */}
-          <div className="flex bg-gym-dark/60 border border-gym-border p-1 rounded-xl self-start lg:self-center shrink-0">
+          <div className="flex bg-gym-dark/60 border border-gym-border p-1 rounded-xl self-start lg:self-center shrink-0 max-w-full overflow-x-auto">
             {[
-              { key: 'all', label: `All Dues (${stats.overdue + dueCountInTimeframe})`, activeClass: 'bg-gym-orange text-white shadow-sm' },
-              { key: 'overdue', label: `Overdue (${stats.overdue})`, activeClass: 'bg-red-500/15 text-red-400 border border-red-500/20' },
-              { key: 'due', label: `Due (${dueCountInTimeframe})`, activeClass: 'bg-amber-500/15 text-amber-400 border border-amber-500/20' },
+              { key: 'all', label: `All Dues (${stats.overdue + dueCountInTimeframe})`, labelMobile: `All (${stats.overdue + dueCountInTimeframe})`, activeClass: 'bg-gym-orange text-white shadow-sm' },
+              { key: 'overdue', label: `Overdue (${stats.overdue})`, labelMobile: `Overdue (${stats.overdue})`, activeClass: 'bg-red-500/15 text-red-400 border border-red-500/20' },
+              { key: 'due', label: `Due (${dueCountInTimeframe})`, labelMobile: `Due (${dueCountInTimeframe})`, activeClass: 'bg-amber-500/15 text-amber-400 border border-amber-500/20' },
             ].map(f => (
               <button
                 key={f.key}
                 onClick={() => setFilterType(f.key)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer ${
+                className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer shrink-0 ${
                   filterType === f.key ? f.activeClass : 'text-gym-text-secondary hover:text-white border border-transparent'
                 }`}
               >
-                {f.label}
+                <span className="hidden sm:inline">{f.label}</span>
+                <span className="sm:hidden">{f.labelMobile}</span>
               </button>
             ))}
           </div>
