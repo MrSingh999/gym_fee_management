@@ -7,6 +7,7 @@ import {
   renewMember,
   updateMember,
   deleteMember,
+  getMemberPayments,
 } from '../controllers/memberController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
@@ -17,6 +18,7 @@ router.use(protect);
 
 router.get('/dashboard/stats', getStats);
 router.get('/due', getDueMembers);
+router.get('/:id/payments', getMemberPayments);
 router.get('/', getMembers);
 router.post('/', createMember);
 router.put('/:id/renew', renewMember);

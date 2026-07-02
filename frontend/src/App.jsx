@@ -6,6 +6,7 @@ import MemberList from '@/features/members/components/MemberList';
 import AddMemberModal from '@/features/members/components/AddMemberModal';
 import EditMemberModal from '@/features/members/components/EditMemberModal';
 import RenewMemberModal from '@/features/members/components/RenewMemberModal';
+import PaymentHistoryModal from '@/features/members/components/PaymentHistoryModal';
 import Login from '@/features/auth/components/Login';
 import { useAuth } from '@/context/AuthContext';
 import { useApp } from '@/context/AppContext';
@@ -18,12 +19,15 @@ export default function App() {
     isAddModalOpen,
     isEditModalOpen,
     isRenewModalOpen,
+    isHistoryModalOpen,
     memberToEdit,
     memberToRenew,
+    memberToViewHistory,
     triggerRefresh,
     closeAddModal,
     closeEditModal,
-    closeRenewModal
+    closeRenewModal,
+    closeHistoryModal
   } = useApp();
 
   // 1. Loading state on boot session restore
@@ -89,6 +93,13 @@ export default function App() {
         onClose={closeRenewModal}
         member={memberToRenew}
         onSuccess={triggerRefresh}
+      />
+
+      {/* Payment History Modal */}
+      <PaymentHistoryModal 
+        isOpen={isHistoryModalOpen}
+        onClose={closeHistoryModal}
+        member={memberToViewHistory}
       />
 
     </div>

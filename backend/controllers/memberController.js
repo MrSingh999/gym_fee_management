@@ -1,4 +1,7 @@
+import mongoose from "mongoose";
 import Member from "../models/Member.js";
+import Plan from "../models/Plan.js";
+import Payment from "../models/Payment.js";
 import { getDateRange } from "../utils/dateHelpers.js";
 import asyncHandler from "../middleware/asyncHandler.js";
 import ErrorResponse from "../utils/errorResponse.js";
@@ -20,21 +23,30 @@ const getStats = asyncHandler(async (req, res, next) => {
   ] = await Promise.all([
     Member.countDocuments(),
     Member.countDocuments({
-      status: { $ne: "inactive" },
-      endDate: { $gt: sevenDaysFromNow },
+      status: { $nin: ["Inactive", "inactive"] },
+      feeEndDate: { $gt: sevenDaysFromNow },
     }),
     Member.countDocuments({
-      status: { $ne: "inactive" },
-      endDate: { $gte: today, $lte: sevenDaysFromNow },
+      status: { $nin: ["Inactive", "inactive"] },
+      feeEndDate: { $gte: today, $lte: sevenDaysFromNow },
     }),
     Member.countDocuments({
-      status: { $ne: "inactive" },
-      endDate: { $lt: today },
+      status: { $nin: ["Inactive", "inactive"] },
+      feeEndDate: { $lt: today },
     }),
-    Member.countDocuments({ status: "inactive" }),
+    Member.countDocuments({ status: { $in: ["Inactive", "inactive"] } }),
     Member.aggregate([
-      { $match: { status: { $ne: "inactive" } } },
-      { $group: { _id: null, total: { $sum: "$feeAmount" } } },
+      { $match: { status: { $nin: ["Inactive", "inactive"] } } },
+      {
+        $lookup: {
+          from: "plans",
+          localField: "plan",
+          foreignField: "_id",
+          as: "planDetails"
+        }
+      },
+      { $unwind: "$planDetails" },
+      { $group: { _id: null, total: { $sum: "$planDetails.price" } } },
     ]),
   ]);
 
@@ -59,9 +71,11 @@ const getDueMembers = asyncHandler(async (req, res, next) => {
 
   // Query for due (within 7 days) or overdue (end date in the past)
   const members = await Member.find({
-    status: { $ne: "inactive" },
-    endDate: { $lte: sevenDaysFromNow },
-  }).sort({ endDate: 1 });
+    status: { $nin: ["Inactive", "inactive"] },
+    feeEndDate: { $lte: sevenDaysFromNow },
+  })
+    .populate('plan')
+    .sort({ feeEndDate: 1 });
 
   // Sync computedStatus with status field in the output
   const formattedMembers = members.map((member) => {
@@ -80,37 +94,45 @@ const getMembers = asyncHandler(async (req, res, next) => {
   const { search, status, membershipType } = req.query;
   const query = {};
 
-  // 1. Text Search (name or phone)
+  // 1. Text Search (name or phone/mobile)
   if (search) {
     query.$or = [
       { name: { $regex: search, $options: "i" } },
-      { phone: { $regex: search, $options: "i" } },
+      { mobile: { $regex: search, $options: "i" } },
     ];
   }
 
-  // 2. Filter by membershipType
+  // 2. Filter by membershipType via plan name
   if (membershipType) {
-    query.membershipType = membershipType;
+    const plan = await Plan.findOne({ name: { $regex: new RegExp(`^${membershipType}$`, "i") } });
+    if (plan) {
+      query.plan = plan._id;
+    } else {
+      // Force empty array response if search plan is not registered
+      query.plan = new mongoose.Types.ObjectId();
+    }
   }
 
   // 3. Filter by status (we translate status filter to date queries)
   const { today, sevenDaysFromNow } = getDateRange();
   if (status) {
     if (status === "inactive") {
-      query.status = "inactive";
+      query.status = "Inactive";
     } else if (status === "overdue") {
-      query.status = { $ne: "inactive" };
-      query.endDate = { $lt: today };
+      query.status = { $nin: ["Inactive", "inactive"] };
+      query.feeEndDate = { $lt: today };
     } else if (status === "due") {
-      query.status = { $ne: "inactive" };
-      query.endDate = { $gte: today, $lte: sevenDaysFromNow };
+      query.status = { $nin: ["Inactive", "inactive"] };
+      query.feeEndDate = { $gte: today, $lte: sevenDaysFromNow };
     } else if (status === "active") {
-      query.status = { $ne: "inactive" };
-      query.endDate = { $gt: sevenDaysFromNow };
+      query.status = { $nin: ["Inactive", "inactive"] };
+      query.feeEndDate = { $gt: sevenDaysFromNow };
     }
   }
 
-  const members = await Member.find(query).sort({ createdAt: -1 });
+  const members = await Member.find(query)
+    .populate('plan')
+    .sort({ createdAt: -1 });
 
   // Sync computedStatus with status field in the output
   const formattedMembers = members.map((member) => {
@@ -137,33 +159,57 @@ const createMember = asyncHandler(async (req, res, next) => {
     feeAmount,
   } = req.body;
 
+  // Resolve matching Plan doc
+  let planDoc = await Plan.findOne({ name: { $regex: new RegExp(`^${membershipType}$`, "i") } });
+  if (!planDoc) {
+    // Fallback default
+    planDoc = await Plan.findOne();
+  }
+
+  if (!planDoc) {
+    throw new ErrorResponse("No gym membership plans configured in database.", 500);
+  }
+
   // Convert inputs
   const start = new Date(startDate || new Date());
   const end = new Date(start);
-
-  // Calculate end date based on membership type (both Workout and Workout + Cardio are 1 month duration)
-  if (membershipType === "workout" || membershipType === "workout + cardio") {
-    end.setMonth(end.getMonth() + 1);
-  } else {
-    end.setMonth(end.getMonth() + 1);
-  }
+  
+  // Calculate end date based on durationDays configured in the plan
+  end.setDate(end.getDate() + planDoc.durationDays);
 
   const newMember = new Member({
     name,
     gender,
     dob: new Date(dob),
-    phone,
-    email,
-    membershipType,
-    startDate: start,
-    endDate: end,
-    feeAmount: Number(feeAmount),
-    status: "active",
+    mobile: phone, // maps to mobile
+    email: email || undefined,
+    plan: planDoc._id,
+    feeStartDate: start,
+    feeEndDate: end,
+    status: "Active",
     lastPaymentDate: new Date(),
   });
 
   const savedMember = await newMember.save();
-  res.status(201).json(savedMember);
+
+  // Log Payment collection entry
+  await Payment.create({
+    member: savedMember._id,
+    plan: planDoc._id,
+    amount: Number(feeAmount || planDoc.price),
+    startDate: start,
+    endDate: end,
+    paymentMethod: "Cash",
+    remarks: "Initial Gym Registration Payment"
+  });
+
+  const populated = await Member.findById(savedMember._id).populate('plan');
+  
+  // Sync computedStatus with status field in output
+  const output = populated.toObject();
+  output.status = populated.computedStatus;
+
+  res.status(201).json(output);
 });
 
 // @desc    Renew / extend membership
@@ -185,14 +231,26 @@ const renewMember = asyncHandler(async (req, res, next) => {
     throw new ErrorResponse("Member not found", 404);
   }
 
-  // Set new start date to today, or if member is active, extend from current endDate, OR use custom startDate if provided
+  // Resolve target Plan
+  let planDoc;
+  if (membershipType) {
+    planDoc = await Plan.findOne({ name: { $regex: new RegExp(`^${membershipType}$`, "i") } });
+  }
+  if (!planDoc) {
+    planDoc = await Plan.findById(member.plan);
+  }
+  if (!planDoc) {
+    planDoc = await Plan.findOne();
+  }
+
+  // Set new start date to today, or if member is active, extend from current feeEndDate
   let newStart;
   if (startDate) {
     newStart = new Date(startDate);
   } else {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const currentEnd = new Date(member.endDate);
+    const currentEnd = new Date(member.feeEndDate);
     currentEnd.setHours(0, 0, 0, 0);
     newStart = currentEnd > today ? currentEnd : today;
   }
@@ -202,26 +260,40 @@ const renewMember = asyncHandler(async (req, res, next) => {
     newEnd.setMonth(newEnd.getMonth() + Number(months));
   } else if (renewalType === "custom" && customDate) {
     newEnd.setTime(new Date(customDate).getTime());
-  } else if (renewalType === "workout" || renewalType === "workout + cardio") {
-    newEnd.setMonth(newEnd.getMonth() + 1);
+  } else if (planDoc) {
+    newEnd.setDate(newEnd.getDate() + planDoc.durationDays);
   } else {
-    throw new ErrorResponse("Invalid renewal type", 400);
+    newEnd.setMonth(newEnd.getMonth() + 1);
   }
 
-  if (membershipType) {
-    member.membershipType = membershipType;
+  if (planDoc) {
+    member.plan = planDoc._id;
   }
-
-  member.startDate = newStart;
-  member.endDate = newEnd;
-  member.status = "active"; // Mark active again
+  member.feeStartDate = newStart;
+  member.feeEndDate = newEnd;
+  member.status = "Active"; // reset to active
   member.lastPaymentDate = new Date();
-  if (feeAmount) {
-    member.feeAmount = Number(feeAmount);
-  }
 
-  const updatedMember = await member.save();
-  res.json(updatedMember);
+  await member.save();
+
+  // Log Payment collection entry for renewal
+  await Payment.create({
+    member: member._id,
+    plan: planDoc ? planDoc._id : undefined,
+    amount: Number(feeAmount || (planDoc ? planDoc.price : 0)),
+    startDate: newStart,
+    endDate: newEnd,
+    paymentMethod: "Cash",
+    remarks: `Membership Renewal: ${months ? months + ' Months' : 'Custom Term'}`
+  });
+
+  const populated = await Member.findById(member._id).populate('plan');
+
+  // Sync computedStatus with status field in output
+  const output = populated.toObject();
+  output.status = populated.computedStatus;
+
+  res.json(output);
 });
 
 // @desc    Update member details
@@ -236,15 +308,45 @@ const updateMember = asyncHandler(async (req, res, next) => {
     throw new ErrorResponse("Member not found", 404);
   }
 
-  // Apply updates
+  // Resolve plan updates
+  if (updateData.membershipType) {
+    const planDoc = await Plan.findOne({ name: { $regex: new RegExp(`^${updateData.membershipType}$`, "i") } });
+    if (planDoc) {
+      member.plan = planDoc._id;
+    }
+  }
+
+  // Update compatibility fields
+  if (updateData.phone) {
+    member.mobile = updateData.phone;
+  }
+  if (updateData.startDate) {
+    member.feeStartDate = updateData.startDate;
+  }
+  if (updateData.endDate) {
+    member.feeEndDate = updateData.endDate;
+  }
+
+  // Apply general updates
   Object.keys(updateData).forEach((key) => {
-    if (updateData[key] !== undefined) {
+    // Skip mapped fields handled separately
+    if (
+      updateData[key] !== undefined && 
+      !['membershipType', 'phone', 'startDate', 'endDate'].includes(key)
+    ) {
       member[key] = updateData[key];
     }
   });
 
-  const updatedMember = await member.save();
-  res.json(updatedMember);
+  await member.save();
+
+  const populated = await Member.findById(member._id).populate('plan');
+
+  // Sync computedStatus with status field in output
+  const output = populated.toObject();
+  output.status = populated.computedStatus;
+
+  res.json(output);
 });
 
 // @desc    Delete a member
@@ -252,11 +354,33 @@ const updateMember = asyncHandler(async (req, res, next) => {
 // @access  Public
 const deleteMember = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
+  
+  // Clean payment history of this member as well
+  await Payment.deleteMany({ member: id });
+
   const deletedMember = await Member.findByIdAndDelete(id);
   if (!deletedMember) {
     throw new ErrorResponse("Member not found", 404);
   }
   res.json({ message: "Member deleted successfully", id });
+});
+
+// @desc    Get payments for a specific member
+// @route   GET /api/members/:id/payments
+// @access  Public
+const getMemberPayments = asyncHandler(async (req, res, next) => {
+  const { id } = req.params;
+  
+  const member = await Member.findById(id);
+  if (!member) {
+    throw new ErrorResponse("Member not found", 404);
+  }
+
+  const payments = await Payment.find({ member: id })
+    .populate('plan')
+    .sort({ paymentDate: -1 });
+
+  res.json(payments);
 });
 
 // Grouped exports at the bottom
@@ -268,4 +392,5 @@ export {
   renewMember,
   updateMember,
   deleteMember,
+  getMemberPayments,
 };

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, SlidersHorizontal, Edit, Trash2, Calendar, Phone, RefreshCw, CheckCircle, Clock, AlertTriangle, User } from 'lucide-react';
+import { Search, SlidersHorizontal, Edit, Trash2, Calendar, Phone, RefreshCw, CheckCircle, Clock, AlertTriangle, User, History } from 'lucide-react';
 import { memberService } from '../services/memberService';
 import { useApp } from '@/context/AppContext';
 import {
@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/select";
 
 export default function MemberList() {
-  const { openEditModal, openRenewModal, refreshTrigger } = useApp();
+  const { openEditModal, openRenewModal, openHistoryModal, refreshTrigger } = useApp();
 
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -288,6 +288,13 @@ export default function MemberList() {
                             Renew
                           </button>
                           <button
+                            onClick={() => openHistoryModal(member)}
+                            title="Payment History"
+                            className="p-2 border border-gym-border rounded-lg text-gym-text-secondary hover:text-white hover:bg-gym-elevated hover:border-gym-border-hover transition-all duration-200 cursor-pointer"
+                          >
+                            <History className="h-3.5 w-3.5" />
+                          </button>
+                          <button
                             onClick={() => openEditModal(member)}
                             title="Edit Details"
                             className="p-2 border border-gym-border rounded-lg text-gym-text-secondary hover:text-white hover:bg-gym-elevated hover:border-gym-border-hover transition-all duration-200 cursor-pointer"
@@ -369,6 +376,13 @@ export default function MemberList() {
                         Renew
                       </button>
                       <button
+                        onClick={() => openHistoryModal(member)}
+                        aria-label="Payment History"
+                        className="p-2 border border-gym-border rounded-lg text-gym-text-secondary hover:text-white hover:bg-gym-elevated transition-all duration-200 cursor-pointer h-9 w-9 flex items-center justify-center"
+                      >
+                        <History className="h-3.5 w-3.5" />
+                      </button>
+                      <button
                         onClick={() => openEditModal(member)}
                         aria-label="Edit Member"
                         className="p-2 border border-gym-border rounded-lg text-gym-text-secondary hover:text-white hover:bg-gym-elevated transition-all duration-200 cursor-pointer h-9 w-9 flex items-center justify-center"
@@ -382,11 +396,11 @@ export default function MemberList() {
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
           </>
         )}
       </div>

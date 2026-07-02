@@ -9,8 +9,10 @@ export function AppProvider({ children }) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isRenewModalOpen, setIsRenewModalOpen] = useState(false);
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [memberToEdit, setMemberToEdit] = useState(null);
   const [memberToRenew, setMemberToRenew] = useState(null);
+  const [memberToViewHistory, setMemberToViewHistory] = useState(null);
   
   // Refresh trigger to reload data in child components
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -48,6 +50,16 @@ export function AppProvider({ children }) {
     setMemberToRenew(null);
   };
 
+  const openHistoryModal = (member) => {
+    setMemberToViewHistory(member);
+    setIsHistoryModalOpen(true);
+  };
+
+  const closeHistoryModal = () => {
+    setIsHistoryModalOpen(false);
+    setMemberToViewHistory(null);
+  };
+
   return (
     <AppContext.Provider value={{
       activeTab,
@@ -64,7 +76,11 @@ export function AppProvider({ children }) {
       openEditModal,
       closeEditModal,
       openRenewModal,
-      closeRenewModal
+      closeRenewModal,
+      isHistoryModalOpen,
+      memberToViewHistory,
+      openHistoryModal,
+      closeHistoryModal
     }}>
       {children}
     </AppContext.Provider>

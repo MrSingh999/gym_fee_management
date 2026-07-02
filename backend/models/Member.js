@@ -16,38 +16,42 @@ const memberSchema = new mongoose.Schema(
       type: Date,
       required: [true, 'Date of birth is required'],
     },
-    phone: {
+    mobile: {
       type: String,
       required: [true, 'Phone number is required'],
       trim: true,
+      alias: 'phone',
     },
     email: {
       type: String,
       trim: true,
       lowercase: true,
+      unique: true,
+      sparse: true,
     },
-    membershipType: {
-      type: String,
-      required: [true, 'Membership type is required'],
-      enum: ['workout', 'workout + cardio'],
+    plan: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Plan',
+      required: [true, 'Plan reference is required'],
     },
-    startDate: {
+    joiningDate: {
       type: Date,
-      required: [true, 'Start date is required'],
+      default: Date.now,
     },
-    endDate: {
+    feeStartDate: {
       type: Date,
-      required: [true, 'End date is required'],
+      required: [true, 'Fee start date is required'],
+      alias: 'startDate',
     },
-    feeAmount: {
-      type: Number,
-      required: [true, 'Fee amount (price) is required'],
-      min: [0, 'Fee cannot be negative'],
+    feeEndDate: {
+      type: Date,
+      required: [true, 'Fee end date is required'],
+      alias: 'endDate',
     },
     status: {
       type: String,
-      enum: ['active', 'inactive', 'due', 'overdue'],
-      default: 'active',
+      enum: ['Active', 'Expired', 'Inactive'],
+      default: 'Active',
     },
     lastPaymentDate: {
       type: Date,
@@ -58,16 +62,25 @@ const memberSchema = new mongoose.Schema(
   }
 );
 
-// Virtual property to dynamically compute status based on end date
+// Virtual properties to extract plan details for backward compatibility
+memberSchema.virtual('membershipType').get(function () {
+  return this.plan && typeof this.plan === 'object' ? this.plan.name : '';
+});
+
+memberSchema.virtual('feeAmount').get(function () {
+  return this.plan && typeof this.plan === 'object' ? this.plan.price : 0;
+});
+
+// Virtual property to dynamically compute status based on end date (for frontend compatibility)
 memberSchema.virtual('computedStatus').get(function () {
-  if (this.status === 'inactive') {
+  if (this.status === 'Inactive' || this.status === 'inactive') {
     return 'inactive';
   }
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const end = new Date(this.endDate);
+  const end = new Date(this.feeEndDate);
   end.setHours(0, 0, 0, 0);
 
   const sevenDaysFromNow = new Date(today);
@@ -86,10 +99,15 @@ memberSchema.virtual('computedStatus').get(function () {
 memberSchema.set('toJSON', { virtuals: true });
 memberSchema.set('toObject', { virtuals: true });
 
-// Pre-save hook to ensure status matches dates if status is not explicitly set to inactive
+// Pre-save hook to map computed status to DB enum values
 memberSchema.pre('save', function (next) {
-  if (this.status !== 'inactive') {
-    this.status = this.computedStatus;
+  if (this.status !== 'Inactive') {
+    const comp = this.computedStatus;
+    if (comp === 'overdue') {
+      this.status = 'Expired';
+    } else {
+      this.status = 'Active';
+    }
   }
   next();
 });

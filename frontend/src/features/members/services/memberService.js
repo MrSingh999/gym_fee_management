@@ -24,13 +24,13 @@ export const memberService = {
     return handleResponse(res);
   },
   
-  renewMember: async (id, { renewalType, customDate, feeAmount }) => {
+  renewMember: async (id, payload) => {
     const res = await fetch(`${API_BASE}/${id}/renew`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ renewalType, customDate, feeAmount }),
+      body: JSON.stringify(payload),
     });
     return handleResponse(res);
   },
@@ -50,6 +50,11 @@ export const memberService = {
     const res = await fetch(`${API_BASE}/${id}`, {
       method: 'DELETE',
     });
+    return handleResponse(res);
+  },
+
+  getMemberPayments: async (id) => {
+    const res = await fetch(`${API_BASE}/${id}/payments`);
     return handleResponse(res);
   }
 };
