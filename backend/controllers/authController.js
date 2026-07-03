@@ -205,6 +205,47 @@ const resetPassword = asyncHandler(async (req, res, next) => {
   sendTokenResponse(user, 200, res);
 });
 
+// @desc    Update logged in user's password
+// @route   PUT /api/auth/update-password
+// @access  Private
+const updatePassword = asyncHandler(async (req, res, next) => {
+  const { currentPassword, newPassword } = req.body;
+
+  if (!currentPassword || !newPassword) {
+    throw new ErrorResponse('Please provide current password and new password', 400);
+  }
+
+  if (newPassword.length < 6) {
+    throw new ErrorResponse('New password must be at least 6 characters long', 400);
+  }
+
+  let user;
+  if (req.user.role === 'admin') {
+    user = await Admin.findById(req.user._id);
+  } else {
+    user = await Member.findById(req.user._id);
+  }
+
+  if (!user) {
+    throw new ErrorResponse('User session no longer exists.', 401);
+  }
+
+  // Check current password
+  const isMatch = await user.matchPassword(currentPassword);
+  if (!isMatch) {
+    throw new ErrorResponse('Incorrect current password', 401);
+  }
+
+  // Set new password (hashed automatically on save)
+  user.password = newPassword;
+  await user.save();
+
+  res.json({
+    success: true,
+    message: 'Password updated successfully'
+  });
+});
+
 // Grouped exports at the bottom
 export {
   loginUser,
@@ -212,4 +253,6 @@ export {
   getMe,
   forgotPassword,
   resetPassword,
+  updatePassword,
 };
+

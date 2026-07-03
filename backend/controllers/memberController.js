@@ -42,8 +42,8 @@ const getStats = asyncHandler(async (req, res, next) => {
           from: "plans",
           localField: "plan",
           foreignField: "_id",
-          as: "planDetails"
-        }
+          as: "planDetails",
+        },
       },
       { $unwind: "$planDetails" },
       { $group: { _id: null, total: { $sum: "$planDetails.price" } } },
@@ -74,7 +74,7 @@ const getDueMembers = asyncHandler(async (req, res, next) => {
     status: { $nin: ["Inactive", "inactive"] },
     feeEndDate: { $lte: sevenDaysFromNow },
   })
-    .populate('plan')
+    .populate("plan")
     .sort({ feeEndDate: 1 });
 
   // Sync computedStatus with status field in the output
@@ -104,7 +104,9 @@ const getMembers = asyncHandler(async (req, res, next) => {
 
   // 2. Filter by membershipType via plan name
   if (membershipType) {
-    const plan = await Plan.findOne({ name: { $regex: new RegExp(`^${membershipType}$`, "i") } });
+    const plan = await Plan.findOne({
+      name: { $regex: new RegExp(`^${membershipType}$`, "i") },
+    });
     if (plan) {
       query.plan = plan._id;
     } else {
@@ -131,7 +133,7 @@ const getMembers = asyncHandler(async (req, res, next) => {
   }
 
   const members = await Member.find(query)
-    .populate('plan')
+    .populate("plan")
     .sort({ createdAt: -1 });
 
   // Sync computedStatus with status field in the output
@@ -157,23 +159,29 @@ const createMember = asyncHandler(async (req, res, next) => {
     membershipType,
     startDate,
     feeAmount,
+    password,
   } = req.body;
 
   // Resolve matching Plan doc
-  let planDoc = await Plan.findOne({ name: { $regex: new RegExp(`^${membershipType}$`, "i") } });
+  let planDoc = await Plan.findOne({
+    name: { $regex: new RegExp(`^${membershipType}$`, "i") },
+  });
   if (!planDoc) {
     // Fallback default
     planDoc = await Plan.findOne();
   }
 
   if (!planDoc) {
-    throw new ErrorResponse("No gym membership plans configured in database.", 500);
+    throw new ErrorResponse(
+      "No gym membership plans configured in database.",
+      500,
+    );
   }
 
   // Convert inputs
   const start = new Date(startDate || new Date());
   const end = new Date(start);
-  
+
   // Calculate end date based on durationDays configured in the plan
   end.setDate(end.getDate() + planDoc.durationDays);
 
@@ -188,6 +196,7 @@ const createMember = asyncHandler(async (req, res, next) => {
     feeEndDate: end,
     status: "Active",
     lastPaymentDate: new Date(),
+    password: password || undefined, // falls back to Mongoose default if empty/undefined
   });
 
   const savedMember = await newMember.save();
@@ -200,11 +209,11 @@ const createMember = asyncHandler(async (req, res, next) => {
     startDate: start,
     endDate: end,
     paymentMethod: "Cash",
-    remarks: "Initial Gym Registration Payment"
+    remarks: "Initial Gym Registration Payment",
   });
 
-  const populated = await Member.findById(savedMember._id).populate('plan');
-  
+  const populated = await Member.findById(savedMember._id).populate("plan");
+
   // Sync computedStatus with status field in output
   const output = populated.toObject();
   output.status = populated.computedStatus;
@@ -234,7 +243,9 @@ const renewMember = asyncHandler(async (req, res, next) => {
   // Resolve target Plan
   let planDoc;
   if (membershipType) {
-    planDoc = await Plan.findOne({ name: { $regex: new RegExp(`^${membershipType}$`, "i") } });
+    planDoc = await Plan.findOne({
+      name: { $regex: new RegExp(`^${membershipType}$`, "i") },
+    });
   }
   if (!planDoc) {
     planDoc = await Plan.findById(member.plan);
@@ -284,10 +295,10 @@ const renewMember = asyncHandler(async (req, res, next) => {
     startDate: newStart,
     endDate: newEnd,
     paymentMethod: "Cash",
-    remarks: `Membership Renewal: ${months ? months + ' Months' : 'Custom Term'}`
+    remarks: `Membership Renewal: ${months ? months + " Months" : "Custom Term"}`,
   });
 
-  const populated = await Member.findById(member._id).populate('plan');
+  const populated = await Member.findById(member._id).populate("plan");
 
   // Sync computedStatus with status field in output
   const output = populated.toObject();
@@ -310,7 +321,9 @@ const updateMember = asyncHandler(async (req, res, next) => {
 
   // Resolve plan updates
   if (updateData.membershipType) {
-    const planDoc = await Plan.findOne({ name: { $regex: new RegExp(`^${updateData.membershipType}$`, "i") } });
+    const planDoc = await Plan.findOne({
+      name: { $regex: new RegExp(`^${updateData.membershipType}$`, "i") },
+    });
     if (planDoc) {
       member.plan = planDoc._id;
     }
@@ -329,12 +342,12 @@ const updateMember = asyncHandler(async (req, res, next) => {
 
   if (updateData.status) {
     const s = updateData.status.toLowerCase();
-    if (s === 'inactive') {
-      member.status = 'Inactive';
-    } else if (s === 'expired' || s === 'overdue') {
-      member.status = 'Expired';
+    if (s === "inactive") {
+      member.status = "Inactive";
+    } else if (s === "expired" || s === "overdue") {
+      member.status = "Expired";
     } else {
-      member.status = 'Active';
+      member.status = "Active";
     }
   }
 
@@ -342,8 +355,10 @@ const updateMember = asyncHandler(async (req, res, next) => {
   Object.keys(updateData).forEach((key) => {
     // Skip mapped fields handled separately
     if (
-      updateData[key] !== undefined && 
-      !['membershipType', 'phone', 'startDate', 'endDate', 'status'].includes(key)
+      updateData[key] !== undefined &&
+      !["membershipType", "phone", "startDate", "endDate", "status"].includes(
+        key,
+      )
     ) {
       member[key] = updateData[key];
     }
@@ -351,7 +366,7 @@ const updateMember = asyncHandler(async (req, res, next) => {
 
   await member.save();
 
-  const populated = await Member.findById(member._id).populate('plan');
+  const populated = await Member.findById(member._id).populate("plan");
 
   // Sync computedStatus with status field in output
   const output = populated.toObject();
@@ -365,7 +380,7 @@ const updateMember = asyncHandler(async (req, res, next) => {
 // @access  Public
 const deleteMember = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
-  
+
   // Clean payment history of this member as well
   await Payment.deleteMany({ member: id });
 
@@ -381,19 +396,22 @@ const deleteMember = asyncHandler(async (req, res, next) => {
 // @access  Public
 const getMemberPayments = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
-  
+
   // Restrict payment details to the owner or admins
-  if (req.user.role !== 'admin' && req.user._id.toString() !== id) {
-    throw new ErrorResponse('Not authorized to access these payment records', 403);
+  if (req.user.role !== "admin" && req.user._id.toString() !== id) {
+    throw new ErrorResponse(
+      "Not authorized to access these payment records",
+      403,
+    );
   }
-  
+
   const member = await Member.findById(id);
   if (!member) {
     throw new ErrorResponse("Member not found", 404);
   }
 
   const payments = await Payment.find({ member: id })
-    .populate('plan')
+    .populate("plan")
     .sort({ paymentDate: -1 });
 
   res.json(payments);

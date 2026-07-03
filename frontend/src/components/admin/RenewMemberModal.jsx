@@ -31,7 +31,12 @@ export default function RenewMemberModal({
   const [submitting, setSubmitting] = useState(false);
 
   const getPriceForPlan = (plan, duration) => {
-    const monthlyRate = plan === "workout + cardio" ? 1000 : 700;
+    let monthlyRate = 700;
+    if (plan === "strength and cardio" || plan === "workout + cardio") {
+      monthlyRate = 1000;
+    } else if (plan === "personal training") {
+      monthlyRate = 2000;
+    }
     return monthlyRate * Number(duration || 1);
   };
 
@@ -70,7 +75,12 @@ export default function RenewMemberModal({
       const diffTime = Math.max(0, newEnd.getTime() - newStart.getTime());
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-      const monthlyRate = plan === "workout + cardio" ? 1000 : 700;
+      let monthlyRate = 700;
+      if (plan === "strength and cardio" || plan === "workout + cardio") {
+        monthlyRate = 1000;
+      } else if (plan === "personal training") {
+        monthlyRate = 2000;
+      }
       const dailyRate = monthlyRate / 30;
       return Math.round(diffDays * dailyRate).toString();
     }
@@ -80,7 +90,7 @@ export default function RenewMemberModal({
 
   useEffect(() => {
     if (member) {
-      const plan = member.membershipType || "workout";
+      const plan = member.membershipType || "strength training";
       setMembershipType(plan);
       setRenewalType("1");
       setCustomMonths("");

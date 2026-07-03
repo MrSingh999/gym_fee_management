@@ -43,4 +43,15 @@ export const authService = {
     });
     return handleResponse(res);
   },
+
+  updatePassword: async (currentPassword, newPassword) => {
+    const res = await fetch("/api/auth/update-password", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ currentPassword, newPassword }),
+      credentials: "include",
+    });
+    return handleResponse(res);
+  },
 };
+

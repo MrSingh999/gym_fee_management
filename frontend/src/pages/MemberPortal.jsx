@@ -16,10 +16,12 @@ import {
   BadgeAlert,
   ChevronRight,
   TrendingDown,
+  Lock,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
 import { memberService } from "@/services/memberService";
+import { authService } from "@/services/authService";
 
 export default function MemberPortal() {
   const { user, logout } = useAuth();
@@ -29,6 +31,55 @@ export default function MemberPortal() {
   const [payments, setPayments] = useState([]);
   const [loadingPayments, setLoadingPayments] = useState(false);
   const [paymentsError, setPaymentsError] = useState(null);
+
+  // Security Form States
+  const [securityForm, setSecurityForm] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [securityError, setSecurityError] = useState(null);
+  const [securitySuccess, setSecuritySuccess] = useState(null);
+  const [securitySubmitting, setSecuritySubmitting] = useState(false);
+
+  const handleSecuritySubmit = async (e) => {
+    e.preventDefault();
+    setSecurityError(null);
+    setSecuritySuccess(null);
+
+    const { currentPassword, newPassword, confirmPassword } = securityForm;
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setSecurityError("All fields are required.");
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      setSecurityError("New password must be at least 6 characters long.");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setSecurityError("New passwords do not match.");
+      return;
+    }
+
+    setSecuritySubmitting(true);
+    try {
+      await authService.updatePassword(currentPassword, newPassword);
+      setSecuritySuccess("Password updated successfully.");
+      setSecurityForm({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+    } catch (err) {
+      console.error(err);
+      setSecurityError(err.message || "Failed to update password.");
+    } finally {
+      setSecuritySubmitting(false);
+    }
+  };
 
   useEffect(() => {
     if (activeTab === "billing") {
@@ -122,7 +173,24 @@ export default function MemberPortal() {
 
   // Define structured workout routines based on plan type
   const getWorkoutRoutine = () => {
-    const planName = (user.plan?.name || "workout").toLowerCase();
+    const planName = (user.plan?.name || "strength training").toLowerCase();
+
+    if (planName.includes("personal") || planName.includes("trainer")) {
+      return [
+        {
+          day: "Monday - Saturday",
+          focus: "1-on-1 Customized Routine",
+          routine:
+            "Your training schedule is fully customized by your personal trainer. Please consult with your trainer for your daily specialized routines, progress tracking, and diet plan.",
+        },
+        {
+          day: "Sunday",
+          focus: "Active Recovery",
+          routine:
+            "Relax and recover. Keep up with hydration, follow your customized nutrition plan, and ensure you get 8 hours of quality rest.",
+        },
+      ];
+    }
 
     if (planName.includes("cardio")) {
       return [
@@ -220,14 +288,21 @@ export default function MemberPortal() {
   const workoutRoutine = getWorkoutRoutine();
 
   // Status visual configurations
+  const isOverdue =
+    remainingDays < 0 ||
+    user.status?.toLowerCase() === "expired" ||
+    user.status?.toLowerCase() === "overdue";
+  const isInactive = user.status?.toLowerCase() === "inactive";
+  const isDisabled = isOverdue || isInactive;
+
   const getStatusBadge = () => {
     const computedStatus = user.status?.toLowerCase();
 
-    if (remainingDays < 0) {
+    if (isOverdue || isInactive) {
       return (
         <span className="inline-flex items-center space-x-1 bg-red-500/10 border border-red-500/25 text-red-400 text-xs font-bold tracking-wider px-3 py-1 rounded-full animate-pulse-glow">
           <span className="status-dot status-dot-overdue"></span>
-          <span>EXPIRED</span>
+          <span>INACTIVE</span>
         </span>
       );
     } else if (remainingDays <= 7) {
@@ -301,11 +376,12 @@ export default function MemberPortal() {
         </div>
 
         {/* Tab Controller */}
-        <div className="flex space-x-1 bg-gym-dark/50 border border-[var(--border-color)] p-1 rounded-[6px] w-full max-w-md animate-fade-in stagger-2">
+        <div className="flex space-x-1 bg-gym-dark/50 border border-[var(--border-color)] p-1 rounded-[6px] w-full max-w-lg animate-fade-in stagger-2">
           {[
             { id: "overview", label: "Overview", icon: User },
             { id: "workouts", label: "Workouts", icon: Dumbbell },
             { id: "billing", label: "Billing History", icon: CreditCard },
+            { id: "security", label: "Security", icon: Lock },
           ].map((tab) => {
             const Icon = tab.icon;
             return (
@@ -511,7 +587,7 @@ export default function MemberPortal() {
                 </div>
 
                 {/* Expiry alerts */}
-                {remainingDays < 0 ? (
+                {isDisabled ? (
                   <div className="flex items-start space-x-3 p-4 bg-red-500/[0.06] border border-red-500/15 text-red-400 rounded-[6px]">
                     <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5 text-red-400" />
                     <div className="text-xs">
@@ -727,11 +803,127 @@ export default function MemberPortal() {
               )}
             </div>
           )}
+
+          {/* Tab 4: Security Panel */}
+          {activeTab === "security" && (
+            <div className="glass-panel p-5 sm:p-6 rounded-[16px] border border-[var(--border-color-hover)] max-w-xl mx-auto space-y-6 animate-fade-in stagger-3">
+              <div className="border-b border-[var(--border-color)] pb-4 flex justify-between items-center">
+                <div>
+                  <h3 className="font-bold text-lg text-[var(--text-primary)]">
+                    Account Security
+                  </h3>
+                  <p className="text-xs text-[var(--text-secondary)]">
+                    Update your login credentials to secure your account.
+                  </p>
+                </div>
+                <div className="p-2.5 bg-gym-dark/50 border border-[var(--border-color)] rounded-[6px]">
+                  <Lock className="h-5 w-5 text-gym-orange" />
+                </div>
+              </div>
+
+              {securityError && (
+                <div
+                  className="flex items-start space-x-2.5 p-3 bg-red-500/[0.06] border border-red-500/15 text-red-400 rounded-[6px] text-xs animate-fade-in"
+                  role="alert"
+                >
+                  <AlertTriangle className="h-4.5 w-4.5 shrink-0 mt-0.5" />
+                  <span>{securityError}</span>
+                </div>
+              )}
+
+              {securitySuccess && (
+                <div
+                  className="flex items-start space-x-2.5 p-3 bg-emerald-500/[0.06] border border-emerald-500/15 text-emerald-400 rounded-[6px] text-xs animate-fade-in"
+                  role="status"
+                >
+                  <CheckCircle className="h-4.5 w-4.5 shrink-0 mt-0.5" />
+                  <span>{securitySuccess}</span>
+                </div>
+              )}
+
+              <form onSubmit={handleSecuritySubmit} className="space-y-4">
+                {/* Current Password */}
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider">
+                    Current Password
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    value={securityForm.currentPassword}
+                    onChange={(e) =>
+                      setSecurityForm({
+                        ...securityForm,
+                        currentPassword: e.target.value,
+                      })
+                    }
+                    placeholder="Enter current password"
+                    className="w-full bg-white/[0.03] border border-[var(--border-color)] rounded-[6px] px-4 py-3 text-sm text-[var(--text-primary)] placeholder-gym-text-muted focus:outline-none focus:border-gym-orange transition-all duration-200"
+                  />
+                </div>
+
+                {/* New Password */}
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider">
+                    New Password
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    minLength="6"
+                    value={securityForm.newPassword}
+                    onChange={(e) =>
+                      setSecurityForm({
+                        ...securityForm,
+                        newPassword: e.target.value,
+                      })
+                    }
+                    placeholder="Minimum 6 characters"
+                    className="w-full bg-white/[0.03] border border-[var(--border-color)] rounded-[6px] px-4 py-3 text-sm text-[var(--text-primary)] placeholder-gym-text-muted focus:outline-none focus:border-gym-orange transition-all duration-200"
+                  />
+                </div>
+
+                {/* Confirm New Password */}
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider">
+                    Confirm New Password
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    value={securityForm.confirmPassword}
+                    onChange={(e) =>
+                      setSecurityForm({
+                        ...securityForm,
+                        confirmPassword: e.target.value,
+                      })
+                    }
+                    placeholder="Repeat new password"
+                    className="w-full bg-white/[0.03] border border-[var(--border-color)] rounded-[6px] px-4 py-3 text-sm text-[var(--text-primary)] placeholder-gym-text-muted focus:outline-none focus:border-gym-orange transition-all duration-200"
+                  />
+                </div>
+
+                <div className="pt-2">
+                  <button
+                    type="submit"
+                    disabled={securitySubmitting}
+                    className="w-full bg-gym-orange hover:bg-gym-orange-hover disabled:opacity-50 text-white py-2.5 rounded-[6px] font-bold text-sm transition-all duration-200 shadow-lg shadow-gym-orange/15 hover:shadow-gym-orange/25 flex items-center justify-center space-x-2 cursor-pointer h-11"
+                  >
+                    {securitySubmitting ? (
+                      <div className="animate-spin rounded-full h-5 w-5 border-2 border-white/30 border-t-white"></div>
+                    ) : (
+                      <span>Update Password</span>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="glass-panel border-t border-[var(--border-color)] py-4 mt-auto">
+      <footer className="glass-panel border-t border-(--border-color) py-4 mt-auto">
         <div className="max-w-7xl mx-auto px-4 md:px-6 flex flex-col sm:flex-row justify-between items-center gap-3 text-center sm:text-left">
           <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider font-semibold">
             © 2026 APEX FITNESS. All Rights Reserved.

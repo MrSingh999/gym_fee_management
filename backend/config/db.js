@@ -24,15 +24,37 @@ const connectDB = async () => {
       console.log('Default system admin seeded successfully: admin@admin.com / admin123');
     }
 
-    // Seed default plans if Plan collection is empty
-    const planCount = await Plan.countDocuments();
-    if (planCount === 0) {
-      console.log('No plans found in database. Seeding default plans...');
-      await Plan.create([
-        { name: 'workout', price: 700, durationDays: 30, description: 'Standard Workout Plan' },
-        { name: 'workout + cardio', price: 1000, durationDays: 30, description: 'Cardio & Workout Combo' }
-      ]);
-      console.log('Default plans seeded successfully!');
+    // Seed and/or update standard plans in database
+    console.log('Synchronizing standard membership plans...');
+    const defaultPlans = [
+      { name: 'strength training', price: 700, durationDays: 30, description: 'Strength Training Focus' },
+      { name: 'strength and cardio', price: 1000, durationDays: 30, description: 'Strength & Cardio Combo' },
+      { name: 'personal training', price: 2000, durationDays: 30, description: '1-on-1 Personal Training' }
+    ];
+
+    for (const planData of defaultPlans) {
+      let existingPlan = await Plan.findOne({ name: planData.name });
+      if (!existingPlan) {
+        // Check for legacy plan names to rename in-place
+        if (planData.name === 'strength training') {
+          existingPlan = await Plan.findOne({ name: 'workout' });
+        } else if (planData.name === 'strength and cardio') {
+          existingPlan = await Plan.findOne({ name: 'workout + cardio' });
+        }
+      }
+
+      if (existingPlan) {
+        // Update details of existing plan
+        existingPlan.name = planData.name;
+        existingPlan.price = planData.price;
+        existingPlan.description = planData.description;
+        await existingPlan.save();
+        console.log(`Plan '${planData.name}' synchronized successfully.`);
+      } else {
+        // Create new plan
+        await Plan.create(planData);
+        console.log(`Plan '${planData.name}' created.`);
+      }
     }
 
     // Migrate legacy members without plan references
@@ -40,8 +62,8 @@ const connectDB = async () => {
     if (legacyMembersCount > 0) {
       console.log(`Found ${legacyMembersCount} legacy members requiring plan reference migration...`);
       const plans = await Plan.find();
-      const workoutPlan = plans.find(p => p.name.toLowerCase() === 'workout');
-      const comboPlan = plans.find(p => p.name.toLowerCase() === 'workout + cardio');
+      const workoutPlan = plans.find(p => p.name.toLowerCase() === 'strength training' || p.name.toLowerCase() === 'workout');
+      const comboPlan = plans.find(p => p.name.toLowerCase() === 'strength and cardio' || p.name.toLowerCase() === 'workout + cardio');
 
       const legacyMembers = await Member.find({ plan: { $exists: false } });
       let migratedCount = 0;

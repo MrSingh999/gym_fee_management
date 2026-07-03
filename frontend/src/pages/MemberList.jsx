@@ -196,14 +196,16 @@ export default function MemberList() {
                 <SelectTrigger className={selectTriggerClass}>
                   <SelectValue>
                     {planFilter === 'all' && 'All Plans'}
-                    {planFilter === 'workout' && 'Workout'}
-                    {planFilter === 'workout + cardio' && 'Workout + Cardio'}
+                    {planFilter === 'strength training' && 'Strength Training'}
+                    {planFilter === 'strength and cardio' && 'Strength & Cardio'}
+                    {planFilter === 'personal training' && 'Personal Training'}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent className="bg-[var(--bg-card)] backdrop-blur-xl border border-[var(--border-color-hover)] rounded-[6px] shadow-2xl">
                   <SelectItem value="all">All Plans</SelectItem>
-                  <SelectItem value="workout">Workout</SelectItem>
-                  <SelectItem value="workout + cardio">Workout + Cardio</SelectItem>
+                  <SelectItem value="strength training">Strength Training</SelectItem>
+                  <SelectItem value="strength and cardio">Strength & Cardio</SelectItem>
+                  <SelectItem value="personal training">Personal Training</SelectItem>
                 </SelectContent>
               </Select>
             </div>

@@ -20,6 +20,7 @@ export default function AddMemberModal({ isOpen, onClose, onSuccess }) {
     membershipType: "workout",
     startDate: new Date().toISOString().split("T")[0],
     feeAmount: "700",
+    password: "",
   });
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
@@ -32,9 +33,10 @@ export default function AddMemberModal({ isOpen, onClose, onSuccess }) {
         dob: "",
         phone: "",
         email: "",
-        membershipType: "workout",
+        membershipType: "strength training",
         startDate: new Date().toISOString().split("T")[0],
         feeAmount: "700",
+        password: "",
       });
       setError(null);
     }
@@ -42,7 +44,11 @@ export default function AddMemberModal({ isOpen, onClose, onSuccess }) {
 
   const handleTypeChange = (type) => {
     let price = "700";
-    if (type === "workout + cardio") price = "1000";
+    if (type === "strength and cardio") {
+      price = "1000";
+    } else if (type === "personal training") {
+      price = "2000";
+    }
 
     setFormData({
       ...formData,
@@ -197,13 +203,15 @@ export default function AddMemberModal({ isOpen, onClose, onSuccess }) {
                 >
                   <SelectTrigger className={selectTriggerClass}>
                     <SelectValue>
-                      {formData.membershipType === 'workout' && 'Workout'}
-                      {formData.membershipType === 'workout + cardio' && 'Workout + Cardio'}
+                      {formData.membershipType === 'strength training' && 'Strength Training'}
+                      {formData.membershipType === 'strength and cardio' && 'Strength & Cardio'}
+                      {formData.membershipType === 'personal training' && 'Personal Training'}
                     </SelectValue>
                   </SelectTrigger>
                   <SelectContent className="bg-[var(--bg-card)] backdrop-blur-xl border border-[var(--border-color-hover)] rounded-[6px] shadow-2xl">
-                    <SelectItem value="workout">Workout</SelectItem>
-                    <SelectItem value="workout + cardio">Workout + Cardio</SelectItem>
+                    <SelectItem value="strength training">Strength Training</SelectItem>
+                    <SelectItem value="strength and cardio">Strength & Cardio</SelectItem>
+                    <SelectItem value="personal training">Personal Training</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -224,13 +232,26 @@ export default function AddMemberModal({ isOpen, onClose, onSuccess }) {
               </div>
 
               {/* Membership Start Date */}
-              <div className="space-y-1.5 col-span-1 md:col-span-2">
+              <div className="space-y-1.5">
                 <label className={labelClass}>Start Date *</label>
                 <DatePicker
                   value={formData.startDate}
                   onChange={(val) => setFormData({ ...formData, startDate: val })}
                   placeholder="Select start date"
                   required
+                />
+              </div>
+
+              {/* Member Password */}
+              <div className="space-y-1.5">
+                <label className={labelClass}>Login Password</label>
+                <input
+                  type="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="Default: member123"
+                  className={inputClass}
                 />
               </div>
             </div>

@@ -22,6 +22,7 @@ export default function EditMemberModal({ isOpen, onClose, member, onSuccess }) 
     endDate: "",
     feeAmount: "",
     status: "active",
+    password: "",
   });
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
@@ -39,6 +40,7 @@ export default function EditMemberModal({ isOpen, onClose, member, onSuccess }) 
         endDate: member.endDate ? new Date(member.endDate).toISOString().split("T")[0] : "",
         feeAmount: member.feeAmount || "",
         status: member.status || "active",
+        password: "",
       });
       setError(null);
     }
@@ -60,10 +62,14 @@ export default function EditMemberModal({ isOpen, onClose, member, onSuccess }) 
 
     setSubmitting(true);
     try {
-      await memberService.updateMember(member._id, {
+      const payload = {
         ...formData,
         feeAmount: Number(formData.feeAmount),
-      });
+      };
+      if (!payload.password) {
+        delete payload.password;
+      }
+      await memberService.updateMember(member._id, payload);
       onSuccess();
       onClose();
     } catch (err) {
@@ -190,13 +196,15 @@ export default function EditMemberModal({ isOpen, onClose, member, onSuccess }) 
                 >
                   <SelectTrigger className={selectTriggerClass}>
                     <SelectValue>
-                      {formData.membershipType === 'workout' && 'Workout'}
-                      {formData.membershipType === 'workout + cardio' && 'Workout + Cardio'}
+                      {formData.membershipType === 'strength training' && 'Strength Training'}
+                      {formData.membershipType === 'strength and cardio' && 'Strength & Cardio'}
+                      {formData.membershipType === 'personal training' && 'Personal Training'}
                     </SelectValue>
                   </SelectTrigger>
                   <SelectContent className="bg-[var(--bg-card)] backdrop-blur-xl border border-[var(--border-color-hover)] rounded-[6px] shadow-2xl">
-                    <SelectItem value="workout">Workout</SelectItem>
-                    <SelectItem value="workout + cardio">Workout + Cardio</SelectItem>
+                    <SelectItem value="strength training">Strength Training</SelectItem>
+                    <SelectItem value="strength and cardio">Strength & Cardio</SelectItem>
+                    <SelectItem value="personal training">Personal Training</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -239,7 +247,7 @@ export default function EditMemberModal({ isOpen, onClose, member, onSuccess }) 
               </div>
 
               {/* Membership Status */}
-              <div className="space-y-1.5 col-span-1 md:col-span-2">
+              <div className="space-y-1.5">
                 <label className={labelClass}>Status *</label>
                 <Select
                   value={formData.status}
@@ -256,6 +264,19 @@ export default function EditMemberModal({ isOpen, onClose, member, onSuccess }) 
                     <SelectItem value="inactive">Inactive (Cancelled / Paused)</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              {/* Member Password */}
+              <div className="space-y-1.5">
+                <label className={labelClass}>New Password</label>
+                <input
+                  type="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="Leave empty to keep unchanged"
+                  className={inputClass}
+                />
               </div>
             </div>
           </div>
