@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { authService } from '@/services/authService';
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { authService } from "@/services/authService";
 
 const AuthContext = createContext();
 
@@ -16,7 +16,7 @@ export function AuthProvider({ children }) {
           setUser(data.user);
         }
       } catch (err) {
-        console.error('Auth verification error:', err);
+        console.error("Auth verification error:", err);
       } finally {
         setCheckingAuth(false);
       }
@@ -27,7 +27,17 @@ export function AuthProvider({ children }) {
 
   const login = async (email, password) => {
     const data = await authService.login(email, password);
-    setUser(data.user);
+
+    // Ensure we have the fully populated member/admin doc immediately after login
+    // (login response may not include populated plan/fee fields).
+    const me = await authService.checkMe();
+    if (me?.success) {
+      setUser(me.user);
+    } else {
+      // Fallback to whatever login returned
+      setUser(data.user);
+    }
+
     return data;
   };
 
@@ -37,7 +47,9 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, checkingAuth, login, logout, setUser }}>
+    <AuthContext.Provider
+      value={{ user, checkingAuth, login, logout, setUser }}
+    >
       {children}
     </AuthContext.Provider>
   );
@@ -46,7 +58,7 @@ export function AuthProvider({ children }) {
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 }

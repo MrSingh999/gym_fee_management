@@ -17,7 +17,16 @@ const PORT = process.env.PORT || 5000;
 connectDB();
 
 // Middleware
-app.use(cors());
+const corsOrigin =
+  process.env.FRONTEND_ORIGIN ||
+  ['http://localhost:5173', 'http://127.0.0.1:5173'];
+
+app.use(
+  cors({
+    origin: corsOrigin,
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(cookieParser()); // Register cookie-parser to access HTTP-only cookies
 
