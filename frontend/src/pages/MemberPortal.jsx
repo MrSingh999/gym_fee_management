@@ -751,55 +751,99 @@ export default function MemberPortal() {
                   No payment invoices found.
                 </div>
               ) : (
-                <div className="overflow-x-auto rounded-[6px] border border-[var(--border-color)] bg-gym-dark/20">
-                  <table className="w-full text-left text-xs border-collapse">
-                    <thead>
-                      <tr className="bg-gym-dark/70 border-b border-[var(--border-color)] text-[var(--text-muted)] font-semibold uppercase tracking-wider text-[10px]">
-                        <th className="p-4">Paid On</th>
-                        <th className="p-4">Membership Plan</th>
-                        <th className="p-4">Billing Period</th>
-                        <th className="p-4">Amount</th>
-                        <th className="p-4">Method</th>
-                        <th className="p-4">Remarks</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gym-border/30">
-                      {payments.map((payment) => (
-                        <tr
-                          key={payment._id}
-                          className="table-row-hover hover:bg-[var(--bg-elevated)]/20 text-[var(--text-secondary)]"
-                        >
-                          <td className="p-4 font-semibold text-[var(--text-primary)]">
-                            {formatDate(
-                              payment.paymentDate || payment.createdAt,
-                            )}
-                          </td>
-                          <td className="p-4 capitalize">
-                            {payment.plan?.name || "Workout"}
-                          </td>
-                          <td className="p-4">
-                            {formatDate(payment.startDate)} —{" "}
-                            {formatDate(payment.endDate)}
-                          </td>
-                          <td className="p-4 font-bold text-[var(--text-primary)] tabular-nums">
-                            ₹{payment.amount.toLocaleString()}
-                          </td>
-                          <td className="p-4">
-                            <span className="inline-flex items-center px-2 py-0.5 rounded bg-gym-dark/50 border border-[var(--border-color)] text-[10px] font-semibold uppercase tracking-wide">
-                              {payment.paymentMethod || "Cash"}
-                            </span>
-                          </td>
-                          <td
-                            className="p-4 max-w-[200px] truncate"
-                            title={payment.remarks}
-                          >
-                            {payment.remarks || "Standard Renewal"}
-                          </td>
+                <>
+                  {/* Desktop View Table */}
+                  <div className="hidden sm:block overflow-x-auto rounded-[6px] border border-[var(--border-color)] bg-gym-dark/20">
+                    <table className="w-full text-left text-xs border-collapse">
+                      <thead>
+                        <tr className="bg-gym-dark/70 border-b border-[var(--border-color)] text-[var(--text-muted)] font-semibold uppercase tracking-wider text-[10px]">
+                          <th className="p-4">Paid On</th>
+                          <th className="p-4">Membership Plan</th>
+                          <th className="p-4">Billing Period</th>
+                          <th className="p-4">Amount</th>
+                          <th className="p-4">Method</th>
+                          <th className="p-4">Remarks</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody className="divide-y divide-gym-border/30">
+                        {payments.map((payment) => (
+                          <tr
+                            key={payment._id}
+                            className="table-row-hover hover:bg-[var(--bg-elevated)]/20 text-[var(--text-secondary)]"
+                          >
+                            <td className="p-4 font-semibold text-[var(--text-primary)]">
+                              {formatDate(
+                                payment.paymentDate || payment.createdAt,
+                              )}
+                            </td>
+                            <td className="p-4 capitalize">
+                              {payment.plan?.name || "Workout"}
+                            </td>
+                            <td className="p-4">
+                              {formatDate(payment.startDate)} —{" "}
+                              {formatDate(payment.endDate)}
+                            </td>
+                            <td className="p-4 font-bold text-[var(--text-primary)] tabular-nums">
+                              ₹{payment.amount.toLocaleString()}
+                            </td>
+                            <td className="p-4">
+                              <span className="inline-flex items-center px-2 py-0.5 rounded bg-gym-dark/50 border border-[var(--border-color)] text-[10px] font-semibold uppercase tracking-wide">
+                                {payment.paymentMethod || "Cash"}
+                              </span>
+                            </td>
+                            <td
+                              className="p-4 max-w-[200px] truncate"
+                              title={payment.remarks}
+                            >
+                              {payment.remarks || "Standard Renewal"}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Mobile View Cards */}
+                  <div className="sm:hidden space-y-3">
+                    {payments.map((payment) => (
+                      <div
+                        key={payment._id}
+                        className="p-3 border border-[var(--border-color)]/40 bg-white/[0.01] rounded-[8px] space-y-2 text-xs"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-[var(--text-muted)] font-medium">
+                            {formatDate(payment.paymentDate || payment.createdAt)}
+                          </span>
+                          <span className="inline-flex items-center px-2 py-0.5 rounded bg-gym-dark/50 border border-[var(--border-color)] text-[9px] font-semibold uppercase tracking-wide">
+                            {payment.paymentMethod || "Cash"}
+                          </span>
+                        </div>
+
+                        <div className="flex justify-between items-baseline">
+                          <span className="font-semibold text-[var(--text-primary)] capitalize">
+                            {payment.plan?.name || "Workout"}
+                          </span>
+                          <span className="font-bold text-gym-orange text-sm tabular-nums">
+                            ₹{payment.amount.toLocaleString()}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center space-x-1.5 text-[10px] text-[var(--text-secondary)] mt-1 border-t border-[var(--border-color)]/10 pt-2">
+                          <Calendar className="h-3.5 w-3.5 text-[var(--text-muted)] shrink-0" />
+                          <span className="tabular-nums font-medium">
+                            {formatDate(payment.startDate)} — {formatDate(payment.endDate)}
+                          </span>
+                        </div>
+
+                        {payment.remarks && (
+                          <p className="text-[10px] text-[var(--text-muted)] italic border-l-2 border-gym-orange/30 pl-2 mt-1.5">
+                            {payment.remarks}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </>
               )}
             </div>
           )}
