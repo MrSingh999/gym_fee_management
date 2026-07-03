@@ -327,12 +327,23 @@ const updateMember = asyncHandler(async (req, res, next) => {
     member.feeEndDate = updateData.endDate;
   }
 
+  if (updateData.status) {
+    const s = updateData.status.toLowerCase();
+    if (s === 'inactive') {
+      member.status = 'Inactive';
+    } else if (s === 'expired' || s === 'overdue') {
+      member.status = 'Expired';
+    } else {
+      member.status = 'Active';
+    }
+  }
+
   // Apply general updates
   Object.keys(updateData).forEach((key) => {
     // Skip mapped fields handled separately
     if (
       updateData[key] !== undefined && 
-      !['membershipType', 'phone', 'startDate', 'endDate'].includes(key)
+      !['membershipType', 'phone', 'startDate', 'endDate', 'status'].includes(key)
     ) {
       member[key] = updateData[key];
     }
@@ -370,6 +381,11 @@ const deleteMember = asyncHandler(async (req, res, next) => {
 // @access  Public
 const getMemberPayments = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
+  
+  // Restrict payment details to the owner or admins
+  if (req.user.role !== 'admin' && req.user._id.toString() !== id) {
+    throw new ErrorResponse('Not authorized to access these payment records', 403);
+  }
   
   const member = await Member.findById(id);
   if (!member) {

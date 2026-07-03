@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import User from '../models/User.js';
+import Admin from '../models/Admin.js';
 import Plan from '../models/Plan.js';
 import Member from '../models/Member.js';
 
@@ -11,14 +11,14 @@ const connectDB = async () => {
     const conn = await mongoose.connect(MONGODB_URI);
     console.log(`Connected to MongoDB database successfully: ${conn.connection.host}`);
 
-    // Seed default admin user if user collection is empty
-    const userCount = await User.countDocuments();
-    if (userCount === 0) {
-      console.log('No users found in database. Seeding default system admin...');
-      await User.create({
+    // Seed default admin user if Admin collection is empty
+    const adminCount = await Admin.countDocuments();
+    if (adminCount === 0) {
+      console.log('No admins found in database. Seeding default system admin...');
+      await Admin.create({
         name: 'System Admin',
         email: 'admin@admin.com',
-        password: 'admin123', // This will be hashed automatically by pre-save User hook
+        password: 'admin123', // This will be hashed automatically by pre-save Admin hook
         role: 'admin',
       });
       console.log('Default system admin seeded successfully: admin@admin.com / admin123');

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Dumbbell, Mail, Lock, AlertCircle, CheckCircle, ArrowLeft, Eye, EyeOff } from 'lucide-react';
-import { authService } from '../services/authService';
+import { authService } from '@/services/authService';
 import { useAuth } from '@/context/AuthContext';
 
 export default function Login() {

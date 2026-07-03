@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
-import User from '../models/User.js';
+import Admin from '../models/Admin.js';
+import Member from '../models/Member.js';
 import sendEmail from '../utils/sendEmail.js';
 import asyncHandler from '../middleware/asyncHandler.js';
 import ErrorResponse from '../utils/errorResponse.js';
@@ -37,32 +38,52 @@ const sendTokenResponse = (user, statusCode, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role,
+        mobile: user.mobile,
+        role: user.role || 'member',
       },
     });
 };
 
-// @desc    Authenticate admin user & set cookie
+// @desc    Authenticate user (admin or member) & set cookie
 // @route   POST /api/auth/login
 // @access  Public
 const loginUser = asyncHandler(async (req, res, next) => {
-  const { email, password } = req.body;
+  const { email, password } = req.body; // email can be email or phone
 
   // Validate email & password
   if (!email || !password) {
-    throw new ErrorResponse('Please provide email and password', 400);
+    throw new ErrorResponse('Please provide email/phone and password', 400);
   }
 
-  // Check for user
-  const user = await User.findOne({ email });
-  if (!user) {
-    throw new ErrorResponse('Invalid credentials', 401);
+  let user;
+
+  // 1. Check Admin collection first (Admins)
+  if (email.includes('@')) {
+    user = await Admin.findOne({ email: email.toLowerCase() });
   }
 
-  // Check if password matches
-  const isMatch = await user.matchPassword(password);
-  if (!isMatch) {
-    throw new ErrorResponse('Invalid credentials', 401);
+  if (user) {
+    // Validate Admin password
+    const isMatch = await user.matchPassword(password);
+    if (!isMatch) {
+      throw new ErrorResponse('Invalid credentials', 401);
+    }
+  } else {
+    // 2. Check Member collection (email or mobile)
+    const query = email.includes('@') 
+      ? { email: email.toLowerCase() } 
+      : { mobile: email };
+    
+    user = await Member.findOne(query).populate('plan');
+    if (!user) {
+      throw new ErrorResponse('Invalid credentials', 401);
+    }
+
+    // Validate Member password
+    const isMatch = await user.matchPassword(password);
+    if (!isMatch) {
+      throw new ErrorResponse('Invalid credentials', 401);
+    }
   }
 
   sendTokenResponse(user, 200, res);
@@ -101,7 +122,7 @@ const forgotPassword = asyncHandler(async (req, res, next) => {
     throw new ErrorResponse('Please enter an email address', 400);
   }
 
-  const user = await User.findOne({ email });
+  const user = await Admin.findOne({ email });
   if (!user) {
     throw new ErrorResponse('No admin account found with that email address', 404);
   }
@@ -164,8 +185,8 @@ const resetPassword = asyncHandler(async (req, res, next) => {
     .update(token)
     .digest('hex');
 
-  // Find user with matching token and unexpired timer
-  const user = await User.findOne({
+  // Find admin with matching token and unexpired timer
+  const user = await Admin.findOne({
     resetPasswordToken: hashedToken,
     resetPasswordExpire: { $gt: Date.now() },
   });

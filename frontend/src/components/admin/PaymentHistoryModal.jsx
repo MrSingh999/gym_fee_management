@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { X, Receipt, Calendar, AlertCircle, RefreshCw, CreditCard, Wallet, Landmark, Banknote } from "lucide-react";
-import { memberService } from "../services/memberService";
+import { memberService } from "@/services/memberService";
 
 export default function PaymentHistoryModal({ isOpen, onClose, member }) {
   const [payments, setPayments] = useState([]);

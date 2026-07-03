@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Search, SlidersHorizontal, Edit, Trash2, Calendar, Phone, RefreshCw, CheckCircle, Clock, AlertTriangle, User, History } from 'lucide-react';
-import { memberService } from '../services/memberService';
+import { memberService } from '@/services/memberService';
 import { useApp } from '@/context/AppContext';
 import {
   Select,
@@ -19,19 +19,29 @@ export default function MemberList() {
 
   // Filters state
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [planFilter, setPlanFilter] = useState('all');
+  const [sortOption, setSortOption] = useState('joining-desc');
+
+  // Debounce search: only update debouncedSearch 500ms after user stops typing
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   useEffect(() => {
     fetchMembers();
-  }, [searchTerm, statusFilter, planFilter, refreshTrigger]);
+  }, [debouncedSearch, statusFilter, planFilter, refreshTrigger]);
 
   const fetchMembers = async () => {
     setLoading(true);
     setError(null);
     try {
       const data = await memberService.getMembers({
-        search: searchTerm,
+        search: debouncedSearch,
         status: statusFilter === 'all' ? '' : statusFilter,
         membershipType: planFilter === 'all' ? '' : planFilter,
       });
@@ -104,6 +114,19 @@ export default function MemberList() {
     );
   };
 
+  const sortedMembers = [...members].sort((a, b) => {
+    if (sortOption === 'joining-desc') {
+      return new Date(b.joiningDate || b.createdAt) - new Date(a.joiningDate || a.createdAt);
+    } else if (sortOption === 'joining-asc') {
+      return new Date(a.joiningDate || a.createdAt) - new Date(b.joiningDate || b.createdAt);
+    } else if (sortOption === 'expiry-desc') {
+      return new Date(b.feeEndDate) - new Date(a.feeEndDate);
+    } else if (sortOption === 'expiry-asc') {
+      return new Date(a.feeEndDate) - new Date(b.feeEndDate);
+    }
+    return 0;
+  });
+
   const selectTriggerClass = "w-full bg-white/[0.04] border border-gym-border rounded-xl pl-10 pr-4 py-3 h-auto text-base text-slate-800 dark:text-white cursor-pointer hover:border-gym-border-hover focus:border-gym-orange transition-all duration-200";
 
   return (
@@ -119,66 +142,102 @@ export default function MemberList() {
 
       {/* Search & Filter Header Panel */}
       <div className="glass-panel p-4 md:p-5 rounded-2xl animate-fade-in" style={{ animationDelay: '80ms', animationFillMode: 'both' }}>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           
           {/* Search bar */}
-          <div className="relative">
-            <Search className="absolute left-3.5 top-3.5 h-4 w-4 text-gym-text-muted" />
-            <input
-              type="text"
-              placeholder="Search by name or phone..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-white/[0.04] border border-gym-border rounded-xl pl-10 pr-4 py-3 text-base text-slate-800 dark:text-white placeholder-gym-text-muted focus:outline-none focus:border-gym-orange transition-all duration-200"
-            />
+          <div className="space-y-1.5">
+            <label className="block text-[10px] sm:text-[11px] font-bold text-gym-text-muted uppercase tracking-wider pl-0.5">Search Member</label>
+            <div className="relative">
+              <Search className="absolute left-3.5 top-3.5 h-4 w-4 text-gym-text-muted" />
+              <input
+                type="text"
+                placeholder="Name or phone..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full bg-white/[0.04] border border-gym-border rounded-xl pl-10 pr-4 py-3 text-base text-slate-800 dark:text-white placeholder-gym-text-muted focus:outline-none focus:border-gym-orange transition-all duration-200"
+              />
+            </div>
           </div>
 
           {/* Status Filter */}
-          <div className="relative">
-            <SlidersHorizontal className="absolute left-3.5 top-3.5 h-4 w-4 text-gym-text-muted z-10 pointer-events-none" />
-            <Select
-              value={statusFilter}
-              onValueChange={setStatusFilter}
-            >
-              <SelectTrigger className={selectTriggerClass}>
-                <SelectValue>
-                  {statusFilter === 'all' && 'All Statuses'}
-                  {statusFilter === 'active' && 'Active'}
-                  {statusFilter === 'due' && 'Due Soon'}
-                  {statusFilter === 'overdue' && 'Overdue'}
-                  {statusFilter === 'inactive' && 'Inactive'}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent className="bg-gym-card backdrop-blur-xl border border-gym-border-hover rounded-xl shadow-2xl">
-                <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="due">Due Soon</SelectItem>
-                <SelectItem value="overdue">Overdue</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="space-y-1.5">
+            <label className="block text-[10px] sm:text-[11px] font-bold text-gym-text-muted uppercase tracking-wider pl-0.5">Status</label>
+            <div className="relative">
+              <SlidersHorizontal className="absolute left-3.5 top-3.5 h-4 w-4 text-gym-text-muted z-10 pointer-events-none" />
+              <Select
+                value={statusFilter}
+                onValueChange={setStatusFilter}
+              >
+                <SelectTrigger className={selectTriggerClass}>
+                  <SelectValue>
+                    {statusFilter === 'all' && 'All Statuses'}
+                    {statusFilter === 'active' && 'Active'}
+                    {statusFilter === 'due' && 'Due Soon'}
+                    {statusFilter === 'overdue' && 'Overdue'}
+                    {statusFilter === 'inactive' && 'Inactive'}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent className="bg-gym-card backdrop-blur-xl border border-gym-border-hover rounded-xl shadow-2xl">
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="due">Due Soon</SelectItem>
+                  <SelectItem value="overdue">Overdue</SelectItem>
+                  <SelectItem value="inactive">Inactive</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           {/* Plan Filter */}
-          <div className="relative">
-            <SlidersHorizontal className="absolute left-3.5 top-3.5 h-4 w-4 text-gym-text-muted z-10 pointer-events-none" />
-            <Select
-              value={planFilter}
-              onValueChange={setPlanFilter}
-            >
-              <SelectTrigger className={selectTriggerClass}>
-                <SelectValue>
-                  {planFilter === 'all' && 'All Plans'}
-                  {planFilter === 'workout' && 'Workout'}
-                  {planFilter === 'workout + cardio' && 'Workout + Cardio'}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent className="bg-gym-card backdrop-blur-xl border border-gym-border-hover rounded-xl shadow-2xl">
-                <SelectItem value="all">All Plans</SelectItem>
-                <SelectItem value="workout">Workout</SelectItem>
-                <SelectItem value="workout + cardio">Workout + Cardio</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="space-y-1.5">
+            <label className="block text-[10px] sm:text-[11px] font-bold text-gym-text-muted uppercase tracking-wider pl-0.5">Membership Plan</label>
+            <div className="relative">
+              <SlidersHorizontal className="absolute left-3.5 top-3.5 h-4 w-4 text-gym-text-muted z-10 pointer-events-none" />
+              <Select
+                value={planFilter}
+                onValueChange={setPlanFilter}
+              >
+                <SelectTrigger className={selectTriggerClass}>
+                  <SelectValue>
+                    {planFilter === 'all' && 'All Plans'}
+                    {planFilter === 'workout' && 'Workout'}
+                    {planFilter === 'workout + cardio' && 'Workout + Cardio'}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent className="bg-gym-card backdrop-blur-xl border border-gym-border-hover rounded-xl shadow-2xl">
+                  <SelectItem value="all">All Plans</SelectItem>
+                  <SelectItem value="workout">Workout</SelectItem>
+                  <SelectItem value="workout + cardio">Workout + Cardio</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Sort Date Timeline */}
+          <div className="space-y-1.5">
+            <label className="block text-[10px] sm:text-[11px] font-bold text-gym-text-muted uppercase tracking-wider pl-0.5">Sort Timeline</label>
+            <div className="relative">
+              <SlidersHorizontal className="absolute left-3.5 top-3.5 h-4 w-4 text-gym-text-muted z-10 pointer-events-none" />
+              <Select
+                value={sortOption}
+                onValueChange={setSortOption}
+              >
+                <SelectTrigger className={selectTriggerClass}>
+                  <SelectValue>
+                    {sortOption === 'joining-desc' && 'Joining: Newest'}
+                    {sortOption === 'joining-asc' && 'Joining: Oldest'}
+                    {sortOption === 'expiry-desc' && 'Expiry: Latest'}
+                    {sortOption === 'expiry-asc' && 'Expiry: Earliest'}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent className="bg-gym-card backdrop-blur-xl border border-gym-border-hover rounded-xl shadow-2xl">
+                  <SelectItem value="joining-desc">Joining: Newest First</SelectItem>
+                  <SelectItem value="joining-asc">Joining: Oldest First</SelectItem>
+                  <SelectItem value="expiry-desc">Expiry: Latest First</SelectItem>
+                  <SelectItem value="expiry-asc">Expiry: Earliest First</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
         </div>
@@ -227,7 +286,7 @@ export default function MemberList() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gym-border/30 text-sm">
-                  {members.map((member, idx) => (
+                  {sortedMembers.map((member, idx) => (
                     <tr 
                       key={member._id} 
                       className="table-row-hover table-zebra"
@@ -319,7 +378,7 @@ export default function MemberList() {
 
             {/* Mobile Card List View */}
             <div className="md:hidden divide-y divide-gym-border/30">
-              {members.map((member, idx) => (
+              {sortedMembers.map((member, idx) => (
                 <div 
                   key={member._id}
                   className="p-4 space-y-3.5 animate-fade-in"

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { X, RefreshCw, Calendar, AlertCircle } from "lucide-react";
-import { memberService } from "../services/memberService";
+import { memberService } from "@/services/memberService";
 import {
   Select,
   SelectContent,

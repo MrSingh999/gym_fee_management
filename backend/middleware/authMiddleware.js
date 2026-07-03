@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
-import User from '../models/User.js';
+import Admin from '../models/Admin.js';
+import Member from '../models/Member.js';
 import ErrorResponse from '../utils/errorResponse.js';
 import asyncHandler from './asyncHandler.js';
 
@@ -22,13 +23,28 @@ const protect = asyncHandler(async (req, res, next) => {
   const decoded = jwt.verify(token, JWT_SECRET);
 
   // Get user from database, excluding password field
-  req.user = await User.findById(decoded.id).select('-password');
-  if (!req.user) {
+  let currentUser = await Admin.findById(decoded.id).select('-password');
+  if (!currentUser) {
+    currentUser = await Member.findById(decoded.id).populate('plan').select('-password');
+  }
+
+  if (!currentUser) {
     throw new ErrorResponse('User session no longer exists. Please log in again.', 401);
   }
 
+  req.user = currentUser;
   next();
 });
 
+// Admin-only middleware
+const admin = (req, res, next) => {
+  if (req.user && req.user.role === 'admin') {
+    next();
+  } else {
+    throw new ErrorResponse('Not authorized as an admin. Access denied.', 403);
+  }
+};
+
 // Grouped exports at the bottom
-export { protect };
+export { protect, admin };
+

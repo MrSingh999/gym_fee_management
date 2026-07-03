@@ -1,30 +1,36 @@
-/**
- * Helper to get the start of today and 7 days from now
- * @returns { { today: Date, sevenDaysFromNow: Date } }
- */
 export const getDateRange = () => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const sevenDaysFromNow = new Date(today);
-  sevenDaysFromNow.setDate(today.getDate() + 7);
-
-  return { today, sevenDaysFromNow };
+  const now = new Date();
+  
+  // IST is UTC + 5:30 (5.5 * 60 * 60 * 1000 = 19,800,000 ms)
+  const istOffset = 5.5 * 60 * 60 * 1000;
+  const istTime = new Date(now.getTime() + istOffset);
+  
+  // Set to start of today in IST
+  istTime.setUTCHours(0, 0, 0, 0);
+  
+  // Convert back to UTC Date for DB queries
+  const todayIST = new Date(istTime.getTime() - istOffset);
+  
+  // Calculate 7 days from today in IST, set to the very end of that day (23:59:59.999 IST)
+  const sevenDaysFromNowIST = new Date(todayIST.getTime() + 8 * 24 * 60 * 60 * 1000 - 1);
+  
+  return { today: todayIST, sevenDaysFromNow: sevenDaysFromNowIST };
 };
 
-/**
- * Helper to calculate the difference in days from today to a given date string/object
- * @param {Date|string} dateStr 
- * @returns {number}
- */
 export const getDaysDiff = (dateStr) => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const now = new Date();
+  const istOffset = 5.5 * 60 * 60 * 1000;
   
-  const end = new Date(dateStr);
-  end.setHours(0, 0, 0, 0);
+  // Start of today in IST
+  const todayIST = new Date(now.getTime() + istOffset);
+  todayIST.setUTCHours(0, 0, 0, 0);
   
-  const diffTime = end - today;
+  // Target date in IST
+  const endDate = new Date(new Date(dateStr).getTime() + istOffset);
+  endDate.setUTCHours(0, 0, 0, 0);
+  
+  const diffTime = endDate - todayIST;
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   return diffDays;
 };
+

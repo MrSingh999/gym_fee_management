@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { X, Save, AlertCircle } from "lucide-react";
-import { memberService } from "../services/memberService";
+import { memberService } from "@/services/memberService";
 import {
   Select,
   SelectContent,
@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
 
-export default function AddMemberModal({ isOpen, onClose, onSuccess }) {
+export default function EditMemberModal({ isOpen, onClose, member, onSuccess }) {
   const [formData, setFormData] = useState({
     name: "",
     gender: "Male",
@@ -18,38 +18,31 @@ export default function AddMemberModal({ isOpen, onClose, onSuccess }) {
     phone: "",
     email: "",
     membershipType: "workout",
-    startDate: new Date().toISOString().split("T")[0],
-    feeAmount: "700",
+    startDate: "",
+    endDate: "",
+    feeAmount: "",
+    status: "active",
   });
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (isOpen) {
+    if (member && isOpen) {
       setFormData({
-        name: "",
-        gender: "Male",
-        dob: "",
-        phone: "",
-        email: "",
-        membershipType: "workout",
-        startDate: new Date().toISOString().split("T")[0],
-        feeAmount: "700",
+        name: member.name || "",
+        gender: member.gender || "Male",
+        dob: member.dob ? new Date(member.dob).toISOString().split("T")[0] : "",
+        phone: member.phone || "",
+        email: member.email || "",
+        membershipType: member.membershipType || "workout",
+        startDate: member.startDate ? new Date(member.startDate).toISOString().split("T")[0] : "",
+        endDate: member.endDate ? new Date(member.endDate).toISOString().split("T")[0] : "",
+        feeAmount: member.feeAmount || "",
+        status: member.status || "active",
       });
       setError(null);
     }
-  }, [isOpen]);
-
-  const handleTypeChange = (type) => {
-    let price = "700";
-    if (type === "workout + cardio") price = "1000";
-
-    setFormData({
-      ...formData,
-      membershipType: type,
-      feeAmount: price,
-    });
-  };
+  }, [member, isOpen]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -60,14 +53,14 @@ export default function AddMemberModal({ isOpen, onClose, onSuccess }) {
     e.preventDefault();
     setError(null);
 
-    if (!formData.name || !formData.phone || !formData.dob || !formData.feeAmount) {
+    if (!formData.name || !formData.phone || !formData.dob || !formData.feeAmount || !formData.startDate || !formData.endDate) {
       setError("Please fill in all required fields.");
       return;
     }
 
     setSubmitting(true);
     try {
-      await memberService.createMember({
+      await memberService.updateMember(member._id, {
         ...formData,
         feeAmount: Number(formData.feeAmount),
       });
@@ -75,13 +68,13 @@ export default function AddMemberModal({ isOpen, onClose, onSuccess }) {
       onClose();
     } catch (err) {
       console.error(err);
-      setError(err.message || "An error occurred while registering the member.");
+      setError(err.message || "An error occurred while saving the member changes.");
     } finally {
       setSubmitting(false);
     }
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || !member) return null;
 
   const inputClass = "w-full bg-white/[0.04] border border-gym-border rounded-xl px-4 py-3 text-base text-slate-800 dark:text-white placeholder-gym-text-muted focus:outline-none focus:border-gym-orange transition-all duration-200";
   const labelClass = "text-[11px] font-bold text-gym-text-muted uppercase tracking-wider";
@@ -97,7 +90,7 @@ export default function AddMemberModal({ isOpen, onClose, onSuccess }) {
         <div className="relative flex justify-between items-center px-6 py-4 border-b border-gym-border shrink-0">
           <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gym-orange/30 to-transparent"></div>
           <h2 className="font-display font-bold text-lg text-slate-800 dark:text-white">
-            Register New Member
+            Edit Member Profile
           </h2>
           <button
             onClick={onClose}
@@ -193,7 +186,7 @@ export default function AddMemberModal({ isOpen, onClose, onSuccess }) {
                 <label className={labelClass}>Membership Plan *</label>
                 <Select
                   value={formData.membershipType}
-                  onValueChange={handleTypeChange}
+                  onValueChange={(val) => setFormData({ ...formData, membershipType: val })}
                 >
                   <SelectTrigger className={selectTriggerClass}>
                     <SelectValue>
@@ -224,7 +217,7 @@ export default function AddMemberModal({ isOpen, onClose, onSuccess }) {
               </div>
 
               {/* Membership Start Date */}
-              <div className="space-y-1.5 col-span-1 md:col-span-2">
+              <div className="space-y-1.5">
                 <label className={labelClass}>Start Date *</label>
                 <DatePicker
                   value={formData.startDate}
@@ -232,6 +225,37 @@ export default function AddMemberModal({ isOpen, onClose, onSuccess }) {
                   placeholder="Select start date"
                   required
                 />
+              </div>
+
+              {/* Membership End Date */}
+              <div className="space-y-1.5">
+                <label className={labelClass}>End Date *</label>
+                <DatePicker
+                  value={formData.endDate}
+                  onChange={(val) => setFormData({ ...formData, endDate: val })}
+                  placeholder="Select end date"
+                  required
+                />
+              </div>
+
+              {/* Membership Status */}
+              <div className="space-y-1.5 col-span-1 md:col-span-2">
+                <label className={labelClass}>Status *</label>
+                <Select
+                  value={formData.status}
+                  onValueChange={(val) => setFormData({ ...formData, status: val })}
+                >
+                  <SelectTrigger className={selectTriggerClass}>
+                    <SelectValue>
+                      {formData.status === 'active' && 'Active'}
+                      {formData.status === 'inactive' && 'Inactive (Cancelled / Paused)'}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent className="bg-gym-card backdrop-blur-xl border border-gym-border-hover rounded-xl shadow-2xl">
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="inactive">Inactive (Cancelled / Paused)</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </div>
@@ -251,7 +275,7 @@ export default function AddMemberModal({ isOpen, onClose, onSuccess }) {
               className="flex items-center space-x-2 bg-gradient-to-r from-gym-orange to-orange-500 hover:from-gym-orange-hover hover:to-orange-600 disabled:opacity-50 text-white px-5 py-3 rounded-xl text-sm font-bold transition-all duration-250 shadow-lg shadow-gym-orange/20 cursor-pointer h-11"
             >
               <Save className="h-4 w-4" />
-              <span>{submitting ? "Registering..." : "Register Member"}</span>
+              <span>{submitting ? "Saving..." : "Save Changes"}</span>
             </button>
           </div>
         </form>

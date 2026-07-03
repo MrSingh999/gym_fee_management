@@ -1,13 +1,14 @@
 import React from 'react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
-import Dashboard from '@/features/dashboard/components/Dashboard';
-import MemberList from '@/features/members/components/MemberList';
-import AddMemberModal from '@/features/members/components/AddMemberModal';
-import EditMemberModal from '@/features/members/components/EditMemberModal';
-import RenewMemberModal from '@/features/members/components/RenewMemberModal';
-import PaymentHistoryModal from '@/features/members/components/PaymentHistoryModal';
-import Login from '@/features/auth/components/Login';
+import Dashboard from '@/pages/Dashboard';
+import MemberList from '@/pages/MemberList';
+import AddMemberModal from '@/components/admin/AddMemberModal';
+import EditMemberModal from '@/components/admin/EditMemberModal';
+import RenewMemberModal from '@/components/admin/RenewMemberModal';
+import PaymentHistoryModal from '@/components/admin/PaymentHistoryModal';
+import Login from '@/pages/Login';
+import MemberPortal from '@/pages/MemberPortal';
 import { useAuth } from '@/context/AuthContext';
 import { useApp } from '@/context/AppContext';
 import { Dumbbell } from 'lucide-react';
@@ -53,7 +54,12 @@ export default function App() {
     return <Login />;
   }
 
-  // 3. Authenticated state -> render main gym management dashboard
+  // 3. Member state -> render Member Portal UI
+  if (user.role === 'member') {
+    return <MemberPortal />;
+  }
+
+  // 4. Authenticated Admin state -> render main gym management dashboard
   return (
     <div className="min-h-screen flex flex-col bg-gym-dark text-slate-800 dark:text-gray-100">
       

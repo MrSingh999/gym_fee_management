@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 
-const userSchema = new mongoose.Schema(
+const adminSchema = new mongoose.Schema(
   {
     name: {
       type: String,
@@ -33,8 +33,8 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-// Encrypt password using bcryptjs before saving user
-userSchema.pre('save', async function (next) {
+// Encrypt password using bcryptjs before saving admin
+adminSchema.pre('save', async function (next) {
   if (!this.isModified('password')) {
     return next();
   }
@@ -48,17 +48,17 @@ userSchema.pre('save', async function (next) {
   }
 });
 
-// Compare user entered password with hashed password in database
-userSchema.methods.matchPassword = async function (enteredPassword) {
+// Compare entered password with hashed password in database
+adminSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
 // Generate and hash password reset token
-userSchema.methods.getResetPasswordToken = function () {
+adminSchema.methods.getResetPasswordToken = function () {
   // Generate random bytes as token
   const resetToken = crypto.randomBytes(20).toString('hex');
 
-  // Hash token and set to resetPasswordToken field on user
+  // Hash token and set to resetPasswordToken field on admin
   this.resetPasswordToken = crypto
     .createHash('sha256')
     .update(resetToken)
@@ -70,6 +70,7 @@ userSchema.methods.getResetPasswordToken = function () {
   return resetToken;
 };
 
-const User = mongoose.model('User', userSchema);
+const Admin = mongoose.model('Admin', adminSchema);
 
-export default User;
+export default Admin;
+
