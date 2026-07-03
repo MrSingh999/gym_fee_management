@@ -334,26 +334,26 @@ export default function RenewMemberModal({
 
   if (!isOpen || !member) return null;
 
-  const inputClass = "w-full bg-white/[0.04] border border-gym-border rounded-xl px-4 py-3 text-base text-slate-800 dark:text-white placeholder-gym-text-muted focus:outline-none focus:border-gym-orange transition-all duration-200";
-  const labelClass = "text-[11px] font-bold text-gym-text-muted uppercase tracking-wider";
-  const selectTriggerClass = "w-full bg-white/[0.04] border border-gym-border rounded-xl px-4 py-3 h-auto text-base text-slate-800 dark:text-white cursor-pointer hover:border-gym-border-hover focus:border-gym-orange transition-all duration-200";
+  const inputClass = "w-full bg-white/[0.03] border border-[var(--border-color)] rounded-[6px] px-4 py-3 text-base text-[var(--text-primary)] placeholder-gym-text-muted focus:outline-none focus:border-gym-orange transition-all duration-200";
+  const labelClass = "text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider";
+  const selectTriggerClass = "w-full bg-white/[0.03] border border-[var(--border-color)] rounded-[6px] px-4 py-3 h-auto text-base text-[var(--text-primary)] cursor-pointer hover:border-[var(--border-color-hover)] focus:border-gym-orange transition-all duration-200";
 
   return (
     <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 overflow-y-auto modal-backdrop" onClick={onClose}>
       <div
-        className="glass-panel w-full max-w-md rounded-2xl shadow-2xl overflow-hidden border border-gym-border-hover animate-slide-up my-auto max-h-[90vh] flex flex-col"
+        className="glass-panel w-full max-w-md rounded-[16px] shadow-2xl overflow-hidden border border-[var(--border-color-hover)] animate-slide-up my-auto max-h-[90vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="relative flex justify-between items-center px-6 py-4 border-b border-gym-border shrink-0">
+        <div className="relative flex justify-between items-center px-6 py-4 border-b border-[var(--border-color)] shrink-0">
           <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gym-orange/30 to-transparent"></div>
-          <h2 className="font-display font-bold text-lg text-slate-800 dark:text-white flex items-center space-x-2">
+          <h2 className="font-bold text-lg text-[var(--text-primary)] flex items-center space-x-2">
             <RefreshCw className="h-4.5 w-4.5 text-gym-orange" />
             <span>Renew Membership</span>
           </h2>
           <button
             onClick={onClose}
-            className="p-1.5 text-gym-text-secondary hover:text-white rounded-lg hover:bg-gym-elevated transition-all duration-200 cursor-pointer"
+            className="p-1.5 text-[var(--text-secondary)] hover:text-[var(--text-primary)] rounded-[6px] hover:bg-[var(--bg-elevated)] transition-all duration-200 cursor-pointer"
           >
             <X className="h-4.5 w-4.5" />
           </button>
@@ -363,32 +363,32 @@ export default function RenewMemberModal({
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
           <div className="p-4 sm:p-6 space-y-5 overflow-y-auto flex-1">
             {error && (
-              <div className="flex items-start space-x-2.5 p-3 bg-red-500/[0.06] border border-red-500/15 text-red-400 rounded-xl text-sm animate-fade-in" role="alert">
+              <div className="flex items-start space-x-2.5 p-3 bg-red-500/[0.06] border border-red-500/15 text-red-400 rounded-[6px] text-sm animate-fade-in" role="alert">
                 <AlertCircle className="h-4.5 w-4.5 shrink-0 mt-0.5" />
                 <span className="text-[13px]">{error}</span>
               </div>
             )}
 
             {/* Member Details Summary */}
-            <div className="bg-gym-elevated/50 border border-gym-border p-4 rounded-xl space-y-2.5">
+            <div className="bg-[var(--bg-elevated)]/50 border border-[var(--border-color)] p-4 rounded-[6px] space-y-2.5">
               <div>
-                <p className="text-[11px] text-gym-text-muted uppercase font-semibold tracking-wider">
+                <p className="text-[11px] text-[var(--text-muted)] uppercase font-semibold tracking-wider">
                   Member
                 </p>
-                <h3 className="font-bold text-slate-800 dark:text-white text-lg">
+                <h3 className="font-bold text-[var(--text-primary)] text-lg">
                   {member.name}
                 </h3>
               </div>
-              <div className="grid grid-cols-2 gap-2 pt-2.5 border-t border-gym-border/50 text-xs">
+              <div className="grid grid-cols-2 gap-2 pt-2.5 border-t border-[var(--border-color)]/50 text-xs">
                 <div>
-                  <span className="text-gym-text-muted">Current Plan:</span>
-                  <p className="text-slate-800 dark:text-white capitalize font-semibold mt-0.5">
+                  <span className="text-[var(--text-muted)]">Current Plan:</span>
+                  <p className="text-[var(--text-primary)] capitalize font-semibold mt-0.5">
                     {member.membershipType}
                   </p>
                 </div>
                 <div>
-                  <span className="text-gym-text-muted">End Date:</span>
-                  <p className="text-slate-800 dark:text-white font-semibold mt-0.5">
+                  <span className="text-[var(--text-muted)]">End Date:</span>
+                  <p className="text-[var(--text-primary)] font-semibold mt-0.5">
                     {formatDate(new Date(member.endDate))}
                   </p>
                 </div>
@@ -396,14 +396,14 @@ export default function RenewMemberModal({
             </div>
 
             {/* Tabs Navigation */}
-            <div className="flex bg-gym-dark/40 border border-gym-border p-1 rounded-xl">
+            <div className="flex bg-gym-dark/40 border border-[var(--border-color)] p-1 rounded-[6px]">
               <button
                 type="button"
                 onClick={() => handleTabChange("standard")}
-                className={`flex-1 py-2 text-[11px] uppercase tracking-wider font-bold transition-all duration-200 rounded-lg cursor-pointer ${
+                className={`flex-1 py-2 text-[11px] uppercase tracking-wider font-bold transition-all duration-200 rounded-[6px] cursor-pointer ${
                   activeTab === "standard"
                     ? "bg-gym-orange text-white shadow-sm"
-                    : "text-gym-text-secondary hover:text-white"
+                    : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                 }`}
               >
                 Standard
@@ -411,10 +411,10 @@ export default function RenewMemberModal({
               <button
                 type="button"
                 onClick={() => handleTabChange("future")}
-                className={`flex-1 py-2 text-[11px] uppercase tracking-wider font-bold transition-all duration-200 rounded-lg cursor-pointer ${
+                className={`flex-1 py-2 text-[11px] uppercase tracking-wider font-bold transition-all duration-200 rounded-[6px] cursor-pointer ${
                   activeTab === "future"
                     ? "bg-gym-orange text-white shadow-sm"
-                    : "text-gym-text-secondary hover:text-white"
+                    : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                 }`}
               >
                 Future Start
@@ -453,7 +453,7 @@ export default function RenewMemberModal({
                       {renewalType === 'custom_date' && 'Custom Date'}
                     </SelectValue>
                   </SelectTrigger>
-                  <SelectContent className="bg-gym-card backdrop-blur-xl border border-gym-border-hover rounded-xl shadow-2xl">
+                  <SelectContent className="bg-[var(--bg-card)] backdrop-blur-xl border border-[var(--border-color-hover)] rounded-[6px] shadow-2xl">
                     <SelectItem value="1">1 Month</SelectItem>
                     <SelectItem value="2">2 Months</SelectItem>
                     <SelectItem value="3">3 Months</SelectItem>
@@ -498,7 +498,7 @@ export default function RenewMemberModal({
               <div className="space-y-1.5">
                 <label className={labelClass}>Renewal Fee (₹) *</label>
                 <div className="relative">
-                  <span className="absolute left-4 top-3 text-sm text-gym-text-muted">₹</span>
+                  <span className="absolute left-4 top-3 text-sm text-[var(--text-muted)]">₹</span>
                   <input
                     type="number"
                     required
@@ -513,18 +513,18 @@ export default function RenewMemberModal({
 
               {/* Calculation Preview */}
               {calculatedDates.start && calculatedDates.end && (
-                <div className="bg-gym-orange/[0.04] border border-gym-orange/10 p-4 rounded-xl space-y-2 text-xs animate-fade-in">
+                <div className="bg-gym-orange/[0.04] border border-gym-orange/10 p-4 rounded-[6px] space-y-2 text-xs animate-fade-in">
                   <div className="flex justify-between items-center">
-                    <span className="text-gym-text-secondary flex items-center">
-                      <Calendar className="h-3.5 w-3.5 mr-1.5 text-gym-text-muted" /> Start Date:
+                    <span className="text-[var(--text-secondary)] flex items-center">
+                      <Calendar className="h-3.5 w-3.5 mr-1.5 text-[var(--text-muted)]" /> Start Date:
                     </span>
-                    <span className="text-slate-800 dark:text-white font-semibold tabular-nums">
+                    <span className="text-[var(--text-primary)] font-semibold tabular-nums">
                       {formatDate(calculatedDates.start)}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-gym-text-secondary flex items-center">
-                      <Calendar className="h-3.5 w-3.5 mr-1.5 text-gym-text-muted" /> New Expiry:
+                    <span className="text-[var(--text-secondary)] flex items-center">
+                      <Calendar className="h-3.5 w-3.5 mr-1.5 text-[var(--text-muted)]" /> New Expiry:
                     </span>
                     <span className="text-gym-orange font-bold tabular-nums">
                       {formatDate(calculatedDates.end)}
@@ -536,18 +536,18 @@ export default function RenewMemberModal({
           </div>
 
           {/* Actions */}
-          <div className="flex justify-end space-x-3 p-4 sm:p-6 border-t border-gym-border shrink-0">
+          <div className="flex justify-end space-x-3 p-4 sm:p-6 border-t border-[var(--border-color)] shrink-0">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-3 rounded-xl border border-gym-border hover:bg-gym-elevated text-sm font-semibold text-gym-text-secondary hover:text-white transition-all duration-200 cursor-pointer h-11 flex items-center justify-center"
+              className="px-4 py-3 rounded-[6px] border border-[var(--border-color)] hover:bg-[var(--bg-elevated)] text-sm font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-200 cursor-pointer h-11 flex items-center justify-center"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="flex items-center space-x-2 bg-gradient-to-r from-gym-orange to-orange-500 hover:from-gym-orange-hover hover:to-orange-600 disabled:opacity-50 text-white px-5 py-3 rounded-xl text-sm font-bold transition-all duration-250 shadow-lg shadow-gym-orange/20 cursor-pointer h-11"
+              className="flex items-center space-x-2 bg-gym-orange hover:bg-gym-orange-hover disabled:opacity-50 text-white px-5 py-3 rounded-[6px] text-sm font-bold transition-all duration-250 shadow-lg shadow-gym-orange/15 cursor-pointer h-11"
             >
               <span>{submitting ? "Processing..." : "Confirm Renewal"}</span>
             </button>

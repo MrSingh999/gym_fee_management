@@ -105,13 +105,13 @@ export default function Dashboard() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
         <div className="relative">
-          <div className="animate-spin rounded-full h-12 w-12 border-2 border-gym-border border-t-gym-orange"></div>
+          <div className="animate-spin rounded-full h-10 w-10 border-2 border-[var(--border-color)] border-t-gym-orange"></div>
           <div
-            className="absolute inset-0 animate-spin rounded-full h-12 w-12 border-2 border-transparent border-b-gym-orange/30"
+            className="absolute inset-0 animate-spin rounded-full h-10 w-10 border-2 border-transparent border-b-gym-orange/30"
             style={{ animationDirection: "reverse", animationDuration: "1.5s" }}
           ></div>
         </div>
-        <p className="text-gym-text-muted font-medium text-sm">
+        <p className="text-[var(--text-muted)] font-medium text-sm">
           Loading fitness metrics...
         </p>
       </div>
@@ -121,19 +121,19 @@ export default function Dashboard() {
   if (error) {
     return (
       <div className="max-w-lg mx-auto mt-16 animate-fade-in">
-        <div className="glass-card p-8 rounded-2xl text-center border-red-500/20">
-          <div className="w-14 h-14 bg-red-500/10 rounded-2xl flex items-center justify-center mx-auto mb-5">
+        <div className="glass-card p-8 rounded-[16px] text-center border-red-500/20">
+          <div className="w-14 h-14 bg-red-500/10 rounded-[16px] flex items-center justify-center mx-auto mb-5">
             <AlertTriangle className="h-7 w-7 text-red-400" />
           </div>
-          <h3 className="text-lg font-display font-bold text-slate-800 dark:text-white mb-2">
+          <h3 className="text-lg font-bold text-[var(--text-primary)] mb-2">
             Connection Error
           </h3>
-          <p className="text-gym-text-secondary text-sm mb-6 leading-relaxed">
+          <p className="text-[var(--text-secondary)] text-sm mb-6 leading-relaxed">
             {error}
           </p>
           <button
             onClick={fetchDashboardData}
-            className="inline-flex items-center space-x-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 border border-red-500/20 cursor-pointer"
+            className="inline-flex items-center space-x-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 px-5 py-2 rounded-[6px] font-semibold text-sm transition-all duration-200 border border-red-500/20 cursor-pointer"
           >
             <RefreshCw className="h-4 w-4" />
             <span>Retry Connection</span>
@@ -148,7 +148,6 @@ export default function Dashboard() {
       label: "Total Members",
       value: stats.total,
       icon: Users,
-      color: "blue",
       bgClass: "bg-blue-500/10",
       textClass: "text-blue-400",
       borderClass: "border-l-blue-500",
@@ -157,7 +156,6 @@ export default function Dashboard() {
       label: "Active",
       value: stats.active,
       icon: CheckCircle,
-      color: "green",
       bgClass: "bg-emerald-500/10",
       textClass: "text-emerald-400",
       borderClass: "border-l-emerald-500",
@@ -166,7 +164,6 @@ export default function Dashboard() {
       label: "Overdue",
       value: stats.overdue,
       icon: AlertTriangle,
-      color: "red",
       bgClass: "bg-red-500/10",
       textClass: "text-red-400",
       borderClass: "border-l-red-500",
@@ -182,7 +179,6 @@ export default function Dashboard() {
             : "Due in 7d",
       value: dueCountInTimeframe,
       icon: Clock,
-      color: "yellow",
       bgClass: "bg-amber-500/10",
       textClass: "text-amber-400",
       borderClass: "border-l-amber-500",
@@ -193,7 +189,6 @@ export default function Dashboard() {
       label: "Monthly Rev",
       value: `₹${stats.estimatedRevenue.toLocaleString()}`,
       icon: TrendingUp,
-      color: "emerald",
       bgClass: "bg-emerald-500/10",
       textClass: "text-emerald-400",
       borderClass: "border-l-emerald-500",
@@ -201,19 +196,19 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Welcome Title */}
       <div className="animate-fade-in">
-        <h1 className="font-display font-bold text-2xl sm:text-3xl md:text-4xl text-slate-800 dark:text-white tracking-tight">
+        <h1 className="font-bold text-2xl sm:text-3xl text-[var(--text-primary)] tracking-tight">
           Admin <span className="gradient-text">Console</span>
         </h1>
-        <p className="text-gym-text-secondary mt-1.5 text-xs sm:text-sm">
+        <p className="text-[var(--text-secondary)] mt-1 text-xs sm:text-sm">
           Quick snapshot of gym membership statuses today.
         </p>
       </div>
 
       {/* KPI Cards Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
         {kpiCards.map((card, index) => {
           const Icon = card.icon;
           const isSelected = card.clickable && filterType === card.filterKey;
@@ -224,7 +219,7 @@ export default function Dashboard() {
               onClick={
                 card.clickable ? () => setFilterType(card.filterKey) : undefined
               }
-              className={`glass-card p-3.5 md:p-5 rounded-xl border-l-[3px] ${card.borderClass} animate-fade-in stagger-${index + 1} ${
+              className={`glass-card p-3.5 md:p-4 rounded-[16px] border-l-[3px] ${card.borderClass} animate-fade-in stagger-${index + 1} ${
                 card.clickable
                   ? "cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
                   : ""
@@ -233,17 +228,17 @@ export default function Dashboard() {
               }`}
               style={{ animationFillMode: "both" }}
             >
-              <div className="flex items-center space-x-2.5 sm:space-x-3">
+              <div className="flex items-center space-x-2.5">
                 <div
-                  className={`p-2 sm:p-2.5 rounded-lg ${card.bgClass} ${card.textClass} shrink-0`}
+                  className={`p-2 rounded-[6px] ${card.bgClass} ${card.textClass} shrink-0`}
                 >
                   <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-[10px] sm:text-[11px] text-gym-text-muted font-semibold uppercase tracking-wider truncate">
+                  <p className="text-[10px] sm:text-[11px] text-[var(--text-muted)] font-semibold uppercase tracking-wider truncate">
                     {card.label}
                   </p>
-                  <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-800 dark:text-white mt-0.5 tabular-nums truncate">
+                  <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-[var(--text-primary)] mt-0.5 tabular-nums truncate">
                     {card.value}
                   </h3>
                 </div>
@@ -255,16 +250,16 @@ export default function Dashboard() {
 
       {/* Main Alert List Area */}
       <div
-        className="glass-panel p-4 sm:p-5 md:p-6 rounded-2xl space-y-5 animate-fade-in"
+        className="glass-panel p-4 sm:p-5 md:p-6 rounded-[16px] space-y-5 animate-fade-in"
         style={{ animationDelay: "200ms", animationFillMode: "both" }}
       >
         {/* List Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-gym-border pb-5">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-[var(--border-color)] pb-5">
           <div className="space-y-1.5">
-            <h2 className="font-display font-bold text-base sm:text-lg text-slate-800 dark:text-white">
+            <h2 className="font-bold text-base sm:text-lg text-[var(--text-primary)]">
               Membership Dues Tracker
             </h2>
-            <p className="text-xs sm:text-sm text-gym-text-secondary">
+            <p className="text-xs sm:text-sm text-[var(--text-secondary)]">
               {filterType === "overdue"
                 ? "Showing memberships that have already expired."
                 : `Showing memberships expiring ${dueTimeframe === 0 ? "today" : `within ${dueTimeframe} days`} or overdue.`}
@@ -273,10 +268,10 @@ export default function Dashboard() {
             {/* Timeframe sub-selector pills */}
             {filterType !== "overdue" && (
               <div className="flex items-center space-x-2 pt-1 animate-fade-in">
-                <span className="text-[10px] sm:text-[11px] text-gym-text-muted font-bold uppercase tracking-wider">
+                <span className="text-[10px] sm:text-[11px] text-[var(--text-muted)] font-bold uppercase tracking-wider">
                   Timeframe:
                 </span>
-                <div className="flex bg-gym-dark/50 border border-gym-border/50 p-0.5 rounded-lg">
+                <div className="flex bg-[var(--bg-canvas)]/50 border border-[var(--border-color)]/50 p-0.5 rounded-[6px]">
                   {[
                     { val: 0, label: "Today" },
                     { val: 3, label: "3 Days" },
@@ -286,10 +281,10 @@ export default function Dashboard() {
                       key={tf.val}
                       type="button"
                       onClick={() => setDueTimeframe(tf.val)}
-                      className={`px-2 py-0.5 sm:px-3 sm:py-1 rounded-md text-[10px] sm:text-[11px] font-bold transition-all duration-200 cursor-pointer ${
+                      className={`px-2 py-0.5 sm:px-3 sm:py-1 rounded-[4px] text-[10px] sm:text-[11px] font-bold transition-all duration-200 cursor-pointer ${
                         dueTimeframe === tf.val
                           ? "bg-gym-orange text-white shadow-sm"
-                          : "text-gym-text-secondary hover:text-white"
+                          : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                       }`}
                     >
                       {tf.label}
@@ -301,7 +296,7 @@ export default function Dashboard() {
           </div>
 
           {/* Toggle Filters */}
-          <div className="flex bg-gym-dark/60 border border-gym-border p-1 rounded-xl self-start lg:self-center shrink-0 max-w-full overflow-x-auto">
+          <div className="flex bg-[var(--bg-canvas)]/60 border border-[var(--border-color)] p-1 rounded-[6px] self-start lg:self-center shrink-0 max-w-full overflow-x-auto">
             {[
               {
                 key: "all",
@@ -327,10 +322,10 @@ export default function Dashboard() {
               <button
                 key={f.key}
                 onClick={() => setFilterType(f.key)}
-                className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer shrink-0 ${
+                className={`px-2.5 py-1.5 rounded-[4px] text-xs font-semibold transition-all duration-200 cursor-pointer shrink-0 ${
                   filterType === f.key
                     ? f.activeClass
-                    : "text-gym-text-secondary hover:text-white border border-transparent"
+                    : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-transparent"
                 }`}
               >
                 <span className="hidden sm:inline">{f.label}</span>
@@ -343,19 +338,19 @@ export default function Dashboard() {
         {/* Alert List */}
         {filteredMembers.length === 0 ? (
           <div className="text-center py-14 animate-fade-in">
-            <div className="w-16 h-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <CheckCircle className="h-8 w-8 text-emerald-400" />
+            <div className="w-14 h-14 bg-emerald-500/10 rounded-[16px] flex items-center justify-center mx-auto mb-4">
+              <CheckCircle className="h-7 w-7 text-emerald-400" />
             </div>
-            <h3 className="text-lg font-display font-bold text-slate-800 dark:text-white mb-1">
+            <h3 className="text-lg font-bold text-[var(--text-primary)] mb-1">
               All Clear
             </h3>
-            <p className="text-gym-text-secondary text-sm max-w-sm mx-auto mb-6">
+            <p className="text-[var(--text-secondary)] text-sm max-w-sm mx-auto mb-6">
               No members are currently overdue or have fees due within the
               selected timeframe.
             </p>
             <button
               onClick={openAddModal}
-              className="inline-flex items-center space-x-2 bg-gym-orange/10 hover:bg-gym-orange/20 text-gym-orange border border-gym-orange/20 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 cursor-pointer"
+              className="inline-flex items-center space-x-2 bg-gym-orange/10 hover:bg-gym-orange/20 text-gym-orange border border-gym-orange/20 px-5 py-2 rounded-[6px] font-semibold text-sm transition-all duration-200 cursor-pointer"
             >
               <UserPlus className="h-4 w-4" />
               <span>Register New Member</span>
@@ -370,7 +365,7 @@ export default function Dashboard() {
               return (
                 <div
                   key={member._id}
-                  className={`p-4 md:p-5 rounded-xl border-l-[3px] transition-all duration-300 animate-fade-in ${
+                  className={`p-4 rounded-[12px] border-l-[3px] transition-all duration-300 animate-fade-in ${
                     isOverdue
                       ? "bg-red-500/[0.03] border border-red-500/10 hover:border-red-500/25 border-l-red-500"
                       : "bg-amber-500/[0.03] border border-amber-500/10 hover:border-amber-500/25 border-l-amber-500"
@@ -384,7 +379,7 @@ export default function Dashboard() {
                     {/* Member Core Info */}
                     <div className="space-y-2 min-w-0 flex-1">
                       <div>
-                        <h4 className="font-bold text-base text-slate-800 dark:text-white truncate">
+                        <h4 className="font-bold text-sm text-[var(--text-primary)] truncate">
                           {member.name}
                         </h4>
                         <div className="flex items-center space-x-2 mt-1">
@@ -400,24 +395,24 @@ export default function Dashboard() {
                             ></span>
                             <span>{member.status}</span>
                           </span>
-                          <span className="text-xs text-gym-text-muted capitalize">
+                          <span className="text-xs text-[var(--text-muted)] capitalize">
                             {member.membershipType}
                           </span>
                         </div>
                       </div>
 
                       {/* Phone */}
-                      <div className="flex items-center text-xs text-gym-text-secondary space-x-1.5">
-                        <Phone className="h-3.5 w-3.5 text-gym-text-muted" />
+                      <div className="flex items-center text-xs text-[var(--text-secondary)] space-x-1.5">
+                        <Phone className="h-3 w-3 text-[var(--text-muted)]" />
                         <span>{member.phone}</span>
                       </div>
 
                       {/* Date */}
-                      <div className="flex items-center text-xs text-gym-text-secondary space-x-1.5">
-                        <Calendar className="h-3.5 w-3.5 text-gym-text-muted" />
+                      <div className="flex items-center text-xs text-[var(--text-secondary)] space-x-1.5">
+                        <Calendar className="h-3 w-3 text-[var(--text-muted)]" />
                         <span>
                           Due:{" "}
-                          <strong className="text-slate-800 dark:text-white">
+                          <strong className="text-[var(--text-primary)]">
                             {formatDate(member.endDate)}
                           </strong>
                         </span>
@@ -425,12 +420,12 @@ export default function Dashboard() {
                     </div>
 
                     {/* Dues Summary & Action */}
-                    <div className="flex sm:flex-col justify-between items-end sm:items-stretch sm:min-h-[90px] border-t border-gym-border/30 sm:border-none pt-3 sm:pt-0 mt-1 sm:mt-0 ml-0 sm:ml-4 shrink-0">
+                    <div className="flex sm:flex-col justify-between items-end sm:items-stretch sm:min-h-[90px] border-t border-[var(--border-color)]/30 sm:border-none pt-3 sm:pt-0 mt-1 sm:mt-0 ml-0 sm:ml-4 shrink-0">
                       <div className="text-left sm:text-right">
-                        <p className="text-[11px] text-gym-text-muted uppercase font-semibold">
+                        <p className="text-[11px] text-[var(--text-muted)] uppercase font-semibold">
                           Amount
                         </p>
-                        <p className="text-lg font-bold text-slate-800 dark:text-white mt-0.5 tabular-nums">
+                        <p className="text-lg font-bold text-[var(--text-primary)] mt-0.5 tabular-nums">
                           ₹{member.feeAmount.toLocaleString()}
                         </p>
                       </div>
@@ -448,7 +443,7 @@ export default function Dashboard() {
 
                         <button
                           onClick={() => openRenewModal(member)}
-                          className={`text-xs font-bold px-4 py-2 rounded-lg transition-all duration-200 cursor-pointer ${
+                          className={`text-xs font-bold px-4 py-1.5 rounded-[6px] transition-all duration-200 cursor-pointer ${
                             isOverdue
                               ? "bg-red-500 hover:bg-red-400 text-white shadow-sm shadow-red-500/20"
                               : "bg-amber-500 hover:bg-amber-400 text-white shadow-sm shadow-amber-500/20"

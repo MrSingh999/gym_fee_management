@@ -13,7 +13,7 @@ export default function Navbar() {
     if (window.confirm('Are you sure you want to log out of the admin console?')) {
       try {
         await logout();
-        setActiveTab('dashboard'); // reset to dashboard
+        setActiveTab('dashboard');
       } catch (err) {
         console.error('Logout error:', err);
       }
@@ -30,62 +30,62 @@ export default function Navbar() {
             className="flex items-center space-x-3 cursor-pointer group" 
             onClick={() => setActiveTab('dashboard')}
           >
-            <div className="relative bg-gradient-to-br from-gym-orange to-orange-400 p-2.5 rounded-xl text-white shadow-lg transition-all duration-300 group-hover:scale-110 group-hover:shadow-[0_0_24px_-4px_rgba(249,115,22,0.5)]">
-              <Dumbbell className="h-5 w-5" />
+            <div className="relative bg-gradient-to-br from-gym-orange to-orange-400 p-2 rounded-[6px] text-white shadow-lg transition-all duration-300 group-hover:scale-105 group-hover:shadow-[0_0_20px_-4px_rgba(249,115,22,0.4)]">
+              <Dumbbell className="h-4.5 w-4.5" />
             </div>
-            <span className="font-display font-bold text-xl tracking-wide text-slate-800 dark:text-white">
+            <span className="font-bold text-lg tracking-tight text-[var(--text-primary)]">
               APEX<span className="gradient-text">FITNESS</span>
             </span>
           </div>
 
-          {/* Navigation Tabs (Desktop only) */}
-          <div className="hidden md:flex items-center bg-gym-dark/40 border border-gym-border rounded-xl p-1">
+          {/* Navigation Tabs (Desktop) */}
+          <div className="hidden md:flex items-center bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-[6px] p-1">
             <button
               onClick={() => setActiveTab('dashboard')}
-              className={`relative flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm transition-all duration-250 cursor-pointer ${
+              className={`relative flex items-center space-x-2 px-4 py-1.5 rounded-[6px] font-medium text-sm transition-all duration-200 cursor-pointer ${
                 activeTab === 'dashboard'
                   ? 'bg-gym-orange text-white shadow-md shadow-gym-orange/20'
-                  : 'text-gym-text-secondary hover:text-white'
+                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
               }`}
             >
-              <LayoutDashboard className="h-4 w-4" />
+              <LayoutDashboard className="h-3.5 w-3.5" />
               <span>Dashboard</span>
             </button>
             
             <button
               onClick={() => setActiveTab('members')}
-              className={`relative flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm transition-all duration-250 cursor-pointer ${
+              className={`relative flex items-center space-x-2 px-4 py-1.5 rounded-[6px] font-medium text-sm transition-all duration-200 cursor-pointer ${
                 activeTab === 'members'
                   ? 'bg-gym-orange text-white shadow-md shadow-gym-orange/20'
-                  : 'text-gym-text-secondary hover:text-white'
+                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
               }`}
             >
-              <Users className="h-4 w-4" />
+              <Users className="h-3.5 w-3.5" />
               <span>Members</span>
             </button>
           </div>
 
-          {/* Quick Actions (Desktop only) */}
+          {/* Quick Actions (Desktop) */}
           <div className="hidden md:flex items-center space-x-2">
             {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
               title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
-              className="flex items-center justify-center w-9 h-9 rounded-lg border border-gym-border text-gym-text-secondary hover:text-white hover:bg-gym-elevated hover:border-gym-border-hover transition-all duration-200 cursor-pointer"
+              className="flex items-center justify-center w-8 h-8 rounded-[6px] border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] hover:border-[var(--border-color-hover)] transition-all duration-200 cursor-pointer"
             >
               {theme === 'dark' ? (
-                <Sun className="h-4 w-4 text-amber-400" />
+                <Sun className="h-3.5 w-3.5 text-amber-400" />
               ) : (
-                <Moon className="h-4 w-4 text-indigo-500" />
+                <Moon className="h-3.5 w-3.5 text-indigo-500" />
               )}
             </button>
 
             {/* New Member */}
             <button
               onClick={openAddModal}
-              className="flex items-center space-x-2 bg-gradient-to-r from-gym-orange to-orange-500 hover:from-gym-orange-hover hover:to-orange-600 text-white px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-250 shadow-lg shadow-gym-orange/20 hover:shadow-gym-orange/30 hover:scale-[1.03] active:scale-[0.97] cursor-pointer"
+              className="flex items-center space-x-2 bg-gym-orange hover:bg-gym-orange-hover text-white px-4 py-1.5 rounded-[6px] font-semibold text-sm transition-all duration-200 shadow-lg shadow-gym-orange/15 hover:shadow-gym-orange/25 cursor-pointer"
             >
-              <UserPlus className="h-4 w-4" />
+              <UserPlus className="h-3.5 w-3.5" />
               <span>New Member</span>
             </button>
             
@@ -93,17 +93,17 @@ export default function Navbar() {
             <button
               onClick={handleLogout}
               title="Log Out"
-              className="flex items-center justify-center w-9 h-9 rounded-lg border border-gym-border text-gym-text-secondary hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/20 transition-all duration-200 cursor-pointer"
+              className="flex items-center justify-center w-8 h-8 rounded-[6px] border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/20 transition-all duration-200 cursor-pointer"
             >
-              <LogOut className="h-4 w-4" />
+              <LogOut className="h-3.5 w-3.5" />
             </button>
           </div>
 
         </div>
       </nav>
 
-      {/* Mobile Bottom Navigation Bar (Ergonomic Phone UI) */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-gym-dark/85 backdrop-blur-xl border-t border-gym-border px-4 py-2 pb-safe flex items-center justify-between shadow-[0_-10px_30px_rgba(0,0,0,0.4)]">
+      {/* Mobile Bottom Navigation Bar */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-[var(--bg-canvas)]/90 backdrop-blur-xl border-t border-[var(--border-color)] px-4 py-2 pb-safe flex items-center justify-between">
         
         {/* Dashboard Tab */}
         <button
@@ -111,7 +111,7 @@ export default function Navbar() {
           className={`flex flex-col items-center justify-center flex-1 py-1 transition-all duration-200 cursor-pointer ${
             activeTab === 'dashboard'
               ? 'text-gym-orange font-bold'
-              : 'text-gym-text-secondary hover:text-white'
+              : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
           }`}
         >
           <LayoutDashboard className={`h-5 w-5 ${activeTab === 'dashboard' ? 'scale-110' : ''}`} />
@@ -124,7 +124,7 @@ export default function Navbar() {
           className={`flex flex-col items-center justify-center flex-1 py-1 transition-all duration-200 cursor-pointer ${
             activeTab === 'members'
               ? 'text-gym-orange font-bold'
-              : 'text-gym-text-secondary hover:text-white'
+              : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
           }`}
         >
           <Users className={`h-5 w-5 ${activeTab === 'members' ? 'scale-110' : ''}`} />
@@ -136,7 +136,7 @@ export default function Navbar() {
           <button
             onClick={openAddModal}
             aria-label="Add New Member"
-            className="flex items-center justify-center w-13 h-13 rounded-full bg-gradient-to-br from-gym-orange to-orange-500 text-white shadow-lg shadow-gym-orange/30 hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer border border-orange-400/20"
+            className="flex items-center justify-center w-13 h-13 rounded-full bg-gym-orange text-white shadow-lg shadow-gym-orange/30 hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
           >
             <UserPlus className="h-6 w-6" />
           </button>
@@ -146,7 +146,7 @@ export default function Navbar() {
         <button
           onClick={toggleTheme}
           aria-label="Toggle Theme"
-          className="flex flex-col items-center justify-center flex-1 py-1 text-gym-text-secondary hover:text-white transition-all duration-200 cursor-pointer"
+          className="flex flex-col items-center justify-center flex-1 py-1 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-200 cursor-pointer"
         >
           {theme === 'dark' ? (
             <Sun className="h-5 w-5 text-amber-400" />
@@ -160,7 +160,7 @@ export default function Navbar() {
         <button
           onClick={handleLogout}
           aria-label="Log Out"
-          className="flex flex-col items-center justify-center flex-1 py-1 text-gym-text-secondary hover:text-red-400 transition-all duration-200 cursor-pointer"
+          className="flex flex-col items-center justify-center flex-1 py-1 text-[var(--text-secondary)] hover:text-red-400 transition-all duration-200 cursor-pointer"
         >
           <LogOut className="h-5 w-5" />
           <span className="text-[10px] mt-1 tracking-wide">Logout</span>

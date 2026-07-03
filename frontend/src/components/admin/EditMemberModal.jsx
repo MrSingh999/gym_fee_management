@@ -76,25 +76,25 @@ export default function EditMemberModal({ isOpen, onClose, member, onSuccess }) 
 
   if (!isOpen || !member) return null;
 
-  const inputClass = "w-full bg-white/[0.04] border border-gym-border rounded-xl px-4 py-3 text-base text-slate-800 dark:text-white placeholder-gym-text-muted focus:outline-none focus:border-gym-orange transition-all duration-200";
-  const labelClass = "text-[11px] font-bold text-gym-text-muted uppercase tracking-wider";
-  const selectTriggerClass = "w-full bg-white/[0.04] border border-gym-border rounded-xl px-4 py-3 h-auto text-base text-slate-800 dark:text-white cursor-pointer hover:border-gym-border-hover focus:border-gym-orange transition-all duration-200";
+  const inputClass = "w-full bg-white/[0.03] border border-[var(--border-color)] rounded-[6px] px-4 py-3 text-base text-[var(--text-primary)] placeholder-gym-text-muted focus:outline-none focus:border-gym-orange transition-all duration-200";
+  const labelClass = "text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider";
+  const selectTriggerClass = "w-full bg-white/[0.03] border border-[var(--border-color)] rounded-[6px] px-4 py-3 h-auto text-base text-[var(--text-primary)] cursor-pointer hover:border-[var(--border-color-hover)] focus:border-gym-orange transition-all duration-200";
 
   return (
     <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 overflow-y-auto modal-backdrop" onClick={onClose}>
       <div
-        className="glass-panel w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden border border-gym-border-hover animate-slide-up my-auto max-h-[90vh] md:max-h-[85vh] flex flex-col"
+        className="glass-panel w-full max-w-2xl rounded-[16px] shadow-2xl overflow-hidden border border-[var(--border-color-hover)] animate-slide-up my-auto max-h-[90vh] md:max-h-[85vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
-        <div className="relative flex justify-between items-center px-6 py-4 border-b border-gym-border shrink-0">
+        <div className="relative flex justify-between items-center px-6 py-4 border-b border-[var(--border-color)] shrink-0">
           <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gym-orange/30 to-transparent"></div>
-          <h2 className="font-display font-bold text-lg text-slate-800 dark:text-white">
+          <h2 className="font-bold text-lg text-[var(--text-primary)]">
             Edit Member Profile
           </h2>
           <button
             onClick={onClose}
-            className="p-1.5 text-gym-text-secondary hover:text-white rounded-lg hover:bg-gym-elevated transition-all duration-200 cursor-pointer"
+            className="p-1.5 text-[var(--text-secondary)] hover:text-[var(--text-primary)] rounded-[6px] hover:bg-[var(--bg-elevated)] transition-all duration-200 cursor-pointer"
           >
             <X className="h-4.5 w-4.5" />
           </button>
@@ -104,7 +104,7 @@ export default function EditMemberModal({ isOpen, onClose, member, onSuccess }) 
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
           <div className="p-4 sm:p-6 space-y-5 overflow-y-auto flex-1">
             {error && (
-              <div className="flex items-start space-x-2.5 p-3 bg-red-500/[0.06] border border-red-500/15 text-red-400 rounded-xl text-sm animate-fade-in" role="alert">
+              <div className="flex items-start space-x-2.5 p-3 bg-red-500/[0.06] border border-red-500/15 text-red-400 rounded-[6px] text-sm animate-fade-in" role="alert">
                 <AlertCircle className="h-4.5 w-4.5 shrink-0 mt-0.5" />
                 <span className="text-[13px]">{error}</span>
               </div>
@@ -135,7 +135,7 @@ export default function EditMemberModal({ isOpen, onClose, member, onSuccess }) 
                   <SelectTrigger className={selectTriggerClass}>
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-gym-card backdrop-blur-xl border border-gym-border-hover rounded-xl shadow-2xl">
+                  <SelectContent className="bg-[var(--bg-card)] backdrop-blur-xl border border-[var(--border-color-hover)] rounded-[6px] shadow-2xl">
                     <SelectItem value="Male">Male</SelectItem>
                     <SelectItem value="Female">Female</SelectItem>
                     <SelectItem value="Other">Other</SelectItem>
@@ -194,7 +194,7 @@ export default function EditMemberModal({ isOpen, onClose, member, onSuccess }) 
                       {formData.membershipType === 'workout + cardio' && 'Workout + Cardio'}
                     </SelectValue>
                   </SelectTrigger>
-                  <SelectContent className="bg-gym-card backdrop-blur-xl border border-gym-border-hover rounded-xl shadow-2xl">
+                  <SelectContent className="bg-[var(--bg-card)] backdrop-blur-xl border border-[var(--border-color-hover)] rounded-[6px] shadow-2xl">
                     <SelectItem value="workout">Workout</SelectItem>
                     <SelectItem value="workout + cardio">Workout + Cardio</SelectItem>
                   </SelectContent>
@@ -251,7 +251,7 @@ export default function EditMemberModal({ isOpen, onClose, member, onSuccess }) 
                       {formData.status === 'inactive' && 'Inactive (Cancelled / Paused)'}
                     </SelectValue>
                   </SelectTrigger>
-                  <SelectContent className="bg-gym-card backdrop-blur-xl border border-gym-border-hover rounded-xl shadow-2xl">
+                  <SelectContent className="bg-[var(--bg-card)] backdrop-blur-xl border border-[var(--border-color-hover)] rounded-[6px] shadow-2xl">
                     <SelectItem value="active">Active</SelectItem>
                     <SelectItem value="inactive">Inactive (Cancelled / Paused)</SelectItem>
                   </SelectContent>
@@ -261,18 +261,18 @@ export default function EditMemberModal({ isOpen, onClose, member, onSuccess }) 
           </div>
 
           {/* Modal Footer Actions */}
-          <div className="flex justify-end space-x-3 p-4 sm:p-6 border-t border-gym-border shrink-0">
+          <div className="flex justify-end space-x-3 p-4 sm:p-6 border-t border-[var(--border-color)] shrink-0">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-3 rounded-xl border border-gym-border hover:bg-gym-elevated text-sm font-semibold text-gym-text-secondary hover:text-white transition-all duration-200 cursor-pointer h-11 flex items-center justify-center"
+              className="px-4 py-3 rounded-[6px] border border-[var(--border-color)] hover:bg-[var(--bg-elevated)] text-sm font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-200 cursor-pointer h-11 flex items-center justify-center"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="flex items-center space-x-2 bg-gradient-to-r from-gym-orange to-orange-500 hover:from-gym-orange-hover hover:to-orange-600 disabled:opacity-50 text-white px-5 py-3 rounded-xl text-sm font-bold transition-all duration-250 shadow-lg shadow-gym-orange/20 cursor-pointer h-11"
+              className="flex items-center space-x-2 bg-gym-orange hover:bg-gym-orange-hover disabled:opacity-50 text-white px-5 py-3 rounded-[6px] text-sm font-bold transition-all duration-250 shadow-lg shadow-gym-orange/15 cursor-pointer h-11"
             >
               <Save className="h-4 w-4" />
               <span>{submitting ? "Saving..." : "Save Changes"}</span>
