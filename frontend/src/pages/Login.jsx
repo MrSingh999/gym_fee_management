@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Dumbbell, Mail, Lock, AlertCircle, CheckCircle, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { authService } from '@/services/authService';
 import { useAuth } from '@/context/AuthContext';
+import bgVideo from '../assets/cbum-motivation.mp4';
 
 export default function Login() {
   const { login, setUser } = useAuth();
@@ -121,7 +122,7 @@ export default function Login() {
   const inputIconClass = "absolute left-3.5 top-3 h-4 w-4 text-[var(--text-muted)]";
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[var(--bg-canvas)] px-4 py-12 relative overflow-hidden noise-overlay">
+    <div className="min-h-screen flex items-center justify-center bg-black px-4 py-12 relative overflow-hidden">
       
       {/* Background Video */}
       <video
@@ -129,24 +130,29 @@ export default function Login() {
         loop
         muted
         playsInline
-        className="absolute inset-0 w-full h-full object-cover opacity-[0.15] z-0 pointer-events-none mix-blend-luminosity"
+        className="absolute inset-0 w-full h-full object-cover opacity-60 z-0 pointer-events-none"
       >
-        <source src="https://assets.mixkit.co/videos/preview/mixkit-man-training-with-battle-ropes-in-the-gym-23116-large.mp4" type="video/mp4" />
+        <source src={bgVideo} type="video/mp4" />
       </video>
 
-      {/* Floating Background Orbs */}
-      <div className="login-orb login-orb-1 z-0"></div>
-      <div className="login-orb login-orb-2 z-0"></div>
-      <div className="login-orb login-orb-3 z-0"></div>
+      {/* Cinematic Vignette Overlay */}
+      <div className="absolute inset-0 bg-radial-vignette z-0 pointer-events-none"></div>
       
-      <div className="glass-panel w-full max-w-[400px] p-8 rounded-[16px] shadow-2xl space-y-6 animate-slide-up relative z-10 border border-[var(--border-color-hover)]">
+      {/* Dark Overlay for text contrast */}
+      <div className="absolute inset-0 bg-black/40 z-0 pointer-events-none"></div>
+
+      {/* Floating Background Orbs - subdued for video bg */}
+      <div className="login-orb login-orb-1 z-0 opacity-20"></div>
+      <div className="login-orb login-orb-2 z-0 opacity-20"></div>
+      
+      <div className="w-full max-w-[400px] p-8 rounded-[20px] shadow-2xl space-y-6 animate-slide-up relative z-10 border border-white/[0.12] bg-black/40 backdrop-blur-2xl">
         
         {/* Brand/Logo */}
         <div className="flex flex-col items-center text-center space-y-3">
           <div className="relative">
             {/* Gradient ring */}
-            <div className="absolute -inset-1 bg-gradient-to-br from-gym-orange via-orange-400 to-amber-500 rounded-[12px] opacity-50 blur-sm animate-pulse-glow"></div>
-            <div className="relative bg-gym-orange p-3 rounded-[12px] text-white shadow-lg">
+            <div className="absolute -inset-1.5 bg-gradient-to-br from-gym-orange via-orange-400 to-amber-500 rounded-[14px] opacity-60 blur-md animate-pulse-glow"></div>
+            <div className="relative bg-gradient-to-br from-gym-orange to-amber-600 p-3.5 rounded-[12px] text-white shadow-lg border border-white/20">
               <Dumbbell className="h-6 w-6" />
             </div>
           </div>
