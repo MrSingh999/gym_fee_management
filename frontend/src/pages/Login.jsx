@@ -123,10 +123,21 @@ export default function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[var(--bg-canvas)] px-4 py-12 relative overflow-hidden noise-overlay">
       
+      {/* Background Video */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="absolute inset-0 w-full h-full object-cover opacity-[0.15] z-0 pointer-events-none mix-blend-luminosity"
+      >
+        <source src="https://assets.mixkit.co/videos/preview/mixkit-man-training-with-battle-ropes-in-the-gym-23116-large.mp4" type="video/mp4" />
+      </video>
+
       {/* Floating Background Orbs */}
-      <div className="login-orb login-orb-1"></div>
-      <div className="login-orb login-orb-2"></div>
-      <div className="login-orb login-orb-3"></div>
+      <div className="login-orb login-orb-1 z-0"></div>
+      <div className="login-orb login-orb-2 z-0"></div>
+      <div className="login-orb login-orb-3 z-0"></div>
       
       <div className="glass-panel w-full max-w-[400px] p-8 rounded-[16px] shadow-2xl space-y-6 animate-slide-up relative z-10 border border-[var(--border-color-hover)]">
         
