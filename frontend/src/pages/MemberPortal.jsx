@@ -388,14 +388,14 @@ export default function MemberPortal() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex-1 flex items-center justify-center space-x-2 py-2.5 rounded-[6px] text-xs font-bold transition-all duration-200 cursor-pointer ${
+                className={`flex-1 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-2 sm:py-2.5 rounded-[6px] text-[10px] sm:text-xs font-bold transition-all duration-200 cursor-pointer ${
                   activeTab === tab.id
                     ? "bg-gym-orange text-white shadow-md shadow-gym-orange/15"
                     : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                 }`}
               >
-                <Icon className="h-4 w-4" />
-                <span>{tab.label}</span>
+                <Icon className="h-4 w-4 shrink-0" />
+                <span className="text-center leading-none">{tab.label}</span>
               </button>
             );
           })}
@@ -819,11 +819,11 @@ export default function MemberPortal() {
                           </span>
                         </div>
 
-                        <div className="flex justify-between items-baseline">
-                          <span className="font-semibold text-[var(--text-primary)] capitalize">
+                        <div className="flex justify-between items-center gap-2">
+                          <span className="font-semibold text-[var(--text-primary)] capitalize truncate">
                             {payment.plan?.name || "Workout"}
                           </span>
-                          <span className="font-bold text-gym-orange text-sm tabular-nums">
+                          <span className="font-bold text-gym-orange text-sm tabular-nums shrink-0">
                             ₹{payment.amount.toLocaleString()}
                           </span>
                         </div>
