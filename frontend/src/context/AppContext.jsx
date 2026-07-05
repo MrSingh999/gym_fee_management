@@ -3,7 +3,6 @@ import React, { createContext, useContext, useState } from 'react';
 const AppContext = createContext();
 
 export function AppProvider({ children }) {
-  const [activeTab, setActiveTab] = useState('dashboard');
   
   // Modals state
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -62,8 +61,6 @@ export function AppProvider({ children }) {
 
   return (
     <AppContext.Provider value={{
-      activeTab,
-      setActiveTab,
       isAddModalOpen,
       isEditModalOpen,
       isRenewModalOpen,

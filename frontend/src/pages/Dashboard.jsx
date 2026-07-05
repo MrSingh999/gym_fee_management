@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { dashboardService } from "@/services/dashboardService";
 import { useApp } from "@/context/AppContext";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Dashboard() {
   const { openRenewModal, openAddModal, refreshTrigger } = useApp();
@@ -103,16 +104,12 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
+      <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
         <div className="relative">
-          <div className="animate-spin rounded-full h-10 w-10 border-2 border-[var(--border-color)] border-t-gym-orange"></div>
-          <div
-            className="absolute inset-0 animate-spin rounded-full h-10 w-10 border-2 border-transparent border-b-gym-orange/30"
-            style={{ animationDirection: "reverse", animationDuration: "1.5s" }}
-          ></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-2 border-(--border-color) border-t-(--text-primary)"></div>
         </div>
-        <p className="text-[var(--text-muted)] font-medium text-sm">
-          Loading fitness metrics...
+        <p className="text-(--text-muted) font-mono text-xs uppercase tracking-wider">
+          Loading metrics...
         </p>
       </div>
     );
@@ -120,22 +117,22 @@ export default function Dashboard() {
 
   if (error) {
     return (
-      <div className="max-w-lg mx-auto mt-16 animate-fade-in">
-        <div className="glass-card p-8 rounded-[16px] text-center border-red-500/20">
-          <div className="w-14 h-14 bg-red-500/10 rounded-[16px] flex items-center justify-center mx-auto mb-5">
-            <AlertTriangle className="h-7 w-7 text-red-400" />
+      <div className="max-w-lg mx-auto mt-12 animate-fade-in">
+        <div className="glass-card p-8 rounded-[16px] text-center border-red-500/20 bg-black/40">
+          <div className="w-12 h-12 bg-red-500/10 rounded-[6px] flex items-center justify-center mx-auto mb-4">
+            <AlertTriangle className="h-5 w-5 text-red-400" />
           </div>
-          <h3 className="text-lg font-bold text-[var(--text-primary)] mb-2">
-            Connection Error
+          <h3 className="text-base font-bold text-(--text-primary) mb-2 font-mono">
+            Connection Lost
           </h3>
-          <p className="text-[var(--text-secondary)] text-sm mb-6 leading-relaxed">
+          <p className="text-(--text-secondary) text-sm mb-6 leading-relaxed">
             {error}
           </p>
           <button
             onClick={fetchDashboardData}
-            className="inline-flex items-center space-x-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 px-5 py-2 rounded-[6px] font-semibold text-sm transition-all duration-200 border border-red-500/20 cursor-pointer"
+            className="inline-flex items-center space-x-2 bg-(--text-primary) text-(--bg-canvas) px-4 py-2 rounded-[6px] font-semibold text-xs transition-colors duration-150 cursor-pointer"
           >
-            <RefreshCw className="h-4 w-4" />
+            <RefreshCw className="h-3.5 w-3.5" />
             <span>Retry Connection</span>
           </button>
         </div>
@@ -148,25 +145,19 @@ export default function Dashboard() {
       label: "Total Members",
       value: stats.total,
       icon: Users,
-      bgClass: "bg-blue-500/10",
-      textClass: "text-blue-400",
-      borderClass: "border-l-blue-500",
+      borderClass: "border-l-zinc-500 dark:border-l-zinc-400",
     },
     {
       label: "Active",
       value: stats.active,
       icon: CheckCircle,
-      bgClass: "bg-emerald-500/10",
-      textClass: "text-emerald-400",
-      borderClass: "border-l-emerald-500",
+      borderClass: "border-l-zinc-300 dark:border-l-zinc-200",
     },
     {
       label: "Overdue",
       value: stats.overdue,
       icon: AlertTriangle,
-      bgClass: "bg-red-500/10",
-      textClass: "text-red-400",
-      borderClass: "border-l-red-500",
+      borderClass: "border-l-red-500 dark:border-l-red-500",
       clickable: true,
       filterKey: "overdue",
     },
@@ -179,9 +170,7 @@ export default function Dashboard() {
             : "Due in 7d",
       value: dueCountInTimeframe,
       icon: Clock,
-      bgClass: "bg-amber-500/10",
-      textClass: "text-amber-400",
-      borderClass: "border-l-amber-500",
+      borderClass: "border-l-amber-500 dark:border-l-amber-500",
       clickable: true,
       filterKey: "due",
     },
@@ -189,22 +178,29 @@ export default function Dashboard() {
       label: "Monthly Rev",
       value: `₹${stats.estimatedRevenue.toLocaleString()}`,
       icon: TrendingUp,
-      bgClass: "bg-emerald-500/10",
-      textClass: "text-emerald-400",
-      borderClass: "border-l-emerald-500",
+      borderClass: "border-l-zinc-800 dark:border-l-zinc-600",
     },
   ];
 
   return (
     <div className="space-y-6">
       {/* Welcome Title */}
-      <div className="animate-fade-in">
-        <h1 className="font-bold text-2xl sm:text-3xl text-[var(--text-primary)] tracking-tight">
-          Admin <span className="gradient-text">Console</span>
-        </h1>
-        <p className="text-[var(--text-secondary)] mt-1 text-xs sm:text-sm">
-          Quick snapshot of gym membership statuses today.
-        </p>
+      <div className="animate-fade-in flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="font-bold text-2xl text-(--text-primary) tracking-tight">
+            Console <span className="text-(--text-secondary) font-normal ml-0.5">Overview</span>
+          </h1>
+          <p className="text-(--text-secondary) mt-1 text-xs font-mono">
+            Gym membership statuses & financial diagnostics dashboard.
+          </p>
+        </div>
+        <button
+          onClick={openAddModal}
+          className="bg-(--text-primary) text-(--bg-canvas) hover:opacity-90 px-4 py-2 rounded-[6px] font-semibold text-xs transition-opacity duration-150 cursor-pointer border border-(--border-color-hover) flex items-center space-x-2"
+        >
+          <UserPlus className="h-3.5 w-3.5" />
+          <span>Register Member</span>
+        </button>
       </div>
 
       {/* KPI Cards Grid */}
@@ -214,64 +210,61 @@ export default function Dashboard() {
           const isSelected = card.clickable && filterType === card.filterKey;
 
           return (
-            <div
+            <motion.div
               key={card.label}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.05 }}
               onClick={
                 card.clickable ? () => setFilterType(card.filterKey) : undefined
               }
-              className={`glass-card p-3.5 md:p-4 rounded-[16px] border-l-[3px] ${card.borderClass} animate-fade-in stagger-${index + 1} ${
+              className={`glass-card p-4 rounded-[12px] border-l-[3px] ${card.borderClass} ${
                 card.clickable
-                  ? "cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
+                  ? "cursor-pointer hover:scale-[1.01] active:scale-[0.99]"
                   : ""
-              } ${isSelected ? "ring-1 ring-gym-orange/30 !border-l-gym-orange" : ""} ${
+              } ${isSelected ? "ring-1 ring-(--text-primary)/40" : ""} ${
                 index === 4 ? "col-span-2 lg:col-span-1" : ""
               }`}
-              style={{ animationFillMode: "both" }}
             >
-              <div className="flex items-center space-x-2.5">
-                <div
-                  className={`p-2 rounded-[6px] ${card.bgClass} ${card.textClass} shrink-0`}
-                >
-                  <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
+              <div className="flex items-start space-x-2">
+                <div className="p-1.5 rounded-[4px] bg-(--bg-elevated) border border-(--border-color) text-(--text-secondary) shrink-0 mt-0.5">
+                  <Icon className="h-3.5 w-3.5" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-[10px] sm:text-[11px] text-[var(--text-muted)] font-semibold uppercase tracking-wider truncate">
+                  <p className="text-[10px] text-(--text-muted) font-bold uppercase tracking-wider font-mono truncate">
                     {card.label}
                   </p>
-                  <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-[var(--text-primary)] mt-0.5 tabular-nums truncate">
+                  <h3 className="text-xl font-bold text-(--text-primary) mt-1 font-mono tracking-tight truncate">
                     {card.value}
                   </h3>
                 </div>
               </div>
-            </div>
+            </motion.div>
           );
         })}
       </div>
 
       {/* Main Alert List Area */}
-      <div
-        className="glass-panel p-4 sm:p-5 md:p-6 rounded-[16px] space-y-5 animate-fade-in"
-        style={{ animationDelay: "200ms", animationFillMode: "both" }}
-      >
+      <div className="glass-panel p-4 sm:p-5 md:p-6 rounded-[16px] space-y-5">
         {/* List Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-[var(--border-color)] pb-5">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-(--border-color) pb-4">
           <div className="space-y-1.5">
-            <h2 className="font-bold text-base sm:text-lg text-[var(--text-primary)]">
+            <h2 className="font-bold text-base text-(--text-primary) font-mono">
               Membership Dues Tracker
             </h2>
-            <p className="text-xs sm:text-sm text-[var(--text-secondary)]">
+            <p className="text-xs text-(--text-secondary)">
               {filterType === "overdue"
-                ? "Showing memberships that have already expired."
-                : `Showing memberships expiring ${dueTimeframe === 0 ? "today" : `within ${dueTimeframe} days`} or overdue.`}
+                ? "Memberships that have lapsed and require balance collection."
+                : `Active memberships expiring ${dueTimeframe === 0 ? "today" : `within ${dueTimeframe} days`} or overdue.`}
             </p>
 
-            {/* Timeframe sub-selector pills */}
+            {/* Timeframe selector pills */}
             {filterType !== "overdue" && (
-              <div className="flex items-center space-x-2 pt-1 animate-fade-in">
-                <span className="text-[10px] sm:text-[11px] text-[var(--text-muted)] font-bold uppercase tracking-wider">
+              <div className="flex items-center space-x-2 pt-1">
+                <span className="text-[10px] text-(--text-muted) font-bold uppercase tracking-wider font-mono">
                   Timeframe:
                 </span>
-                <div className="flex bg-[var(--bg-canvas)]/50 border border-[var(--border-color)]/50 p-0.5 rounded-[6px]">
+                <div className="flex bg-(--bg-canvas) border border-(--border-color) p-0.5 rounded-[6px]">
                   {[
                     { val: 0, label: "Today" },
                     { val: 3, label: "3 Days" },
@@ -281,10 +274,10 @@ export default function Dashboard() {
                       key={tf.val}
                       type="button"
                       onClick={() => setDueTimeframe(tf.val)}
-                      className={`px-2 py-0.5 sm:px-3 sm:py-1 rounded-[4px] text-[10px] sm:text-[11px] font-bold transition-all duration-200 cursor-pointer ${
+                      className={`px-2.5 py-0.5 rounded-[4px] text-[10px] font-bold transition-all duration-200 cursor-pointer ${
                         dueTimeframe === tf.val
-                          ? "bg-gym-orange text-white shadow-sm"
-                          : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                          ? "bg-(--text-primary) text-(--bg-canvas) shadow-sm"
+                          : "text-(--text-secondary) hover:text-(--text-primary)"
                       }`}
                     >
                       {tf.label}
@@ -296,36 +289,36 @@ export default function Dashboard() {
           </div>
 
           {/* Toggle Filters */}
-          <div className="flex bg-[var(--bg-canvas)]/60 border border-[var(--border-color)] p-1 rounded-[6px] self-start lg:self-center shrink-0 max-w-full overflow-x-auto">
+          <div className="flex bg-(--bg-canvas) border border-(--border-color) p-0.5 rounded-[6px] self-start lg:self-center shrink-0 max-w-full overflow-x-auto">
             {[
               {
                 key: "all",
                 label: `All Dues (${stats.overdue + dueCountInTimeframe})`,
                 labelMobile: `All (${stats.overdue + dueCountInTimeframe})`,
-                activeClass: "bg-gym-orange text-white shadow-sm",
+                activeClass: "bg-(--text-primary) text-(--bg-canvas) font-bold",
               },
               {
                 key: "overdue",
                 label: `Overdue (${stats.overdue})`,
                 labelMobile: `Overdue (${stats.overdue})`,
                 activeClass:
-                  "bg-red-500/15 text-red-400 border border-red-500/20",
+                  "bg-red-500/10 text-red-500 border border-red-500/20 font-bold",
               },
               {
                 key: "due",
                 label: `Due (${dueCountInTimeframe})`,
                 labelMobile: `Due (${dueCountInTimeframe})`,
                 activeClass:
-                  "bg-amber-500/15 text-amber-400 border border-amber-500/20",
+                  "bg-amber-500/10 text-amber-500 border border-amber-500/20 font-bold",
               },
             ].map((f) => (
               <button
                 key={f.key}
                 onClick={() => setFilterType(f.key)}
-                className={`px-2.5 py-1.5 rounded-[4px] text-xs font-semibold transition-all duration-200 cursor-pointer shrink-0 ${
+                className={`px-3 py-1 rounded-[4px] text-xs transition-all duration-150 cursor-pointer shrink-0 ${
                   filterType === f.key
                     ? f.activeClass
-                    : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-transparent"
+                    : "text-(--text-secondary) hover:text-(--text-primary) border border-transparent"
                 }`}
               >
                 <span className="hidden sm:inline">{f.label}</span>
@@ -336,129 +329,141 @@ export default function Dashboard() {
         </div>
 
         {/* Alert List */}
-        {filteredMembers.length === 0 ? (
-          <div className="text-center py-14 animate-fade-in">
-            <div className="w-14 h-14 bg-emerald-500/10 rounded-[16px] flex items-center justify-center mx-auto mb-4">
-              <CheckCircle className="h-7 w-7 text-emerald-400" />
-            </div>
-            <h3 className="text-lg font-bold text-[var(--text-primary)] mb-1">
-              All Clear
-            </h3>
-            <p className="text-[var(--text-secondary)] text-sm max-w-sm mx-auto mb-6">
-              No members are currently overdue or have fees due within the
-              selected timeframe.
-            </p>
-            <button
-              onClick={openAddModal}
-              className="inline-flex items-center space-x-2 bg-gym-orange/10 hover:bg-gym-orange/20 text-gym-orange border border-gym-orange/20 px-5 py-2 rounded-[6px] font-semibold text-sm transition-all duration-200 cursor-pointer"
+        <AnimatePresence mode="wait">
+          {filteredMembers.length === 0 ? (
+            <motion.div 
+              key="empty"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="text-center py-14"
             >
-              <UserPlus className="h-4 w-4" />
-              <span>Register New Member</span>
-            </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {filteredMembers.map((member, idx) => {
-              const daysDiff = getDaysDiff(member.endDate);
-              const isOverdue = member.status === "overdue";
+              <div className="w-12 h-12 border border-(--border-color) rounded-[8px] flex items-center justify-center mx-auto mb-4 text-(--text-secondary)">
+                <CheckCircle className="h-5 w-5" />
+              </div>
+              <h3 className="text-sm font-bold text-(--text-primary) mb-1 font-mono">
+                Diagnostics Clear
+              </h3>
+              <p className="text-(--text-secondary) text-xs max-w-sm mx-auto mb-6">
+                No active billing records are pending or overdue under the current configuration parameters.
+              </p>
+              <button
+                onClick={openAddModal}
+                className="inline-flex items-center space-x-2 border border-(--border-color) hover:bg-(--bg-elevated) text-(--text-primary) px-4 py-2 rounded-[6px] font-semibold text-xs transition-colors duration-150 cursor-pointer"
+              >
+                <UserPlus className="h-3.5 w-3.5" />
+                <span>Register Member</span>
+              </button>
+            </motion.div>
+          ) : (
+            <motion.div 
+              key="list"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="grid grid-cols-1 md:grid-cols-2 gap-3"
+            >
+              {filteredMembers.map((member, idx) => {
+                const daysDiff = getDaysDiff(member.endDate);
+                const isOverdue = member.status === "overdue";
 
-              return (
-                <div
-                  key={member._id}
-                  className={`p-4 rounded-[12px] border-l-[3px] transition-all duration-300 animate-fade-in ${
-                    isOverdue
-                      ? "bg-red-500/[0.03] border border-red-500/10 hover:border-red-500/25 border-l-red-500"
-                      : "bg-amber-500/[0.03] border border-amber-500/10 hover:border-amber-500/25 border-l-amber-500"
-                  }`}
-                  style={{
-                    animationDelay: `${idx * 50}ms`,
-                    animationFillMode: "both",
-                  }}
-                >
-                  <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-start gap-4">
-                    {/* Member Core Info */}
-                    <div className="space-y-2 min-w-0 flex-1">
-                      <div>
-                        <h4 className="font-bold text-sm text-[var(--text-primary)] truncate">
-                          {member.name}
-                        </h4>
-                        <div className="flex items-center space-x-2 mt-1">
-                          <span
-                            className={`inline-flex items-center space-x-1 text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full ${
-                              isOverdue
-                                ? "bg-red-500/15 text-red-400"
-                                : "bg-amber-500/15 text-amber-400"
-                            }`}
-                          >
+                return (
+                  <motion.div
+                    key={member._id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.2, delay: idx * 0.02 }}
+                    className={`p-4 rounded-[8px] border transition-all duration-200 ${
+                      isOverdue
+                        ? "bg-red-500/[0.01] border-red-500/20 hover:border-red-500/35 border-l-[3px] border-l-red-500"
+                        : "bg-amber-500/[0.01] border-amber-500/20 hover:border-amber-500/35 border-l-[3px] border-l-amber-500"
+                    }`}
+                  >
+                    <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-start gap-4">
+                      {/* Member Core Info */}
+                      <div className="space-y-2 min-w-0 flex-1">
+                        <div>
+                          <h4 className="font-bold text-sm text-(--text-primary) truncate">
+                            {member.name}
+                          </h4>
+                          <div className="flex items-center space-x-2 mt-1">
                             <span
-                              className={`status-dot ${isOverdue ? "status-dot-overdue" : "status-dot-due"}`}
-                            ></span>
-                            <span>{member.status}</span>
-                          </span>
-                          <span className="text-xs text-[var(--text-muted)] capitalize">
-                            {member.membershipType}
+                              className={`inline-flex items-center space-x-1 text-[9px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full ${
+                                isOverdue
+                                  ? "bg-red-500/10 text-red-400"
+                                  : "bg-amber-500/10 text-amber-400"
+                              }`}
+                            >
+                              <span
+                                className={`status-dot ${isOverdue ? "status-dot-overdue" : "status-dot-due"}`}
+                              ></span>
+                              <span>{member.status}</span>
+                            </span>
+                            <span className="text-[11px] text-(--text-muted) capitalize font-mono">
+                              {member.membershipType}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Phone */}
+                        <div className="flex items-center text-xs text-(--text-secondary) space-x-1.5 font-mono">
+                          <Phone className="h-3 w-3 text-(--text-muted)" />
+                          <span>{member.phone}</span>
+                        </div>
+
+                        {/* Date */}
+                        <div className="flex items-center text-xs text-(--text-secondary) space-x-1.5 font-mono">
+                          <Calendar className="h-3 w-3 text-(--text-muted)" />
+                          <span>
+                            Due:{" "}
+                            <strong className="text-(--text-primary)">
+                              {formatDate(member.endDate)}
+                            </strong>
                           </span>
                         </div>
                       </div>
 
-                      {/* Phone */}
-                      <div className="flex items-center text-xs text-[var(--text-secondary)] space-x-1.5">
-                        <Phone className="h-3 w-3 text-[var(--text-muted)]" />
-                        <span>{member.phone}</span>
-                      </div>
+                      {/* Dues Summary & Action */}
+                      <div className="flex sm:flex-col justify-between items-end sm:items-stretch sm:min-h-[85px] border-t border-(--border-color)/30 sm:border-none pt-3 sm:pt-0 mt-1 sm:mt-0 ml-0 sm:ml-4 shrink-0">
+                        <div className="text-left sm:text-right">
+                          <p className="text-[10px] text-(--text-muted) uppercase font-semibold font-mono">
+                            Dues Amount
+                          </p>
+                          <p className="text-base font-bold text-(--text-primary) mt-0.5 font-mono">
+                            ₹{member.feeAmount.toLocaleString()}
+                          </p>
+                        </div>
 
-                      {/* Date */}
-                      <div className="flex items-center text-xs text-[var(--text-secondary)] space-x-1.5">
-                        <Calendar className="h-3 w-3 text-[var(--text-muted)]" />
-                        <span>
-                          Due:{" "}
-                          <strong className="text-[var(--text-primary)]">
-                            {formatDate(member.endDate)}
-                          </strong>
-                        </span>
+                        <div className="mt-0 sm:mt-2 text-right">
+                          {isOverdue ? (
+                            <p className="text-[10px] text-red-400 font-semibold mb-1.5 font-mono">
+                              Overdue by {Math.abs(daysDiff)}d
+                            </p>
+                          ) : (
+                            <p className="text-[10px] text-amber-400 font-semibold mb-1.5 font-mono">
+                              Expires in {daysDiff}d
+                            </p>
+                          )}
+
+                          <button
+                            onClick={() => openRenewModal(member)}
+                            className={`text-[11px] font-bold px-3 py-1.5 rounded-[4px] transition-colors duration-150 cursor-pointer ${
+                              isOverdue
+                                ? "bg-red-500 hover:bg-red-400 text-white"
+                                : "bg-amber-500 hover:bg-amber-400 text-white"
+                            }`}
+                          >
+                            Renew Dues
+                          </button>
+                        </div>
                       </div>
                     </div>
-
-                    {/* Dues Summary & Action */}
-                    <div className="flex sm:flex-col justify-between items-end sm:items-stretch sm:min-h-[90px] border-t border-[var(--border-color)]/30 sm:border-none pt-3 sm:pt-0 mt-1 sm:mt-0 ml-0 sm:ml-4 shrink-0">
-                      <div className="text-left sm:text-right">
-                        <p className="text-[11px] text-[var(--text-muted)] uppercase font-semibold">
-                          Amount
-                        </p>
-                        <p className="text-lg font-bold text-[var(--text-primary)] mt-0.5 tabular-nums">
-                          ₹{member.feeAmount.toLocaleString()}
-                        </p>
-                      </div>
-
-                      <div className="mt-0 sm:mt-3 text-right">
-                        {isOverdue ? (
-                          <p className="text-[11px] text-red-400 font-semibold mb-1.5 sm:mb-2">
-                            Overdue by {Math.abs(daysDiff)}d
-                          </p>
-                        ) : (
-                          <p className="text-[11px] text-amber-400 font-semibold mb-1.5 sm:mb-2">
-                            Expires in {daysDiff}d
-                          </p>
-                        )}
-
-                        <button
-                          onClick={() => openRenewModal(member)}
-                          className={`text-xs font-bold px-4 py-1.5 rounded-[6px] transition-all duration-200 cursor-pointer ${
-                            isOverdue
-                              ? "bg-red-500 hover:bg-red-400 text-white shadow-sm shadow-red-500/20"
-                              : "bg-amber-500 hover:bg-amber-400 text-white shadow-sm shadow-amber-500/20"
-                          }`}
-                        >
-                          Renew
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
+                  </motion.div>
+                );
+              })}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

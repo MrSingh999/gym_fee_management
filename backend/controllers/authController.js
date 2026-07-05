@@ -7,31 +7,39 @@ import asyncHandler from '../middleware/asyncHandler.js';
 import ErrorResponse from '../utils/errorResponse.js';
 
 // Helper to sign JWT and send cookie
-const sendTokenResponse = (user, statusCode, res) => {
-  const JWT_SECRET = process.env.JWT_SECRET || 'apexfit_jwt_secret_key_12345';
-  const JWT_EXPIRE = process.env.JWT_EXPIRE || '30d';
-  
-  // Sign token
-  const token = jwt.sign({ id: user._id }, JWT_SECRET, {
-    expiresIn: JWT_EXPIRE,
-  });
+const sendTokenResponse = async (user, statusCode, res) => {
+  // Sign tokens using Mongoose model methods
+  const accessToken = user.getSignedAccessToken();
+  const refreshToken = user.getSignedRefreshToken();
 
-  const cookieOptions = {
-    expires: new Date(
-      Date.now() + 30 * 24 * 60 * 60 * 1000 // 30 days
-    ),
+  // Save refresh token to user document in the DB
+  user.refreshToken = refreshToken;
+  await user.save({ validateBeforeSave: false });
+
+  // Access token cookie options (15 minutes)
+  const accessTokenCookieOptions = {
+    expires: new Date(Date.now() + 15 * 60 * 1000),
     httpOnly: true,
-    sameSite: 'lax', // standard sameSite
+    sameSite: 'lax',
   };
 
-  // Secure cookie in production
+  // Refresh token cookie options (7 days)
+  const refreshTokenCookieOptions = {
+    expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    httpOnly: true,
+    sameSite: 'lax',
+    path: '/api/auth', // restrict scope for extra security
+  };
+
   if (process.env.NODE_ENV === 'production') {
-    cookieOptions.secure = true;
+    accessTokenCookieOptions.secure = true;
+    refreshTokenCookieOptions.secure = true;
   }
 
   res
     .status(statusCode)
-    .cookie('token', token, cookieOptions)
+    .cookie('accessToken', accessToken, accessTokenCookieOptions)
+    .cookie('refreshToken', refreshToken, refreshTokenCookieOptions)
     .json({
       success: true,
       user: {
@@ -44,16 +52,11 @@ const sendTokenResponse = (user, statusCode, res) => {
     });
 };
 
-// @desc    Authenticate user (admin or member) & set cookie
+// @desc    Authenticate user (admin or member) & set cookies
 // @route   POST /api/auth/login
 // @access  Public
 const loginUser = asyncHandler(async (req, res, next) => {
-  const { email, password } = req.body; // email can be email or phone
-
-  // Validate email & password
-  if (!email || !password) {
-    throw new ErrorResponse('Please provide email/phone and password', 400);
-  }
+  const { email, password } = req.body;
 
   let user;
 
@@ -86,26 +89,124 @@ const loginUser = asyncHandler(async (req, res, next) => {
     }
   }
 
-  sendTokenResponse(user, 200, res);
+  await sendTokenResponse(user, 200, res);
 });
 
-// @desc    Log user out & clear cookie
+// @desc    Log user out & clear cookies
 // @route   POST /api/auth/logout
 // @access  Public
 const logoutUser = asyncHandler(async (req, res, next) => {
-  res.cookie('token', 'none', {
-    expires: new Date(Date.now() + 10 * 1000), // expire in 10s
+  let token;
+  if (req.cookies && req.cookies.accessToken) {
+    token = req.cookies.accessToken;
+  }
+
+  if (token) {
+    try {
+      const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET || 'apexfit_access_token_secret_key_12345';
+      const decoded = jwt.verify(token, ACCESS_TOKEN_SECRET);
+      
+      let user = await Admin.findById(decoded.id);
+      if (!user) {
+        user = await Member.findById(decoded.id);
+      }
+      
+      if (user) {
+        user.refreshToken = undefined;
+        await user.save({ validateBeforeSave: false });
+      }
+    } catch (err) {
+      // Ignore token verification errors during logout
+    }
+  }
+
+  res.cookie('accessToken', 'none', {
+    expires: new Date(Date.now() + 10 * 1000),
     httpOnly: true,
   });
 
+  res.cookie('refreshToken', 'none', {
+    expires: new Date(Date.now() + 10 * 1000),
+    httpOnly: true,
+    path: '/api/auth',
+  });
+
   res.json({ success: true, message: 'Logged out successfully' });
+});
+
+// @desc    Refresh access token using refresh token
+// @route   POST /api/auth/refresh
+// @access  Public
+const refreshTokens = asyncHandler(async (req, res, next) => {
+  let refreshToken;
+  
+  if (req.cookies && req.cookies.refreshToken) {
+    refreshToken = req.cookies.refreshToken;
+  }
+
+  if (!refreshToken || refreshToken === 'none') {
+    throw new ErrorResponse('No refresh token provided. Please log in.', 401);
+  }
+
+  try {
+    const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || 'apexfit_refresh_token_secret_key_67890';
+    const decoded = jwt.verify(refreshToken, REFRESH_TOKEN_SECRET);
+
+    // Find user in DB
+    let user = await Admin.findById(decoded.id);
+    if (!user) {
+      user = await Member.findById(decoded.id);
+    }
+
+    if (!user || user.refreshToken !== refreshToken) {
+      throw new ErrorResponse('Session is invalid or expired. Please log in again.', 401);
+    }
+
+    // Generate a new access token using model method
+    const accessToken = user.getSignedAccessToken();
+
+    const accessTokenCookieOptions = {
+      expires: new Date(Date.now() + 15 * 60 * 1000),
+      httpOnly: true,
+      sameSite: 'lax',
+    };
+
+    if (process.env.NODE_ENV === 'production') {
+      accessTokenCookieOptions.secure = true;
+    }
+
+    res
+      .status(200)
+      .cookie('accessToken', accessToken, accessTokenCookieOptions)
+      .json({
+        success: true,
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          mobile: user.mobile,
+          role: user.role || 'member',
+        },
+      });
+  } catch (err) {
+    // Clear cookies if refresh token is expired or invalid
+    res.cookie('accessToken', 'none', {
+      expires: new Date(Date.now() + 10 * 1000),
+      httpOnly: true,
+    });
+    res.cookie('refreshToken', 'none', {
+      expires: new Date(Date.now() + 10 * 1000),
+      httpOnly: true,
+      path: '/api/auth',
+    });
+    throw new ErrorResponse('Invalid or expired refresh token. Please log in again.', 401);
+  }
 });
 
 // @desc    Get current logged in user details
 // @route   GET /api/auth/me
 // @access  Private
 const getMe = asyncHandler(async (req, res, next) => {
-  // req.user was populated by protect middleware
   res.json({
     success: true,
     user: req.user,
@@ -117,10 +218,6 @@ const getMe = asyncHandler(async (req, res, next) => {
 // @access  Public
 const forgotPassword = asyncHandler(async (req, res, next) => {
   const { email } = req.body;
-
-  if (!email) {
-    throw new ErrorResponse('Please enter an email address', 400);
-  }
 
   const user = await Admin.findOne({ email });
   if (!user) {
@@ -175,10 +272,6 @@ const resetPassword = asyncHandler(async (req, res, next) => {
   const { token } = req.params;
   const { password } = req.body;
 
-  if (!password) {
-    throw new ErrorResponse('Please provide a new password', 400);
-  }
-
   // Hash the input token to match stored version
   const hashedToken = crypto
     .createHash('sha256')
@@ -202,7 +295,7 @@ const resetPassword = asyncHandler(async (req, res, next) => {
 
   await user.save();
 
-  sendTokenResponse(user, 200, res);
+  await sendTokenResponse(user, 200, res);
 });
 
 // @desc    Update logged in user's password
@@ -210,14 +303,6 @@ const resetPassword = asyncHandler(async (req, res, next) => {
 // @access  Private
 const updatePassword = asyncHandler(async (req, res, next) => {
   const { currentPassword, newPassword } = req.body;
-
-  if (!currentPassword || !newPassword) {
-    throw new ErrorResponse('Please provide current password and new password', 400);
-  }
-
-  if (newPassword.length < 6) {
-    throw new ErrorResponse('New password must be at least 6 characters long', 400);
-  }
 
   let user;
   if (req.user.role === 'admin') {
@@ -250,9 +335,9 @@ const updatePassword = asyncHandler(async (req, res, next) => {
 export {
   loginUser,
   logoutUser,
+  refreshTokens,
   getMe,
   forgotPassword,
   resetPassword,
   updatePassword,
 };
-

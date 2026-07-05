@@ -22,6 +22,8 @@ import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
 import { memberService } from "@/services/memberService";
 import { authService } from "@/services/authService";
+import Logo from "@/components/ui/Logo";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function MemberPortal() {
   const { user, logout } = useAuth();
@@ -329,9 +331,9 @@ export default function MemberPortal() {
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className="bg-gradient-to-br from-gym-orange to-orange-400 p-2.5 rounded-[6px] text-white shadow-lg">
-              <Dumbbell className="h-5 w-5 animate-pulse" />
+              <Logo className="h-5 w-5 animate-pulse" />
             </div>
-            <span className="font-bold text-xl tracking-wide text-[var(--text-primary)]">
+            <span className="font-bold text-xl tracking-wide text-(--text-primary)">
               APEX<span className="gradient-text">FITNESS</span>
             </span>
           </div>
@@ -340,7 +342,7 @@ export default function MemberPortal() {
             <button
               onClick={toggleTheme}
               title={`Switch to ${theme === "dark" ? "Light" : "Dark"} Mode`}
-              className="flex items-center justify-center w-9 h-9 rounded-[6px] border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-all duration-200 cursor-pointer"
+              className="flex items-center justify-center w-9 h-9 rounded-[6px] border border-(--border-color) text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--bg-elevated) transition-all duration-200 cursor-pointer"
             >
               {theme === "dark" ? (
                 <Sun className="h-4 w-4 text-amber-400" />
@@ -351,7 +353,7 @@ export default function MemberPortal() {
 
             <button
               onClick={handleLogout}
-              className="flex items-center space-x-1.5 border border-[var(--border-color)] hover:border-red-500/30 text-[var(--text-secondary)] hover:text-red-400 hover:bg-red-500/10 px-3 py-1.5 rounded-[6px] text-xs font-bold transition-all duration-200 cursor-pointer"
+              className="flex items-center space-x-1.5 border border-(--border-color) hover:border-red-500/30 text-(--text-secondary) hover:text-red-400 hover:bg-red-500/10 px-3 py-1.5 rounded-[6px] text-xs font-bold transition-all duration-200 cursor-pointer"
             >
               <LogOut className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Sign Out</span>
@@ -365,10 +367,10 @@ export default function MemberPortal() {
         {/* Welcome Section */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 animate-fade-in">
           <div>
-            <h1 className="font-bold text-2xl sm:text-3xl md:text-4xl text-[var(--text-primary)] tracking-tight">
+            <h1 className="font-bold text-2xl sm:text-3xl md:text-4xl text-(--text-primary) tracking-tight">
               Hey, <span className="gradient-text">{user.name}</span>!
             </h1>
-            <p className="text-[var(--text-secondary)] mt-1.5 text-xs sm:text-sm">
+            <p className="text-(--text-secondary) mt-1.5 text-xs sm:text-sm">
               Welcome back to your fitness portal. Track your progress below.
             </p>
           </div>
@@ -376,7 +378,7 @@ export default function MemberPortal() {
         </div>
 
         {/* Tab Controller */}
-        <div className="flex space-x-1 bg-gym-dark/50 border border-[var(--border-color)] p-1 rounded-[6px] w-full max-w-lg animate-fade-in stagger-2">
+        <div className="flex space-x-1 bg-gym-dark/50 border border-(--border-color) p-1 rounded-[6px] w-full max-w-lg relative animate-fade-in stagger-2">
           {[
             { id: "overview", label: "Overview", icon: User },
             { id: "workouts", label: "Workouts", icon: Dumbbell },
@@ -384,16 +386,24 @@ export default function MemberPortal() {
             { id: "security", label: "Security", icon: Lock },
           ].map((tab) => {
             const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex-1 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-2 sm:py-2.5 rounded-[6px] text-[10px] sm:text-xs font-bold transition-all duration-200 cursor-pointer ${
-                  activeTab === tab.id
-                    ? "bg-gym-orange text-white shadow-md shadow-gym-orange/15"
-                    : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                className={`relative flex-1 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-2 sm:py-2.5 rounded-[6px] text-[10px] sm:text-xs font-bold transition-all duration-200 cursor-pointer z-10 ${
+                  isActive
+                    ? "text-black dark:text-white"
+                    : "text-(--text-secondary) hover:text-(--text-primary)"
                 }`}
               >
+                {isActive && (
+                  <motion.div
+                    layoutId="member-portal-active-tab"
+                    className="absolute inset-0 bg-white dark:bg-[#18181b] rounded-[6px] -z-10 border border-(--border-color-hover) shadow-sm dark:shadow-none"
+                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                  />
+                )}
                 <Icon className="h-4 w-4 shrink-0" />
                 <span className="text-center leading-none">{tab.label}</span>
               </button>
@@ -407,8 +417,8 @@ export default function MemberPortal() {
           {activeTab === "overview" && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in stagger-3">
               {/* Membership Progress Card (Glow indicator) */}
-              <div className="glass-panel p-6 rounded-[16px] flex flex-col items-center justify-center text-center space-y-5 border border-[var(--border-color-hover)] lg:col-span-1">
-                <h3 className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">
+              <div className="glass-panel p-6 rounded-[16px] flex flex-col items-center justify-center text-center space-y-5 border border-(--border-color-hover) lg:col-span-1">
+                <h3 className="text-xs font-bold text-(--text-muted) uppercase tracking-wider">
                   Membership Validity
                 </h3>
 
@@ -446,36 +456,36 @@ export default function MemberPortal() {
                     />
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-2xl font-bold text-[var(--text-primary)] tabular-nums">
+                    <span className="text-2xl font-bold text-(--text-primary) font-mono">
                       {remainingDays > 0 ? remainingDays : 0}
                     </span>
-                    <span className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-wider mt-0.5">
+                    <span className="text-[10px] text-(--text-muted) font-bold uppercase tracking-wider font-mono mt-0.5">
                       Days Left
                     </span>
                   </div>
                 </div>
 
                 <div className="space-y-1.5 w-full">
-                  <div className="flex justify-between text-xs text-[var(--text-secondary)]">
+                  <div className="flex justify-between text-xs text-(--text-secondary) font-mono">
                     <span>Active Period</span>
-                    <span className="font-semibold text-[var(--text-primary)]">
+                    <span className="font-semibold text-(--text-primary)">
                       {percentRemaining}% Time Remaining
                     </span>
                   </div>
-                  <div className="w-full bg-gym-dark/50 border border-[var(--border-color)] p-3.5 rounded-[6px] space-y-2">
+                  <div className="w-full bg-gym-dark/50 border border-(--border-color) p-3.5 rounded-[6px] space-y-2 font-mono">
                     <div className="flex justify-between text-xs">
-                      <span className="text-[var(--text-muted)]">
+                      <span className="text-(--text-muted)">
                         Start Date:
                       </span>
-                      <span className="font-semibold text-[var(--text-primary)]">
+                      <span className="font-semibold text-(--text-primary)">
                         {formatDate(user.feeStartDate)}
                       </span>
                     </div>
                     <div className="flex justify-between text-xs">
-                      <span className="text-[var(--text-muted)]">
+                      <span className="text-(--text-muted)">
                         Expiry Date:
                       </span>
-                      <span className="font-semibold text-[var(--text-primary)]">
+                      <span className="font-semibold text-(--text-primary)">
                         {formatDate(user.feeEndDate)}
                       </span>
                     </div>
@@ -484,102 +494,102 @@ export default function MemberPortal() {
               </div>
 
               {/* Core Profile details */}
-              <div className="glass-panel p-6 rounded-[16px] space-y-6 lg:col-span-2 border border-[var(--border-color-hover)]">
-                <div className="border-b border-[var(--border-color)] pb-4">
-                  <h3 className="font-bold text-lg text-[var(--text-primary)]">
+              <div className="glass-panel p-6 rounded-[16px] space-y-6 lg:col-span-2 border border-(--border-color-hover)">
+                <div className="border-b border-(--border-color) pb-4">
+                  <h3 className="font-bold text-lg text-(--text-primary)">
                     Profile Overview
                   </h3>
-                  <p className="text-xs text-[var(--text-secondary)]">
+                  <p className="text-xs text-(--text-secondary)">
                     Your registered personal and member details.
                   </p>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* Item: Name */}
-                  <div className="bg-gym-dark/30 border border-[var(--border-color)]/40 p-4 rounded-[6px] flex items-center space-x-3.5">
+                  <div className="bg-gym-dark/30 border border-(--border-color)/40 p-4 rounded-[6px] flex items-center space-x-3.5">
                     <div className="p-2.5 bg-gym-orange/10 text-gym-orange rounded-[6px] shrink-0">
                       <User className="h-5 w-5" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-wider">
+                      <p className="text-[10px] text-(--text-muted) font-bold uppercase tracking-wider font-mono">
                         Full Name
                       </p>
-                      <h4 className="font-bold text-sm text-[var(--text-primary)] mt-0.5 truncate">
+                      <h4 className="font-bold text-sm text-(--text-primary) mt-0.5 truncate">
                         {user.name}
                       </h4>
                     </div>
                   </div>
 
                   {/* Item: Contact */}
-                  <div className="bg-gym-dark/30 border border-[var(--border-color)]/40 p-4 rounded-[6px] flex items-center space-x-3.5">
+                  <div className="bg-gym-dark/30 border border-(--border-color)/40 p-4 rounded-[6px] flex items-center space-x-3.5">
                     <div className="p-2.5 bg-gym-orange/10 text-gym-orange rounded-[6px] shrink-0">
                       <Activity className="h-5 w-5" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-wider">
+                      <p className="text-[10px] text-(--text-muted) font-bold uppercase tracking-wider font-mono">
                         Mobile Number
                       </p>
-                      <h4 className="font-bold text-sm text-[var(--text-primary)] mt-0.5 truncate">
+                      <h4 className="font-bold text-sm text-(--text-primary) mt-0.5 truncate font-mono">
                         {user.mobile || user.phone}
                       </h4>
                     </div>
                   </div>
 
                   {/* Item: Email */}
-                  <div className="bg-gym-dark/30 border border-[var(--border-color)]/40 p-4 rounded-[6px] flex items-center space-x-3.5">
+                  <div className="bg-gym-dark/30 border border-(--border-color)/40 p-4 rounded-[6px] flex items-center space-x-3.5">
                     <div className="p-2.5 bg-gym-orange/10 text-gym-orange rounded-[6px] shrink-0">
                       <Clock className="h-5 w-5" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-wider">
+                      <p className="text-[10px] text-(--text-muted) font-bold uppercase tracking-wider font-mono">
                         Email Address
                       </p>
-                      <h4 className="font-bold text-sm text-[var(--text-primary)] mt-0.5 truncate">
+                      <h4 className="font-bold text-sm text-(--text-primary) mt-0.5 truncate font-mono">
                         {user.email || "No email registered"}
                       </h4>
                     </div>
                   </div>
 
                   {/* Item: Plan Tier */}
-                  <div className="bg-gym-dark/30 border border-[var(--border-color)]/40 p-4 rounded-[6px] flex items-center space-x-3.5">
+                  <div className="bg-gym-dark/30 border border-(--border-color)/40 p-4 rounded-[6px] flex items-center space-x-3.5">
                     <div className="p-2.5 bg-gym-orange/10 text-gym-orange rounded-[6px] shrink-0">
                       <Dumbbell className="h-5 w-5" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-wider">
+                      <p className="text-[10px] text-(--text-muted) font-bold uppercase tracking-wider font-mono">
                         Membership Plan
                       </p>
-                      <h4 className="font-bold text-sm text-[var(--text-primary)] mt-0.5 capitalize truncate">
+                      <h4 className="font-bold text-sm text-(--text-primary) mt-0.5 capitalize truncate font-mono">
                         {user.plan?.name || "Workout"} Plan
                       </h4>
                     </div>
                   </div>
 
                   {/* Item: Age & Gender */}
-                  <div className="bg-gym-dark/30 border border-[var(--border-color)]/40 p-4 rounded-[6px] flex items-center space-x-3.5">
+                  <div className="bg-gym-dark/30 border border-(--border-color)/40 p-4 rounded-[6px] flex items-center space-x-3.5">
                     <div className="p-2.5 bg-gym-orange/10 text-gym-orange rounded-[6px] shrink-0">
                       <Calendar className="h-5 w-5" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-wider">
+                      <p className="text-[10px] text-(--text-muted) font-bold uppercase tracking-wider font-mono">
                         Age / Gender
                       </p>
-                      <h4 className="font-bold text-sm text-[var(--text-primary)] mt-0.5 truncate">
+                      <h4 className="font-bold text-sm text-(--text-primary) mt-0.5 truncate font-mono">
                         {calculateAge(user.dob)} Years / {user.gender || "N/A"}
                       </h4>
                     </div>
                   </div>
 
                   {/* Item: Joining Date */}
-                  <div className="bg-gym-dark/30 border border-[var(--border-color)]/40 p-4 rounded-[6px] flex items-center space-x-3.5">
+                  <div className="bg-gym-dark/30 border border-(--border-color)/40 p-4 rounded-[6px] flex items-center space-x-3.5">
                     <div className="p-2.5 bg-gym-orange/10 text-gym-orange rounded-[6px] shrink-0">
                       <FileText className="h-5 w-5" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-wider">
+                      <p className="text-[10px] text-(--text-muted) font-bold uppercase tracking-wider font-mono">
                         Member Since
                       </p>
-                      <h4 className="font-bold text-sm text-[var(--text-primary)] mt-0.5 truncate">
+                      <h4 className="font-bold text-sm text-(--text-primary) mt-0.5 truncate font-mono">
                         {formatDate(user.joiningDate)}
                       </h4>
                     </div>
@@ -636,34 +646,34 @@ export default function MemberPortal() {
           {activeTab === "workouts" && (
             <div className="space-y-6 animate-fade-in stagger-3">
               {/* Header card with plan description */}
-              <div className="glass-panel p-6 rounded-[16px] border border-[var(--border-color-hover)] space-y-4">
+              <div className="glass-panel p-6 rounded-[16px] border border-(--border-color-hover) space-y-4">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                   <div>
                     <span className="text-[10px] text-gym-orange bg-gym-orange/10 px-3 py-1 rounded-full font-bold uppercase tracking-wider">
                       Current Training Plan
                     </span>
-                    <h2 className="font-bold text-xl sm:text-2xl text-[var(--text-primary)] capitalize mt-2">
+                    <h2 className="font-bold text-xl sm:text-2xl text-(--text-primary) capitalize mt-2">
                       {user.plan?.name || "Workout"} Split
                     </h2>
                   </div>
                   <div className="text-left sm:text-right shrink-0">
-                    <p className="text-[10px] text-[var(--text-muted)] uppercase font-semibold">
+                    <p className="text-[10px] text-(--text-muted) uppercase font-semibold">
                       Plan Rate
                     </p>
-                    <p className="text-xl font-bold text-[var(--text-primary)] mt-0.5 tabular-nums">
+                    <p className="text-xl font-bold text-(--text-primary) mt-0.5 tabular-nums">
                       ₹{(user.plan?.price || 700).toLocaleString()}{" "}
-                      <span className="text-xs text-[var(--text-muted)] font-normal">
+                      <span className="text-xs text-(--text-muted) font-normal">
                         / {user.plan?.durationDays || 30} days
                       </span>
                     </p>
                   </div>
                 </div>
 
-                <div className="bg-gym-dark/45 border border-[var(--border-color)] p-4 rounded-[6px]">
-                  <h4 className="text-xs text-[var(--text-muted)] font-bold uppercase tracking-wider mb-1.5">
+                <div className="bg-gym-dark/45 border border-(--border-color) p-4 rounded-[6px]">
+                  <h4 className="text-xs text-(--text-muted) font-bold uppercase tracking-wider mb-1.5">
                     Plan Description
                   </h4>
-                  <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
+                  <p className="text-sm text-(--text-secondary) leading-relaxed">
                     {user.plan?.description ||
                       "Your gym training routine configured for general muscle hypertrophy, strength, and structural fitness."}
                   </p>
@@ -672,7 +682,7 @@ export default function MemberPortal() {
 
               {/* Weekly Workout Split */}
               <div className="space-y-3">
-                <h3 className="font-bold text-base text-[var(--text-primary)] pl-1">
+                <h3 className="font-bold text-base text-(--text-primary) pl-1">
                   Weekly Training Schedule
                 </h3>
 
@@ -687,26 +697,26 @@ export default function MemberPortal() {
                         className={`p-4 rounded-[6px] border transition-all duration-300 ${
                           isToday
                             ? "bg-gym-orange/[0.04] border-gym-orange ring-1 ring-gym-orange/20 shadow-md shadow-gym-orange/5"
-                            : "bg-gym-dark/25 hover:bg-gym-dark/40 border-[var(--border-color)] hover:border-[var(--border-color-hover)]"
+                            : "bg-gym-dark/25 hover:bg-gym-dark/40 border-(--border-color) hover:border-(--border-color-hover)"
                         }`}
                       >
-                        <div className="flex justify-between items-center pb-2.5 border-b border-[var(--border-color)]/40">
-                          <span className="font-bold text-xs uppercase tracking-wider text-[var(--text-muted)]">
+                        <div className="flex justify-between items-center pb-2.5 border-b border-(--border-color)/40">
+                          <span className="font-bold text-xs uppercase tracking-wider text-(--text-muted) font-mono">
                             {item.day}
                           </span>
                           {isToday && (
-                            <span className="bg-gym-orange text-white text-[9px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider">
+                            <span className="bg-(--text-primary) text-(--bg-canvas) text-[9px] font-bold px-2 py-0.5 rounded-[4px] uppercase tracking-wider">
                               Today
                             </span>
                           )}
                         </div>
                         <div className="mt-3">
                           <h4
-                            className={`font-bold text-xs tracking-wide ${isToday ? "text-gym-orange" : "text-[var(--text-primary)]"}`}
+                            className={`font-bold text-xs tracking-wide ${isToday ? "text-gym-orange" : "text-(--text-primary)"}`}
                           >
                             {item.focus}
                           </h4>
-                          <p className="text-[11px] text-[var(--text-secondary)] leading-relaxed mt-2 line-clamp-5 hover:line-clamp-none transition-all duration-300">
+                          <p className="text-[11px] text-(--text-secondary) leading-relaxed mt-2 line-clamp-5 hover:line-clamp-none transition-all duration-300">
                             {item.routine}
                           </p>
                         </div>
@@ -720,25 +730,25 @@ export default function MemberPortal() {
 
           {/* Tab 3: Billing History Panel */}
           {activeTab === "billing" && (
-            <div className="glass-panel p-5 sm:p-6 rounded-[16px] border border-[var(--border-color-hover)] space-y-6 animate-fade-in stagger-3">
-              <div className="border-b border-[var(--border-color)] pb-4 flex justify-between items-center">
+            <div className="glass-panel p-5 sm:p-6 rounded-[16px] border border-(--border-color-hover) space-y-6 animate-fade-in stagger-3">
+              <div className="border-b border-(--border-color) pb-4 flex justify-between items-center">
                 <div>
-                  <h3 className="font-bold text-lg text-[var(--text-primary)]">
+                  <h3 className="font-bold text-lg text-(--text-primary)">
                     Billing History
                   </h3>
-                  <p className="text-xs text-[var(--text-secondary)]">
+                  <p className="text-xs text-(--text-secondary)">
                     Overview of all subscription invoices and renewals.
                   </p>
                 </div>
-                <div className="p-2.5 bg-gym-dark/50 border border-[var(--border-color)] rounded-[6px]">
+                <div className="p-2.5 bg-gym-dark/50 border border-(--border-color) rounded-[6px]">
                   <CreditCard className="h-5 w-5 text-gym-orange" />
                 </div>
               </div>
 
               {loadingPayments ? (
                 <div className="text-center py-10">
-                  <div className="animate-spin rounded-full h-8 w-8 border-2 border-[var(--border-color)] border-t-gym-orange mx-auto"></div>
-                  <p className="text-xs text-[var(--text-muted)] mt-3">
+                  <div className="animate-spin rounded-full h-8 w-8 border-2 border-(--border-color) border-t-gym-orange mx-auto"></div>
+                  <p className="text-xs text-(--text-muted) mt-3">
                     Loading billing data...
                   </p>
                 </div>
@@ -747,16 +757,16 @@ export default function MemberPortal() {
                   {paymentsError}
                 </div>
               ) : payments.length === 0 ? (
-                <div className="text-center py-10 text-[var(--text-muted)] text-xs">
+                <div className="text-center py-10 text-(--text-muted) text-xs">
                   No payment invoices found.
                 </div>
               ) : (
                 <>
                   {/* Desktop View Table */}
-                  <div className="hidden sm:block overflow-x-auto rounded-[6px] border border-[var(--border-color)] bg-gym-dark/20">
+                  <div className="hidden sm:block overflow-x-auto rounded-[6px] border border-(--border-color) bg-gym-dark/20">
                     <table className="w-full text-left text-xs border-collapse">
                       <thead>
-                        <tr className="bg-gym-dark/70 border-b border-[var(--border-color)] text-[var(--text-muted)] font-semibold uppercase tracking-wider text-[10px]">
+                        <tr className="bg-(--bg-elevated) border-b border-(--border-color) text-(--text-muted) text-[10px] uppercase tracking-wider font-bold font-mono">
                           <th className="p-4">Paid On</th>
                           <th className="p-4">Membership Plan</th>
                           <th className="p-4">Billing Period</th>
@@ -765,34 +775,34 @@ export default function MemberPortal() {
                           <th className="p-4">Remarks</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gym-border/30">
+                      <tbody className="divide-y divide-(--border-color)/30">
                         {payments.map((payment) => (
                           <tr
                             key={payment._id}
-                            className="table-row-hover hover:bg-[var(--bg-elevated)]/20 text-[var(--text-secondary)]"
+                            className="table-row-hover hover:bg-(--bg-elevated)/20 text-(--text-secondary)"
                           >
-                            <td className="p-4 font-semibold text-[var(--text-primary)]">
+                            <td className="p-4 font-semibold text-(--text-primary) font-mono">
                               {formatDate(
                                 payment.paymentDate || payment.createdAt,
                               )}
                             </td>
-                            <td className="p-4 capitalize">
+                            <td className="p-4 capitalize font-mono">
                               {payment.plan?.name || "Workout"}
                             </td>
-                            <td className="p-4">
+                            <td className="p-4 font-mono">
                               {formatDate(payment.startDate)} —{" "}
                               {formatDate(payment.endDate)}
                             </td>
-                            <td className="p-4 font-bold text-[var(--text-primary)] tabular-nums">
+                            <td className="p-4 font-bold text-(--text-primary) font-mono tabular-nums">
                               ₹{payment.amount.toLocaleString()}
                             </td>
                             <td className="p-4">
-                              <span className="inline-flex items-center px-2 py-0.5 rounded bg-gym-dark/50 border border-[var(--border-color)] text-[10px] font-semibold uppercase tracking-wide">
+                              <span className="inline-flex items-center px-2 py-0.5 rounded bg-gym-dark/50 border border-(--border-color) text-[10px] font-semibold uppercase tracking-wide font-mono">
                                 {payment.paymentMethod || "Cash"}
                               </span>
                             </td>
                             <td
-                              className="p-4 max-w-[200px] truncate"
+                              className="p-4 max-w-[200px] truncate font-mono"
                               title={payment.remarks}
                             >
                               {payment.remarks || "Standard Renewal"}
@@ -808,35 +818,38 @@ export default function MemberPortal() {
                     {payments.map((payment) => (
                       <div
                         key={payment._id}
-                        className="p-3 border border-[var(--border-color)]/40 bg-white/[0.01] rounded-[8px] space-y-2 text-xs"
+                        className="p-3 border border-(--border-color)/40 bg-white/[0.01] rounded-[8px] space-y-2 text-xs"
                       >
                         <div className="flex items-center justify-between">
-                          <span className="text-[var(--text-muted)] font-medium">
-                            {formatDate(payment.paymentDate || payment.createdAt)}
+                          <span className="text-(--text-muted) font-medium font-mono">
+                            {formatDate(
+                              payment.paymentDate || payment.createdAt,
+                            )}
                           </span>
-                          <span className="inline-flex items-center px-2 py-0.5 rounded bg-gym-dark/50 border border-[var(--border-color)] text-[9px] font-semibold uppercase tracking-wide">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded bg-gym-dark/50 border border-(--border-color) text-[9px] font-semibold uppercase tracking-wide font-mono">
                             {payment.paymentMethod || "Cash"}
                           </span>
                         </div>
 
                         <div className="flex justify-between items-center gap-2">
-                          <span className="font-semibold text-[var(--text-primary)] capitalize truncate">
+                          <span className="font-semibold text-(--text-primary) capitalize truncate">
                             {payment.plan?.name || "Workout"}
                           </span>
-                          <span className="font-bold text-gym-orange text-sm tabular-nums shrink-0">
+                          <span className="font-bold text-gym-orange text-sm tabular-nums shrink-0 font-mono">
                             ₹{payment.amount.toLocaleString()}
                           </span>
                         </div>
 
-                        <div className="flex items-center space-x-1.5 text-[10px] text-[var(--text-secondary)] mt-1 border-t border-[var(--border-color)]/10 pt-2">
-                          <Calendar className="h-3.5 w-3.5 text-[var(--text-muted)] shrink-0" />
+                        <div className="flex items-center space-x-1.5 text-[10px] text-(--text-secondary) mt-1 border-t border-(--border-color)/10 pt-2 font-mono">
+                          <Calendar className="h-3.5 w-3.5 text-(--text-muted) shrink-0" />
                           <span className="tabular-nums font-medium">
-                            {formatDate(payment.startDate)} — {formatDate(payment.endDate)}
+                            {formatDate(payment.startDate)} —{" "}
+                            {formatDate(payment.endDate)}
                           </span>
                         </div>
 
                         {payment.remarks && (
-                          <p className="text-[10px] text-[var(--text-muted)] italic border-l-2 border-gym-orange/30 pl-2 mt-1.5">
+                          <p className="text-[10px] text-(--text-muted) italic border-l-2 border-(--border-color-hover) pl-2 mt-1.5 font-mono">
                             {payment.remarks}
                           </p>
                         )}
@@ -850,17 +863,17 @@ export default function MemberPortal() {
 
           {/* Tab 4: Security Panel */}
           {activeTab === "security" && (
-            <div className="glass-panel p-5 sm:p-6 rounded-[16px] border border-[var(--border-color-hover)] max-w-xl mx-auto space-y-6 animate-fade-in stagger-3">
-              <div className="border-b border-[var(--border-color)] pb-4 flex justify-between items-center">
+            <div className="glass-panel p-5 sm:p-6 rounded-[16px] border border-(--border-color-hover) max-w-xl mx-auto space-y-6 animate-fade-in stagger-3">
+              <div className="border-b border-(--border-color) pb-4 flex justify-between items-center">
                 <div>
-                  <h3 className="font-bold text-lg text-[var(--text-primary)]">
+                  <h3 className="font-bold text-lg text-(--text-primary)">
                     Account Security
                   </h3>
-                  <p className="text-xs text-[var(--text-secondary)]">
+                  <p className="text-xs text-(--text-secondary)">
                     Update your login credentials to secure your account.
                   </p>
                 </div>
-                <div className="p-2.5 bg-gym-dark/50 border border-[var(--border-color)] rounded-[6px]">
+                <div className="p-2.5 bg-gym-dark/50 border border-(--border-color) rounded-[6px]">
                   <Lock className="h-5 w-5 text-gym-orange" />
                 </div>
               </div>
@@ -888,7 +901,7 @@ export default function MemberPortal() {
               <form onSubmit={handleSecuritySubmit} className="space-y-4">
                 {/* Current Password */}
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider">
+                  <label className="text-[11px] font-bold text-(--text-muted) uppercase tracking-wider">
                     Current Password
                   </label>
                   <input
@@ -902,13 +915,13 @@ export default function MemberPortal() {
                       })
                     }
                     placeholder="Enter current password"
-                    className="w-full bg-white/[0.03] border border-[var(--border-color)] rounded-[6px] px-4 py-3 text-sm text-[var(--text-primary)] placeholder-gym-text-muted focus:outline-none focus:border-gym-orange transition-all duration-200"
+                    className="w-full bg-white/[0.03] border border-(--border-color) rounded-[6px] px-4 py-3 text-sm text-(--text-primary) placeholder-gym-text-muted focus:outline-none focus:border-gym-orange transition-all duration-200"
                   />
                 </div>
 
                 {/* New Password */}
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider">
+                  <label className="text-[11px] font-bold text-(--text-muted) uppercase tracking-wider">
                     New Password
                   </label>
                   <input
@@ -923,13 +936,13 @@ export default function MemberPortal() {
                       })
                     }
                     placeholder="Minimum 6 characters"
-                    className="w-full bg-white/[0.03] border border-[var(--border-color)] rounded-[6px] px-4 py-3 text-sm text-[var(--text-primary)] placeholder-gym-text-muted focus:outline-none focus:border-gym-orange transition-all duration-200"
+                    className="w-full bg-white/[0.03] border border-(--border-color) rounded-[6px] px-4 py-3 text-sm text-(--text-primary) placeholder-gym-text-muted focus:outline-none focus:border-gym-orange transition-all duration-200"
                   />
                 </div>
 
                 {/* Confirm New Password */}
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider">
+                  <label className="text-[11px] font-bold text-(--text-muted) uppercase tracking-wider">
                     Confirm New Password
                   </label>
                   <input
@@ -943,7 +956,7 @@ export default function MemberPortal() {
                       })
                     }
                     placeholder="Repeat new password"
-                    className="w-full bg-white/[0.03] border border-[var(--border-color)] rounded-[6px] px-4 py-3 text-sm text-[var(--text-primary)] placeholder-gym-text-muted focus:outline-none focus:border-gym-orange transition-all duration-200"
+                    className="w-full bg-white/[0.03] border border-(--border-color) rounded-[6px] px-4 py-3 text-sm text-(--text-primary) placeholder-gym-text-muted focus:outline-none focus:border-gym-orange transition-all duration-200"
                   />
                 </div>
 
@@ -969,10 +982,10 @@ export default function MemberPortal() {
       {/* Footer */}
       <footer className="glass-panel border-t border-(--border-color) py-4 mt-auto">
         <div className="max-w-7xl mx-auto px-4 md:px-6 flex flex-col sm:flex-row justify-between items-center gap-3 text-center sm:text-left">
-          <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider font-semibold">
+          <p className="text-[10px] text-(--text-muted) uppercase tracking-wider font-semibold">
             © 2026 APEX FITNESS. All Rights Reserved.
           </p>
-          <p className="text-[10px] text-[var(--text-muted)]">
+          <p className="text-[10px] text-(--text-muted)">
             Powered by APEX Gym Management System
           </p>
         </div>

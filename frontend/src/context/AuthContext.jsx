@@ -25,6 +25,17 @@ export function AuthProvider({ children }) {
     checkAuthStatus();
   }, []);
 
+  // Listen for transparent session expiry event
+  useEffect(() => {
+    const handleSessionExpired = () => {
+      setUser(null);
+    };
+    window.addEventListener("auth-session-expired", handleSessionExpired);
+    return () => {
+      window.removeEventListener("auth-session-expired", handleSessionExpired);
+    };
+  }, []);
+
   const login = async (email, password) => {
     const data = await authService.login(email, password);
 

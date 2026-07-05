@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Dumbbell, Mail, Lock, AlertCircle, CheckCircle, ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, AlertCircle, CheckCircle, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { authService } from '@/services/authService';
 import { useAuth } from '@/context/AuthContext';
 import bgVideo from '../assets/cbum-motivation.mp4';
+import Logo from '@/components/ui/Logo';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Login() {
   const { login, setUser } = useAuth();
@@ -117,12 +119,12 @@ export default function Login() {
     }
   };
 
-  const inputClass = "w-full bg-white/[0.03] border border-[var(--border-color)] rounded-[6px] pl-11 pr-4 py-3 text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-gym-orange focus:bg-white/[0.05] transition-all duration-200";
+  const inputClass = "w-full bg-black/40 border border-(--border-color) rounded-[6px] pl-10 pr-4 py-2.5 text-sm text-[#ffffff] placeholder-zinc-500 focus:outline-none focus:border-[#ffffff] focus:bg-black/60 transition-all duration-200 font-mono";
 
-  const inputIconClass = "absolute left-3.5 top-3 h-4 w-4 text-[var(--text-muted)]";
+  const inputIconClass = "absolute left-3.5 top-3.5 h-3.5 w-3.5 text-zinc-500";
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black px-4 py-12 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-black px-4 py-12 relative overflow-hidden saas-grid-bg noise-overlay">
       
       {/* Background Video */}
       <video
@@ -130,66 +132,71 @@ export default function Login() {
         loop
         muted
         playsInline
-        className="absolute inset-0 w-full h-full object-cover opacity-60 z-0 pointer-events-none"
+        className="absolute inset-0 w-full h-full object-cover opacity-30 z-0 pointer-events-none filter grayscale brightness-50"
       >
         <source src={bgVideo} type="video/mp4" />
       </video>
 
       {/* Cinematic Vignette Overlay */}
       <div className="absolute inset-0 bg-radial-vignette z-0 pointer-events-none"></div>
-      
-      {/* Dark Overlay for text contrast */}
-      <div className="absolute inset-0 bg-black/40 z-0 pointer-events-none"></div>
 
-      {/* Floating Background Orbs - subdued for video bg */}
-      <div className="login-orb login-orb-1 z-0 opacity-20"></div>
-      <div className="login-orb login-orb-2 z-0 opacity-20"></div>
-      
-      <div className="w-full max-w-[400px] p-8 rounded-[20px] shadow-2xl space-y-6 animate-slide-up relative z-10 border border-white/[0.12] bg-black/40 backdrop-blur-2xl">
-        
+      <motion.div 
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, cubicBezier: [0.16, 1, 0.3, 1] }}
+        className="w-full max-w-[380px] p-8 rounded-[16px] border border-zinc-800/80 bg-[#09090b]/90 backdrop-blur-2xl shadow-[0_30px_60px_rgba(0,0,0,0.8)] relative z-10 space-y-6"
+      >
         {/* Brand/Logo */}
         <div className="flex flex-col items-center text-center space-y-3">
-          <div className="relative">
-            {/* Gradient ring */}
-            <div className="absolute -inset-1.5 bg-gradient-to-br from-gym-orange via-orange-400 to-amber-500 rounded-[14px] opacity-60 blur-md animate-pulse-glow"></div>
-            <div className="relative bg-gradient-to-br from-gym-orange to-amber-600 p-3.5 rounded-[12px] text-white shadow-lg border border-white/20">
-              <Dumbbell className="h-6 w-6" />
-            </div>
+          <div className="p-3 bg-[#ffffff] text-black rounded-[8px] shadow-sm">
+            <Logo className="h-5.5 w-5.5" />
           </div>
           <div>
-            <h1 className="font-bold text-2xl tracking-tight text-[var(--text-primary)]">
-              APEX<span className="gradient-text">FITNESS</span>
+            <h1 className="font-bold text-xl tracking-tight text-white font-mono">
+              APEX<span className="text-zinc-500 font-normal">DASHBOARD</span>
             </h1>
-            <p className="text-[11px] text-[var(--text-muted)] uppercase tracking-[0.2em] font-semibold mt-1.5">
-              {view === 'login' && 'Admin Console'}
+            <p className="text-[10px] text-zinc-500 uppercase tracking-[0.25em] font-mono mt-1">
+              {view === 'login' && 'Admin Verification'}
               {view === 'forgot' && 'Account Recovery'}
-              {view === 'reset' && 'New Password'}
+              {view === 'reset' && 'Create Password'}
             </p>
           </div>
         </div>
 
         {/* Status Alerts */}
-        {error && (
-          <div className="flex items-start space-x-2.5 p-3 bg-red-500/[0.06] border border-red-500/15 text-red-400 rounded-[6px] text-sm animate-fade-in" role="alert">
-            <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-            <span className="text-[13px] leading-relaxed">{error}</span>
-          </div>
-        )}
-        {successMessage && (
-          <div className="flex items-start space-x-2.5 p-3 bg-emerald-500/[0.06] border border-emerald-500/15 text-emerald-400 rounded-[6px] text-sm animate-fade-in" role="status">
-            <CheckCircle className="h-4 w-4 shrink-0 mt-0.5" />
-            <span className="text-[13px] leading-relaxed">{successMessage}</span>
-          </div>
-        )}
+        <AnimatePresence mode="wait">
+          {error && (
+            <motion.div 
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="flex items-start space-x-2.5 p-3 bg-red-500/[0.06] border border-red-500/15 text-red-400 rounded-[6px] text-xs leading-normal"
+            >
+              <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+              <span>{error}</span>
+            </motion.div>
+          )}
+          {successMessage && (
+            <motion.div 
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="flex items-start space-x-2.5 p-3 bg-zinc-100/10 border border-zinc-100/15 text-zinc-200 rounded-[6px] text-xs leading-normal"
+            >
+              <CheckCircle className="h-4 w-4 shrink-0 mt-0.5" />
+              <span>{successMessage}</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* View 1: Login Form */}
         {view === 'login' && (
-          <form onSubmit={handleLogin} className="space-y-5">
-            <div className="space-y-4">
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div className="space-y-3">
               
               {/* Email */}
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider">Email</label>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider font-mono">Email</label>
                 <div className="relative">
                   <Mail className={inputIconClass} />
                   <input
@@ -204,15 +211,15 @@ export default function Login() {
               </div>
 
               {/* Password */}
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 <div className="flex justify-between items-center">
-                  <label className="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider">Password</label>
+                  <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider font-mono">Password</label>
                   <button
                     type="button"
                     onClick={() => { setView('forgot'); clearMessages(); }}
-                    className="text-[11px] text-gym-orange hover:text-gym-orange-hover font-semibold transition cursor-pointer"
+                    className="text-[10px] text-zinc-400 hover:text-white font-semibold transition font-mono cursor-pointer"
                   >
-                    Forgot Password?
+                    Forgot?
                   </button>
                 </div>
                 <div className="relative">
@@ -228,7 +235,7 @@ export default function Login() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-3 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition cursor-pointer"
+                    className="absolute right-3.5 top-3 text-zinc-500 hover:text-white transition cursor-pointer"
                     tabIndex={-1}
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -241,10 +248,10 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gym-orange hover:bg-gym-orange-hover disabled:opacity-50 text-white py-2.5 rounded-[6px] font-semibold text-sm transition-all duration-200 shadow-lg shadow-gym-orange/15 hover:shadow-gym-orange/25 flex items-center justify-center space-x-2 cursor-pointer"
+              className="w-full bg-[#ffffff] hover:bg-[#e4e4e7] disabled:opacity-50 text-black py-2.5 rounded-[6px] font-bold text-sm transition-all duration-200 flex items-center justify-center space-x-2 cursor-pointer font-mono shadow-sm"
             >
               {loading ? (
-                <div className="animate-spin rounded-full h-5 w-5 border-2 border-white/30 border-t-white"></div>
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-black/30 border-t-black"></div>
               ) : (
                 <span>Sign In</span>
               )}
@@ -254,13 +261,13 @@ export default function Login() {
 
         {/* View 2: Forgot Password Form */}
         {view === 'forgot' && (
-          <form onSubmit={handleForgotPassword} className="space-y-5">
-            <p className="text-sm text-[var(--text-secondary)] text-center leading-relaxed">
-              Enter your administrator email address to receive a password reset link.
+          <form onSubmit={handleForgotPassword} className="space-y-4">
+            <p className="text-xs text-zinc-400 text-center leading-relaxed font-mono">
+              Enter email below to fetch a reset token key.
             </p>
 
             <div className="space-y-1.5">
-              <label className="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider">Admin Email</label>
+              <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider font-mono">Admin Email</label>
               <div className="relative">
                 <Mail className={inputIconClass} />
                 <input
@@ -274,26 +281,26 @@ export default function Login() {
               </div>
             </div>
 
-            <div className="space-y-2.5">
+            <div className="space-y-2">
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-gym-orange hover:bg-gym-orange-hover disabled:opacity-50 text-white py-2.5 rounded-[6px] font-semibold text-sm transition-all duration-200 shadow-lg shadow-gym-orange/15 flex items-center justify-center space-x-2 cursor-pointer"
+                className="w-full bg-[#ffffff] hover:bg-[#e4e4e7] disabled:opacity-50 text-black py-2.5 rounded-[6px] font-bold text-sm transition-all duration-200 flex items-center justify-center space-x-2 cursor-pointer font-mono"
               >
                 {loading ? (
-                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white/30 border-t-white"></div>
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-black/30 border-t-black"></div>
                 ) : (
-                  <span>Send Reset Link</span>
+                  <span>Send Request</span>
                 )}
               </button>
 
               <button
                 type="button"
                 onClick={() => { setView('login'); clearMessages(); }}
-                className="w-full border border-[var(--border-color)] hover:bg-[var(--bg-elevated)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] py-2 rounded-[6px] font-semibold text-xs transition-all duration-200 flex items-center justify-center space-x-1.5 cursor-pointer"
+                className="w-full border border-zinc-800 hover:bg-zinc-900 text-zinc-400 hover:text-white py-2 rounded-[6px] font-semibold text-xs transition-all duration-200 flex items-center justify-center space-x-1.5 cursor-pointer font-mono"
               >
                 <ArrowLeft className="h-3.5 w-3.5" />
-                <span>Back to Login</span>
+                <span>Back</span>
               </button>
             </div>
           </form>
@@ -301,16 +308,16 @@ export default function Login() {
 
         {/* View 3: Reset Password Form */}
         {view === 'reset' && (
-          <form onSubmit={handleResetPassword} className="space-y-5">
-            <p className="text-sm text-[var(--text-secondary)] text-center leading-relaxed">
-              Create a secure new password for your admin account.
+          <form onSubmit={handleResetPassword} className="space-y-4">
+            <p className="text-xs text-zinc-400 text-center leading-relaxed font-mono">
+              Configure a new master password for verification.
             </p>
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               
               {/* New Password */}
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider">New Password</label>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider font-mono">New Password</label>
                 <div className="relative">
                   <Lock className={inputIconClass} />
                   <input
@@ -326,8 +333,8 @@ export default function Login() {
               </div>
 
               {/* Confirm Password */}
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider">Confirm Password</label>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider font-mono">Confirm Password</label>
                 <div className="relative">
                   <Lock className={inputIconClass} />
                   <input
@@ -346,18 +353,18 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gym-orange hover:bg-gym-orange-hover disabled:opacity-50 text-white py-2.5 rounded-[6px] font-semibold text-sm transition-all duration-200 shadow-lg shadow-gym-orange/15 flex items-center justify-center space-x-2 cursor-pointer"
+              className="w-full bg-[#ffffff] hover:bg-[#e4e4e7] disabled:opacity-50 text-black py-2.5 rounded-[6px] font-bold text-sm transition-all duration-200 flex items-center justify-center space-x-2 cursor-pointer font-mono"
             >
               {loading ? (
-                <div className="animate-spin rounded-full h-5 w-5 border-2 border-white/30 border-t-white"></div>
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-black/30 border-t-black"></div>
               ) : (
-                <span>Save & Sign In</span>
+                <span>Save Password</span>
               )}
             </button>
           </form>
         )}
 
-      </div>
+      </motion.div>
     </div>
   );
 }

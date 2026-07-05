@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, SlidersHorizontal, Edit, Trash2, Calendar, Phone, RefreshCw, CheckCircle, Clock, AlertTriangle, User, History } from 'lucide-react';
 import { memberService } from '@/services/memberService';
 import { useApp } from '@/context/AppContext';
@@ -9,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function MemberList() {
   const { openEditModal, openRenewModal, openHistoryModal, refreshTrigger } = useApp();
@@ -92,14 +93,14 @@ export default function MemberList() {
       inactive: {
         label: 'Inactive',
         dotClass: '',
-        badgeClass: 'text-[var(--text-muted)] bg-white/[0.03] border-[var(--border-color)]',
+        badgeClass: 'text-(--text-muted) bg-white/[0.03] border-(--border-color)',
       },
     };
 
     const config = configs[status] || configs.inactive;
 
     return (
-      <span className={`inline-flex items-center space-x-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full border w-fit ${config.badgeClass}`}>
+      <span className={`inline-flex items-center space-x-1.5 text-[10px] font-bold px-2.5 py-0.5 rounded-full border w-fit ${config.badgeClass}`}>
         {config.dotClass ? (
           <span className={`status-dot ${config.dotClass}`}></span>
         ) : (
@@ -123,17 +124,17 @@ export default function MemberList() {
     return 0;
   });
 
-  const selectTriggerClass = "w-full bg-white/[0.03] border border-[var(--border-color)] rounded-[6px] pl-10 pr-4 py-2.5 h-auto text-sm text-[var(--text-primary)] cursor-pointer hover:border-[var(--border-color-hover)] focus:border-gym-orange transition-all duration-200";
+  const selectTriggerClass = "w-full bg-white/[0.03] border border-(--border-color) rounded-[6px] pl-10 pr-4 py-2.5 h-auto text-sm text-(--text-primary) cursor-pointer hover:border-(--border-color-hover) focus:border-zinc-400 transition-all duration-200 font-mono";
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       
       {/* Title */}
       <div className="animate-fade-in">
-        <h1 className="font-bold text-2xl sm:text-3xl text-[var(--text-primary)] tracking-tight">
-          Members <span className="gradient-text">Directory</span>
+        <h1 className="font-bold text-2xl text-(--text-primary) tracking-tight">
+          Members <span className="text-(--text-secondary) font-normal ml-0.5">Directory</span>
         </h1>
-        <p className="text-[var(--text-secondary)] mt-1 text-sm">Manage, search, and update gym member records.</p>
+        <p className="text-(--text-secondary) mt-1 text-xs font-mono">Registry list of active and inactive gym members.</p>
       </div>
 
       {/* Search & Filter Header Panel */}
@@ -142,24 +143,24 @@ export default function MemberList() {
           
           {/* Search bar */}
           <div className="space-y-1.5">
-            <label className="block text-[10px] sm:text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider pl-0.5">Search Member</label>
+            <label className="block text-[10px] font-bold text-(--text-muted) uppercase tracking-wider pl-0.5 font-mono">Search Member</label>
             <div className="relative">
-              <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-[var(--text-muted)]" />
+              <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-(--text-muted)" />
               <input
                 type="text"
                 placeholder="Name or phone..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full bg-white/[0.03] border border-[var(--border-color)] rounded-[6px] pl-10 pr-4 py-2.5 text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-gym-orange transition-all duration-200"
+                className="w-full bg-white/[0.03] border border-(--border-color) rounded-[6px] pl-10 pr-4 py-2.5 text-sm text-(--text-primary) placeholder-(--text-muted) focus:outline-none focus:border-zinc-400 transition-all duration-200 font-mono"
               />
             </div>
           </div>
 
           {/* Status Filter */}
           <div className="space-y-1.5">
-            <label className="block text-[10px] sm:text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider pl-0.5">Status</label>
+            <label className="block text-[10px] font-bold text-(--text-muted) uppercase tracking-wider pl-0.5 font-mono">Status</label>
             <div className="relative">
-              <SlidersHorizontal className="absolute left-3.5 top-2.5 h-4 w-4 text-[var(--text-muted)] z-10 pointer-events-none" />
+              <SlidersHorizontal className="absolute left-3.5 top-2.5 h-4 w-4 text-(--text-muted) z-10 pointer-events-none" />
               <Select
                 value={statusFilter}
                 onValueChange={setStatusFilter}
@@ -173,7 +174,7 @@ export default function MemberList() {
                     {statusFilter === 'inactive' && 'Inactive'}
                   </SelectValue>
                 </SelectTrigger>
-                <SelectContent className="bg-[var(--bg-card)] backdrop-blur-xl border border-[var(--border-color-hover)] rounded-[6px] shadow-2xl">
+                <SelectContent className="bg-(--bg-card) border border-(--border-color-hover) rounded-[6px] shadow-2xl">
                   <SelectItem value="all">All Statuses</SelectItem>
                   <SelectItem value="active">Active</SelectItem>
                   <SelectItem value="due">Due Soon</SelectItem>
@@ -186,9 +187,9 @@ export default function MemberList() {
 
           {/* Plan Filter */}
           <div className="space-y-1.5">
-            <label className="block text-[10px] sm:text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider pl-0.5">Membership Plan</label>
+            <label className="block text-[10px] font-bold text-(--text-muted) uppercase tracking-wider pl-0.5 font-mono">Membership Plan</label>
             <div className="relative">
-              <SlidersHorizontal className="absolute left-3.5 top-2.5 h-4 w-4 text-[var(--text-muted)] z-10 pointer-events-none" />
+              <SlidersHorizontal className="absolute left-3.5 top-2.5 h-4 w-4 text-(--text-muted) z-10 pointer-events-none" />
               <Select
                 value={planFilter}
                 onValueChange={setPlanFilter}
@@ -196,16 +197,14 @@ export default function MemberList() {
                 <SelectTrigger className={selectTriggerClass}>
                   <SelectValue>
                     {planFilter === 'all' && 'All Plans'}
-                    {planFilter === 'strength training' && 'Strength Training'}
-                    {planFilter === 'strength and cardio' && 'Strength & Cardio'}
-                    {planFilter === 'personal training' && 'Personal Training'}
+                    {planFilter === 'workout' && 'Workout'}
+                    {planFilter === 'workout + cardio' && 'Workout + Cardio'}
                   </SelectValue>
                 </SelectTrigger>
-                <SelectContent className="bg-[var(--bg-card)] backdrop-blur-xl border border-[var(--border-color-hover)] rounded-[6px] shadow-2xl">
+                <SelectContent className="bg-(--bg-card) border border-(--border-color-hover) rounded-[6px] shadow-2xl">
                   <SelectItem value="all">All Plans</SelectItem>
-                  <SelectItem value="strength training">Strength Training</SelectItem>
-                  <SelectItem value="strength and cardio">Strength & Cardio</SelectItem>
-                  <SelectItem value="personal training">Personal Training</SelectItem>
+                  <SelectItem value="workout">Workout</SelectItem>
+                  <SelectItem value="workout + cardio">Workout + Cardio</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -213,9 +212,9 @@ export default function MemberList() {
 
           {/* Sort Date Timeline */}
           <div className="space-y-1.5">
-            <label className="block text-[10px] sm:text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider pl-0.5">Sort Timeline</label>
+            <label className="block text-[10px] font-bold text-(--text-muted) uppercase tracking-wider pl-0.5 font-mono">Sort Timeline</label>
             <div className="relative">
-              <SlidersHorizontal className="absolute left-3.5 top-2.5 h-4 w-4 text-[var(--text-muted)] z-10 pointer-events-none" />
+              <SlidersHorizontal className="absolute left-3.5 top-2.5 h-4 w-4 text-(--text-muted) z-10 pointer-events-none" />
               <Select
                 value={sortOption}
                 onValueChange={setSortOption}
@@ -228,7 +227,7 @@ export default function MemberList() {
                     {sortOption === 'expiry-asc' && 'Expiry: Earliest'}
                   </SelectValue>
                 </SelectTrigger>
-                <SelectContent className="bg-[var(--bg-card)] backdrop-blur-xl border border-[var(--border-color-hover)] rounded-[6px] shadow-2xl">
+                <SelectContent className="bg-(--bg-card) border border-(--border-color-hover) rounded-[6px] shadow-2xl">
                   <SelectItem value="joining-desc">Joining: Newest First</SelectItem>
                   <SelectItem value="joining-asc">Joining: Oldest First</SelectItem>
                   <SelectItem value="expiry-desc">Expiry: Latest First</SelectItem>
@@ -245,8 +244,8 @@ export default function MemberList() {
       <div className="glass-panel rounded-[16px] overflow-hidden animate-fade-in" style={{ animationDelay: '160ms', animationFillMode: 'both' }}>
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 space-y-3">
-            <div className="animate-spin rounded-full h-10 w-10 border-2 border-[var(--border-color)] border-t-gym-orange"></div>
-            <p className="text-[var(--text-muted)] text-sm">Loading directory...</p>
+            <div className="animate-spin rounded-full h-8 w-8 border-2 border-(--border-color) border-t-(--text-primary)"></div>
+            <p className="text-(--text-muted) text-sm font-mono uppercase tracking-wider text-xs">Loading directory...</p>
           </div>
         ) : error ? (
           <div className="text-center py-14">
@@ -256,7 +255,7 @@ export default function MemberList() {
             <p className="text-red-400 text-sm mb-4">{error}</p>
             <button
               onClick={fetchMembers}
-              className="inline-flex items-center space-x-2 bg-white/[0.03] border border-[var(--border-color)] hover:bg-[var(--bg-elevated)] text-[var(--text-primary)] px-4 py-2 rounded-[6px] text-xs font-semibold transition-all duration-200 cursor-pointer"
+              className="inline-flex items-center space-x-2 bg-white/[0.03] border border-(--border-color) hover:bg-(--bg-elevated) text-(--text-primary) px-4 py-2 rounded-[6px] text-xs font-semibold transition-all duration-200 cursor-pointer"
             >
               <RefreshCw className="h-3.5 w-3.5" />
               <span>Retry</span>
@@ -264,8 +263,8 @@ export default function MemberList() {
           </div>
         ) : members.length === 0 ? (
           <div className="text-center py-16">
-            <p className="text-[var(--text-secondary)] text-sm font-semibold">No records match your query.</p>
-            <p className="text-xs text-[var(--text-muted)] mt-1">Try adjusting search or filter criteria.</p>
+            <p className="text-(--text-secondary) text-sm font-semibold">No records match your query.</p>
+            <p className="text-xs text-(--text-muted) mt-1 font-mono">Try adjusting search or filter criteria.</p>
           </div>
         ) : (
           <>
@@ -273,7 +272,7 @@ export default function MemberList() {
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-[var(--bg-elevated)]/50 border-b border-[var(--border-color)] text-[var(--text-muted)] text-[11px] uppercase tracking-wider font-bold">
+                  <tr className="bg-(--bg-elevated)/50 border-b border-(--border-color) text-(--text-muted) text-[10px] uppercase tracking-wider font-bold font-mono">
                     <th className="py-3.5 px-5">Member</th>
                     <th className="py-3.5 px-5">Gender / DOB</th>
                     <th className="py-3.5 px-5">Plan</th>
@@ -283,180 +282,188 @@ export default function MemberList() {
                     <th className="py-3.5 px-5 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[var(--border-color)]/30 text-sm">
-                  {sortedMembers.map((member, idx) => (
-                    <tr 
-                      key={member._id} 
-                      className="table-row-hover table-zebra"
-                      style={{ animationDelay: `${idx * 30}ms` }}
-                    >
-                      
-                      {/* Member Info */}
-                      <td className="py-3 px-5">
-                        <div className="font-semibold text-[var(--text-primary)] text-[13px]">{member.name}</div>
-                        <div className="flex items-center text-xs text-[var(--text-muted)] space-x-1.5 mt-0.5">
-                          <Phone className="h-3 w-3" />
-                          <span>{member.phone}</span>
-                        </div>
-                      </td>
+                <tbody className="divide-y divide-(--border-color)/30 text-sm">
+                  <AnimatePresence>
+                    {sortedMembers.map((member, idx) => (
+                      <motion.tr 
+                        key={member._id} 
+                        initial={{ opacity: 0, y: 4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.15, delay: idx * 0.01 }}
+                        className="table-row-hover table-zebra"
+                      >
+                        
+                        {/* Member Info */}
+                        <td className="py-3 px-5">
+                          <div className="font-semibold text-(--text-primary) text-[13px]">{member.name}</div>
+                          <div className="flex items-center text-xs text-(--text-muted) space-x-1.5 mt-0.5 font-mono">
+                            <Phone className="h-3 w-3" />
+                            <span>{member.phone}</span>
+                          </div>
+                        </td>
 
-                      {/* Gender / DOB */}
-                      <td className="py-3 px-5">
-                        <div className="text-[var(--text-secondary)] capitalize text-[13px]">{member.gender || '—'}</div>
-                        <div className="text-xs text-[var(--text-muted)] mt-0.5">
-                          {member.dob ? formatDate(member.dob) : '—'}
-                        </div>
-                      </td>
+                        {/* Gender / DOB */}
+                        <td className="py-3 px-5">
+                          <div className="text-(--text-secondary) capitalize text-[13px]">{member.gender || '—'}</div>
+                          <div className="text-xs text-(--text-muted) mt-0.5 font-mono">
+                            {member.dob ? formatDate(member.dob) : '—'}
+                          </div>
+                        </td>
 
-                      {/* Subscription Plan */}
-                      <td className="py-3 px-5">
-                        <span className="text-[var(--text-secondary)] font-medium capitalize text-[13px]">{member.membershipType}</span>
-                      </td>
+                        {/* Subscription Plan */}
+                        <td className="py-3 px-5">
+                          <span className="text-(--text-secondary) font-medium capitalize text-[13px] font-mono">{member.membershipType}</span>
+                        </td>
 
-                      {/* Timeline Details */}
-                      <td className="py-3 px-5">
-                        <div className="flex items-center text-xs text-[var(--text-secondary)] space-x-1">
-                          <Calendar className="h-3 w-3 text-[var(--text-muted)] shrink-0" />
-                          <span className="tabular-nums">
-                            {formatDate(member.startDate)} → {formatDate(member.endDate)}
-                          </span>
-                        </div>
-                      </td>
+                        {/* Timeline Details */}
+                        <td className="py-3 px-5">
+                          <div className="flex items-center text-xs text-(--text-secondary) space-x-1 font-mono">
+                            <Calendar className="h-3 w-3 text-(--text-muted) shrink-0" />
+                            <span className="tabular-nums">
+                              {formatDate(member.startDate)} → {formatDate(member.endDate)}
+                            </span>
+                          </div>
+                        </td>
 
-                      {/* Fee Dues */}
-                      <td className="py-3 px-5 font-bold text-[var(--text-primary)] tabular-nums">
-                        ₹{member.feeAmount.toLocaleString()}
-                      </td>
+                        {/* Fee Dues */}
+                        <td className="py-3 px-5 font-bold text-(--text-primary) tabular-nums font-mono">
+                          ₹{member.feeAmount.toLocaleString()}
+                        </td>
 
-                      {/* Status Badge */}
-                      <td className="py-3 px-5">
-                        <div className="flex justify-center">
-                          {getStatusBadge(member.status)}
-                        </div>
-                      </td>
+                        {/* Status Badge */}
+                        <td className="py-3 px-5">
+                          <div className="flex justify-center">
+                            {getStatusBadge(member.status)}
+                          </div>
+                        </td>
 
-                      {/* Actions */}
-                      <td className="py-3 px-5">
-                        <div className="flex items-center justify-end space-x-1.5">
-                          <button
-                            onClick={() => openRenewModal(member)}
-                            className="bg-gym-orange/10 hover:bg-gym-orange text-gym-orange hover:text-white px-3 py-1.5 rounded-[6px] text-[11px] font-bold transition-all duration-200 border border-gym-orange/20 hover:border-gym-orange cursor-pointer"
-                          >
-                            Renew
-                          </button>
-                          <button
-                            onClick={() => openHistoryModal(member)}
-                            title="Payment History"
-                            className="p-1.5 border border-[var(--border-color)] rounded-[6px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] hover:border-[var(--border-color-hover)] transition-all duration-200 cursor-pointer"
-                          >
-                            <History className="h-3.5 w-3.5" />
-                          </button>
-                          <button
-                            onClick={() => openEditModal(member)}
-                            title="Edit Details"
-                            className="p-1.5 border border-[var(--border-color)] rounded-[6px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] hover:border-[var(--border-color-hover)] transition-all duration-200 cursor-pointer"
-                          >
-                            <Edit className="h-3.5 w-3.5" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(member._id, member.name)}
-                            title="Delete Member"
-                            className="p-1.5 border border-[var(--border-color)] rounded-[6px] text-[var(--text-secondary)] hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/20 transition-all duration-200 cursor-pointer"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
-                      </td>
+                        {/* Actions */}
+                        <td className="py-3 px-5">
+                          <div className="flex items-center justify-end space-x-1.5">
+                            <button
+                              onClick={() => openRenewModal(member)}
+                              className="bg-(--text-primary) hover:opacity-90 text-(--bg-canvas) px-3 py-1.5 rounded-[4px] text-[10px] font-bold transition-all duration-200 cursor-pointer border border-(--border-color-hover)"
+                            >
+                              Renew
+                            </button>
+                            <button
+                              onClick={() => openHistoryModal(member)}
+                              title="Payment History"
+                              className="p-1.5 border border-(--border-color) rounded-[4px] text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--bg-elevated) hover:border-(--border-color-hover) transition-all duration-200 cursor-pointer"
+                            >
+                              <History className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              onClick={() => openEditModal(member)}
+                              title="Edit Details"
+                              className="p-1.5 border border-(--border-color) rounded-[4px] text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--bg-elevated) hover:border-(--border-color-hover) transition-all duration-200 cursor-pointer"
+                            >
+                              <Edit className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(member._id, member.name)}
+                              title="Delete Member"
+                              className="p-1.5 border border-(--border-color) rounded-[4px] text-(--text-secondary) hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/20 transition-all duration-200 cursor-pointer"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        </td>
 
-                    </tr>
-                  ))}
+                      </motion.tr>
+                    ))}
+                  </AnimatePresence>
                 </tbody>
               </table>
             </div>
 
             {/* Mobile Card List View */}
-            <div className="md:hidden divide-y divide-[var(--border-color)]/30">
-              {sortedMembers.map((member, idx) => (
-                <div 
-                  key={member._id}
-                  className="p-4 space-y-3 animate-fade-in"
-                  style={{ animationDelay: `${idx * 40}ms`, animationFillMode: 'both' }}
-                >
-                  {/* Header row: name & status */}
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <h3 className="font-bold text-sm text-[var(--text-primary)] leading-snug truncate">{member.name}</h3>
-                      <div className="flex items-center text-xs text-[var(--text-muted)] mt-1 space-x-2">
-                        <span className="capitalize">{member.gender || '—'}</span>
-                        <span>•</span>
-                        <span>{member.dob ? formatDate(member.dob) : 'DOB —'}</span>
+            <div className="md:hidden divide-y divide-(--border-color)/30">
+              <AnimatePresence>
+                {sortedMembers.map((member, idx) => (
+                  <motion.div 
+                    key={member._id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.2, delay: idx * 0.02 }}
+                    className="p-4 space-y-3"
+                  >
+                    {/* Header row: name & status */}
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <h3 className="font-bold text-sm text-(--text-primary) leading-snug truncate">{member.name}</h3>
+                        <div className="flex items-center text-xs text-(--text-muted) mt-1 space-x-2">
+                          <span className="capitalize">{member.gender || '—'}</span>
+                          <span>•</span>
+                          <span className="font-mono">{member.dob ? formatDate(member.dob) : 'DOB —'}</span>
+                        </div>
+                      </div>
+                      <div className="shrink-0">
+                        {getStatusBadge(member.status)}
                       </div>
                     </div>
-                    <div className="shrink-0">
-                      {getStatusBadge(member.status)}
-                    </div>
-                  </div>
 
-                  {/* Details block */}
-                  <div className="grid grid-cols-2 gap-3 text-xs bg-white/[0.01] border border-[var(--border-color)]/40 rounded-[12px] p-3">
-                    <div className="space-y-1">
-                      <p className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-wider">Plan Type</p>
-                      <p className="font-semibold text-[var(--text-primary)] capitalize">{member.membershipType}</p>
+                    {/* Details block */}
+                    <div className="grid grid-cols-2 gap-3 text-xs bg-white/[0.01] border border-(--border-color)/40 rounded-[8px] p-3">
+                      <div className="space-y-1">
+                        <p className="text-[10px] text-(--text-muted) font-bold uppercase tracking-wider font-mono">Plan Type</p>
+                        <p className="font-semibold text-(--text-primary) capitalize font-mono">{member.membershipType}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-[10px] text-(--text-muted) font-bold uppercase tracking-wider font-mono">Fee Amount</p>
+                        <p className="font-bold text-(--text-primary) font-mono">₹{member.feeAmount.toLocaleString()}</p>
+                      </div>
+                      <div className="space-y-1 col-span-2 pt-2 border-t border-(--border-color)/20">
+                        <p className="text-[10px] text-(--text-muted) font-bold uppercase tracking-wider font-mono">Timeline</p>
+                        <p className="text-(--text-secondary) font-medium tabular-nums font-mono">
+                          {formatDate(member.startDate)} → {formatDate(member.endDate)}
+                        </p>
+                      </div>
                     </div>
-                    <div className="space-y-1">
-                      <p className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-wider">Fee Amount</p>
-                      <p className="font-bold text-gym-orange">₹{member.feeAmount.toLocaleString()}</p>
-                    </div>
-                    <div className="space-y-1 col-span-2 pt-2 border-t border-[var(--border-color)]/20">
-                      <p className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-wider">Timeline</p>
-                      <p className="text-[var(--text-secondary)] font-medium tabular-nums">
-                        {formatDate(member.startDate)} → {formatDate(member.endDate)}
-                      </p>
-                    </div>
-                  </div>
 
-                  {/* Actions & Contact */}
-                  <div className="flex items-center justify-between pt-1">
-                    <a
-                      href={`tel:${member.phone}`}
-                      className="flex items-center space-x-1.5 text-xs text-gym-orange hover:text-orange-400 font-bold transition-all duration-200 h-9 px-1 rounded-[6px]"
-                    >
-                      <Phone className="h-3.5 w-3.5" />
-                      <span className="tabular-nums">{member.phone}</span>
-                    </a>
-                    
-                    <div className="flex items-center space-x-2">
-                      <button
-                        onClick={() => openRenewModal(member)}
-                        className="bg-gym-orange hover:bg-gym-orange-hover text-white px-3 py-1.5 rounded-[6px] text-xs font-bold transition-all duration-200 shadow-sm shadow-gym-orange/15 cursor-pointer h-9"
+                    {/* Actions & Contact */}
+                    <div className="flex items-center justify-between pt-1">
+                      <a
+                        href={`tel:${member.phone}`}
+                        className="flex items-center space-x-1.5 text-xs text-(--text-primary) hover:opacity-80 font-bold transition-all duration-200 h-9 px-1 rounded-[6px] font-mono"
                       >
-                        Renew
-                      </button>
-                      <button
-                        onClick={() => openHistoryModal(member)}
-                        aria-label="Payment History"
-                        className="p-2 border border-[var(--border-color)] rounded-[6px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-all duration-200 cursor-pointer h-9 w-9 flex items-center justify-center"
-                      >
-                        <History className="h-3.5 w-3.5" />
-                      </button>
-                      <button
-                        onClick={() => openEditModal(member)}
-                        aria-label="Edit Member"
-                        className="p-2 border border-[var(--border-color)] rounded-[6px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-all duration-200 cursor-pointer h-9 w-9 flex items-center justify-center"
-                      >
-                        <Edit className="h-3.5 w-3.5" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(member._id, member.name)}
-                        aria-label="Delete Member"
-                        className="p-2 border border-[var(--border-color)] rounded-[6px] text-[var(--text-secondary)] hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/20 transition-all duration-200 cursor-pointer h-9 w-9 flex items-center justify-center"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
+                        <Phone className="h-3.5 w-3.5" />
+                        <span className="tabular-nums">{member.phone}</span>
+                      </a>
+                      
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => openRenewModal(member)}
+                          className="bg-(--text-primary) text-(--bg-canvas) px-3 py-1.5 rounded-[4px] text-xs font-bold transition-all duration-200 cursor-pointer h-9"
+                        >
+                          Renew
+                        </button>
+                        <button
+                          onClick={() => openHistoryModal(member)}
+                          aria-label="Payment History"
+                          className="p-2 border border-(--border-color) rounded-[4px] text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--bg-elevated) transition-all duration-200 cursor-pointer h-9 w-9 flex items-center justify-center"
+                        >
+                          <History className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          onClick={() => openEditModal(member)}
+                          aria-label="Edit Member"
+                          className="p-2 border border-(--border-color) rounded-[4px] text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--bg-elevated) transition-all duration-200 cursor-pointer h-9 w-9 flex items-center justify-center"
+                        >
+                          <Edit className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(member._id, member.name)}
+                          aria-label="Delete Member"
+                          className="p-2 border border-(--border-color) rounded-[4px] text-(--text-secondary) hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/20 transition-all duration-200 cursor-pointer h-9 w-9 flex items-center justify-center"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              ))}
+                  </motion.div>
+                ))}
+              </AnimatePresence>
             </div>
           </>
         )}

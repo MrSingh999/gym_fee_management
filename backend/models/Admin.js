@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
+import jwt from 'jsonwebtoken';
 
 const adminSchema = new mongoose.Schema(
   {
@@ -27,6 +28,7 @@ const adminSchema = new mongoose.Schema(
     },
     resetPasswordToken: String,
     resetPasswordExpire: Date,
+    refreshToken: String,
   },
   {
     timestamps: true,
@@ -68,6 +70,24 @@ adminSchema.methods.getResetPasswordToken = function () {
   this.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
 
   return resetToken;
+};
+
+// Sign JWT Access Token
+adminSchema.methods.getSignedAccessToken = function () {
+  const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET || 'apexfit_access_token_secret_key_12345';
+  const ACCESS_TOKEN_EXPIRE = process.env.ACCESS_TOKEN_EXPIRE || '15m';
+  return jwt.sign({ id: this._id }, ACCESS_TOKEN_SECRET, {
+    expiresIn: ACCESS_TOKEN_EXPIRE,
+  });
+};
+
+// Sign JWT Refresh Token
+adminSchema.methods.getSignedRefreshToken = function () {
+  const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || 'apexfit_refresh_token_secret_key_67890';
+  const REFRESH_TOKEN_EXPIRE = process.env.REFRESH_TOKEN_EXPIRE || '7d';
+  return jwt.sign({ id: this._id }, REFRESH_TOKEN_SECRET, {
+    expiresIn: REFRESH_TOKEN_EXPIRE,
+  });
 };
 
 const Admin = mongoose.model('Admin', adminSchema);

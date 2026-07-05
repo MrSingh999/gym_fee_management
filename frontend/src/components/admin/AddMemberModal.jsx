@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { X, Save, AlertCircle } from "lucide-react";
 import { memberService } from "@/services/memberService";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Select,
   SelectContent,
@@ -87,27 +88,38 @@ export default function AddMemberModal({ isOpen, onClose, onSuccess }) {
     }
   };
 
-  if (!isOpen) return null;
-
-  const inputClass = "w-full bg-white/[0.03] border border-[var(--border-color)] rounded-[6px] px-4 py-2.5 text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-gym-orange transition-all duration-200";
-  const labelClass = "text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider";
-  const selectTriggerClass = "w-full bg-white/[0.03] border border-[var(--border-color)] rounded-[6px] px-4 py-2.5 h-auto text-sm text-[var(--text-primary)] cursor-pointer hover:border-[var(--border-color-hover)] focus:border-gym-orange transition-all duration-200";
+  const inputClass = "w-full bg-white/[0.03] border border-(--border-color) rounded-[6px] px-4 py-2.5 text-sm text-(--text-primary) placeholder-(--text-muted) focus:outline-none focus:border-gym-orange transition-all duration-200";
+  const labelClass = "text-[11px] font-bold text-(--text-muted) uppercase tracking-wider";
+  const selectTriggerClass = "w-full bg-white/[0.03] border border-(--border-color) rounded-[6px] px-4 py-2.5 h-auto text-sm text-(--text-primary) cursor-pointer hover:border-(--border-color-hover) focus:border-gym-orange transition-all duration-200";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 overflow-y-auto modal-backdrop" onClick={onClose}>
-      <div
-        className="glass-panel w-full max-w-2xl rounded-[16px] shadow-2xl overflow-hidden border border-[var(--border-color-hover)] animate-slide-up my-auto max-h-[90vh] md:max-h-[85vh] flex flex-col"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.15 }}
+          className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 overflow-y-auto modal-backdrop" 
+          onClick={onClose}
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96, y: 8 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.96, y: 8 }}
+            transition={{ type: "spring", stiffness: 350, damping: 28 }}
+            className="glass-panel w-full max-w-2xl rounded-[16px] shadow-2xl overflow-hidden border border-(--border-color-hover) my-auto max-h-[90vh] md:max-h-[85vh] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
         {/* Modal Header */}
-        <div className="relative flex justify-between items-center px-6 py-4 border-b border-[var(--border-color)] shrink-0">
+        <div className="relative flex justify-between items-center px-6 py-4 border-b border-(--border-color) shrink-0">
           <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gym-orange/30 to-transparent"></div>
-          <h2 className="font-bold text-lg text-[var(--text-primary)]">
+          <h2 className="font-bold text-lg text-(--text-primary)">
             Register New Member
           </h2>
           <button
             onClick={onClose}
-            className="p-1.5 text-[var(--text-secondary)] hover:text-[var(--text-primary)] rounded-[6px] hover:bg-[var(--bg-elevated)] transition-all duration-200 cursor-pointer"
+            className="p-1.5 text-(--text-secondary) hover:text-(--text-primary) rounded-[6px] hover:bg-(--bg-elevated) transition-all duration-200 cursor-pointer"
           >
             <X className="h-4.5 w-4.5" />
           </button>
@@ -148,7 +160,7 @@ export default function AddMemberModal({ isOpen, onClose, onSuccess }) {
                   <SelectTrigger className={selectTriggerClass}>
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-[var(--bg-card)] backdrop-blur-xl border border-[var(--border-color-hover)] rounded-[6px] shadow-2xl">
+                  <SelectContent className="bg-(--bg-card) backdrop-blur-xl border border-(--border-color-hover) rounded-[6px] shadow-2xl">
                     <SelectItem value="Male">Male</SelectItem>
                     <SelectItem value="Female">Female</SelectItem>
                     <SelectItem value="Other">Other</SelectItem>
@@ -208,7 +220,7 @@ export default function AddMemberModal({ isOpen, onClose, onSuccess }) {
                       {formData.membershipType === 'personal training' && 'Personal Training'}
                     </SelectValue>
                   </SelectTrigger>
-                  <SelectContent className="bg-[var(--bg-card)] backdrop-blur-xl border border-[var(--border-color-hover)] rounded-[6px] shadow-2xl">
+                  <SelectContent className="bg-(--bg-card) backdrop-blur-xl border border-(--border-color-hover) rounded-[6px] shadow-2xl">
                     <SelectItem value="strength training">Strength Training</SelectItem>
                     <SelectItem value="strength and cardio">Strength & Cardio</SelectItem>
                     <SelectItem value="personal training">Personal Training</SelectItem>
@@ -258,11 +270,11 @@ export default function AddMemberModal({ isOpen, onClose, onSuccess }) {
           </div>
 
           {/* Modal Footer Actions */}
-          <div className="flex justify-end space-x-3 p-4 sm:p-6 border-t border-[var(--border-color)] shrink-0">
+          <div className="flex justify-end space-x-3 p-4 sm:p-6 border-t border-(--border-color) shrink-0">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 rounded-[6px] border border-[var(--border-color)] hover:bg-[var(--bg-elevated)] text-sm font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-200 cursor-pointer"
+              className="px-4 py-2.5 rounded-[6px] border border-(--border-color) hover:bg-(--bg-elevated) text-sm font-semibold text-(--text-secondary) hover:text-(--text-primary) transition-all duration-200 cursor-pointer"
             >
               Cancel
             </button>
@@ -275,8 +287,10 @@ export default function AddMemberModal({ isOpen, onClose, onSuccess }) {
               <span>{submitting ? "Registering..." : "Register Member"}</span>
             </button>
           </div>
-        </form>
-      </div>
-    </div>
+          </form>
+        </motion.div>
+      </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

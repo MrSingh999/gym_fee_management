@@ -1,72 +1,26 @@
-import { handleResponse } from "@/services/apiClient";
+import apiClient from "@/services/apiClient";
 
 const API_BASE = "/api/members";
 
 export const memberService = {
-  getMembers: async ({
-    search = "",
-    status = "",
-    membershipType = "",
-  } = {}) => {
-    const params = new URLSearchParams();
-    if (search) params.append("search", search);
-    if (status) params.append("status", status);
-    if (membershipType) params.append("membershipType", membershipType);
+  getMembers: ({ search = "", status = "", membershipType = "" } = {}) => {
+    const params = {};
+    if (search) params.search = search;
+    if (status) params.status = status;
+    if (membershipType) params.membershipType = membershipType;
 
-    const res = await fetch(`${API_BASE}?${params.toString()}`, {
-      credentials: "include",
-    });
-    return handleResponse(res);
+    return apiClient.get(API_BASE, { params });
   },
 
-  createMember: async (memberData) => {
-    const res = await fetch(API_BASE, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(memberData),
-      credentials: "include",
-    });
-    return handleResponse(res);
-  },
+  createMember: (memberData) => apiClient.post(API_BASE, memberData),
 
-  renewMember: async (id, payload) => {
-    const res = await fetch(`${API_BASE}/${id}/renew`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-      credentials: "include",
-    });
-    return handleResponse(res);
-  },
+  renewMember: (id, payload) =>
+    apiClient.put(`${API_BASE}/${id}/renew`, payload),
 
-  updateMember: async (id, memberData) => {
-    const res = await fetch(`${API_BASE}/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(memberData),
-      credentials: "include",
-    });
-    return handleResponse(res);
-  },
+  updateMember: (id, memberData) =>
+    apiClient.put(`${API_BASE}/${id}`, memberData),
 
-  deleteMember: async (id) => {
-    const res = await fetch(`${API_BASE}/${id}`, {
-      method: "DELETE",
-      credentials: "include",
-    });
-    return handleResponse(res);
-  },
+  deleteMember: (id) => apiClient.delete(`${API_BASE}/${id}`),
 
-  getMemberPayments: async (id) => {
-    const res = await fetch(`${API_BASE}/${id}/payments`, {
-      credentials: "include",
-    });
-    return handleResponse(res);
-  },
+  getMemberPayments: (id) => apiClient.get(`${API_BASE}/${id}/payments`),
 };
