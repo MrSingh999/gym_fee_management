@@ -9,14 +9,17 @@ export function ThemeProvider({ children }) {
 
   useEffect(() => {
     const root = window.document.documentElement;
-    if (theme === 'light') {
-      root.classList.remove('dark');
-      root.classList.add('light');
-    } else {
-      root.classList.remove('light');
-      root.classList.add('dark');
-    }
+    const frameId = requestAnimationFrame(() => {
+      if (theme === 'light') {
+        root.classList.remove('dark');
+        root.classList.add('light');
+      } else {
+        root.classList.remove('light');
+        root.classList.add('dark');
+      }
+    });
     localStorage.setItem('theme', theme);
+    return () => cancelAnimationFrame(frameId);
   }, [theme]);
 
   const toggleTheme = () => {

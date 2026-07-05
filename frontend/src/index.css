@@ -391,6 +391,12 @@ button:focus-visible {
   /* inherits from :root */
 }
 
+/* ─── RADIAL VIGNETTE OVERLAY ─── */
+.bg-radial-vignette {
+  background: radial-gradient(circle, transparent 45%, rgba(0, 0, 0, 0.8) 100%);
+  transition: background 0.3s ease;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

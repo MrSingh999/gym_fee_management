@@ -5,7 +5,6 @@ import Member from '../models/Member.js';
 
 const connectDB = async () => {
   const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/gym_dashboard';
-  console.log('Connecting to MongoDB...');
   
   try {
     const conn = await mongoose.connect(MONGODB_URI);
@@ -25,13 +24,13 @@ const connectDB = async () => {
     }
 
     // Seed and/or update standard plans in database
-    console.log('Synchronizing standard membership plans...');
     const defaultPlans = [
       { name: 'strength training', price: 700, durationDays: 30, description: 'Strength Training Focus' },
       { name: 'strength and cardio', price: 1000, durationDays: 30, description: 'Strength & Cardio Combo' },
       { name: 'personal training', price: 2000, durationDays: 30, description: '1-on-1 Personal Training' }
     ];
 
+    let plansCreatedCount = 0;
     for (const planData of defaultPlans) {
       let existingPlan = await Plan.findOne({ name: planData.name });
       if (!existingPlan) {
@@ -49,12 +48,14 @@ const connectDB = async () => {
         existingPlan.price = planData.price;
         existingPlan.description = planData.description;
         await existingPlan.save();
-        console.log(`Plan '${planData.name}' synchronized successfully.`);
       } else {
         // Create new plan
         await Plan.create(planData);
-        console.log(`Plan '${planData.name}' created.`);
+        plansCreatedCount++;
       }
+    }
+    if (plansCreatedCount > 0) {
+      console.log(`Standard plans synchronized (${plansCreatedCount} new plans created).`);
     }
 
     // Migrate legacy members without plan references

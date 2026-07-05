@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import Dashboard from '@/pages/Dashboard';
@@ -13,6 +14,72 @@ import MemberPortal from '@/pages/MemberPortal';
 import { useAuth } from '@/context/AuthContext';
 import { useApp } from '@/context/AppContext';
 import Logo from '@/components/ui/Logo';
+
+const BootLoader = () => {
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-zinc-50 dark:bg-black space-y-6 transition-colors duration-300">
+      <div className="relative h-24 w-24">
+        {/* Faded base logo */}
+        <motion.div 
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 0.2 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="absolute inset-0"
+        >
+          <Logo className="h-full w-full text-black dark:text-white" />
+        </motion.div>
+        
+        {/* Filled logo that reveals */}
+        <motion.div 
+          initial={{ scale: 0.8, opacity: 0, clipPath: 'inset(100% 0% 0% 0%)' }}
+          animate={{ 
+            scale: [0.8, 1, 1, 1.05, 1], // Entrance, static filling phase, then pulse
+            opacity: 1,
+            clipPath: 'inset(0% 0% 0% 0%)'
+          }}
+          transition={{ 
+            scale: {
+              times: [0, 0.2, 0.6, 0.8, 1],
+              duration: 4,
+              ease: "easeInOut",
+              repeat: Infinity,
+              repeatType: "reverse",
+              repeatDelay: 0.5
+            },
+            opacity: { duration: 0.8, ease: "easeOut" },
+            clipPath: { duration: 2, ease: "easeInOut", delay: 0.5 }
+          }}
+          className="absolute inset-0"
+        >
+          <Logo className="h-full w-full text-black dark:text-white" />
+        </motion.div>
+      </div>
+      
+      <motion.p 
+        initial={{ opacity: 0, y: 10, letterSpacing: "0.1em" }}
+        animate={{ 
+          opacity: [0, 1, 0.5, 1],
+          y: 0, 
+          letterSpacing: "0.2em" 
+        }}
+        transition={{ 
+          opacity: {
+            times: [0, 0.25, 0.6, 1],
+            duration: 4,
+            repeat: Infinity,
+            repeatType: "reverse",
+            repeatDelay: 0.5
+          },
+          y: { duration: 1, ease: "easeOut", delay: 0.2 },
+          letterSpacing: { duration: 1, ease: "easeOut", delay: 0.2 }
+        }}
+        className="text-zinc-500 dark:text-zinc-400 font-mono text-[10px] uppercase"
+      >
+        Loading System
+      </motion.p>
+    </div>
+  );
+};
 
 function AdminLayout({ children }) {
   const {
@@ -78,23 +145,18 @@ function AdminLayout({ children }) {
 
 export default function App() {
   const { user, checkingAuth } = useAuth();
+  const [minLoadTimeElapsed, setMinLoadTimeElapsed] = useState(false);
 
-  // 1. Loading state on boot session restore
-  if (checkingAuth) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gym-dark space-y-5">
-        <div className="relative">
-          <div className="absolute -inset-2 bg-gradient-to-br from-gym-orange via-orange-400 to-amber-500 rounded-2xl opacity-40 blur-md animate-pulse-glow"></div>
-          <div className="relative bg-gradient-to-br from-gym-orange to-orange-500 p-4 rounded-2xl text-white shadow-lg">
-            <Logo className="h-8 w-8" />
-          </div>
-        </div>
-        <div className="relative">
-          <div className="animate-spin rounded-full h-8 w-8 border-2 border-gym-border border-t-gym-orange"></div>
-        </div>
-        <p className="text-gym-text-muted font-semibold text-xs tracking-[0.15em] uppercase">Verifying Session</p>
-      </div>
-    );
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setMinLoadTimeElapsed(true);
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // 1. Loading state on boot session restore or minimum 3s loader
+  if (checkingAuth || !minLoadTimeElapsed) {
+    return <BootLoader />;
   }
 
   return (

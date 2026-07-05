@@ -17,9 +17,9 @@ const PORT = process.env.PORT || 5000;
 connectDB();
 
 // Middleware
-const corsOrigin =
-  process.env.FRONTEND_ORIGIN ||
-  ['http://localhost:5173', 'http://127.0.0.1:5173'];
+const corsOrigin = process.env.FRONTEND_ORIGIN
+  ? process.env.FRONTEND_ORIGIN.split(',')
+  : ['http://localhost:5173', 'http://127.0.0.1:5173'];
 
 app.use(
   cors({
@@ -32,7 +32,9 @@ app.use(cookieParser()); // Register cookie-parser to access HTTP-only cookies
 
 // Request logging middleware
 app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  }
   next();
 });
 
