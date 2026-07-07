@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { X, Save, AlertCircle } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { X, Save, AlertCircle, Camera, Trash2 } from "lucide-react";
 import { memberService } from "@/services/memberService";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -10,8 +10,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
+import CropImageModal from "@/components/CropImageModal";
+import ImageViewer from "@/components/ImageViewer";
 
 export default function EditMemberModal({ isOpen, onClose, member, onSuccess }) {
+  const fileInputRef = useRef(null);
   const [formData, setFormData] = useState({
     name: "",
     gender: "Male",
@@ -25,6 +28,11 @@ export default function EditMemberModal({ isOpen, onClose, member, onSuccess }) 
     status: "active",
     password: "",
   });
+  const [profilePicture, setProfilePicture] = useState(null);
+  const [profilePreview, setProfilePreview] = useState(null);
+  const [removeProfile, setRemoveProfile] = useState(false);
+  const [cropImageSrc, setCropImageSrc] = useState(null);
+  const [viewImageSrc, setViewImageSrc] = useState(null);
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -43,6 +51,11 @@ export default function EditMemberModal({ isOpen, onClose, member, onSuccess }) 
         status: member.status || "active",
         password: "",
       });
+      setProfilePicture(null);
+      setProfilePreview(null);
+      setRemoveProfile(false);
+      setCropImageSrc(null);
+      setViewImageSrc(null);
       setError(null);
     }
   }, [member, isOpen]);
@@ -50,6 +63,35 @@ export default function EditMemberModal({ isOpen, onClose, member, onSuccess }) 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+  };
+
+  const handleProfilePictureChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setError("Only image files are allowed.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setError("File size must be under 5MB.");
+      return;
+    }
+    setCropImageSrc(URL.createObjectURL(file));
+    setRemoveProfile(false);
+    setError(null);
+  };
+
+  const handleCropComplete = (croppedFile) => {
+    setProfilePicture(croppedFile);
+    setProfilePreview(URL.createObjectURL(croppedFile));
+    setCropImageSrc(null);
+  };
+
+  const handleRemovePhoto = () => {
+    setProfilePicture(null);
+    setProfilePreview(null);
+    setRemoveProfile(true);
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const handleSubmit = async (e) => {
@@ -70,7 +112,22 @@ export default function EditMemberModal({ isOpen, onClose, member, onSuccess }) 
       if (!payload.password) {
         delete payload.password;
       }
-      await memberService.updateMember(member._id, payload);
+
+      if (profilePicture || removeProfile) {
+        const formDataPayload = new FormData();
+        Object.entries(payload).forEach(([key, val]) => {
+          formDataPayload.append(key, val);
+        });
+        if (removeProfile) {
+          formDataPayload.append("removeProfile", "true");
+        }
+        if (profilePicture) {
+          formDataPayload.append("profilePicture", profilePicture);
+        }
+        await memberService.updateMember(member._id, formDataPayload);
+      } else {
+        await memberService.updateMember(member._id, payload);
+      }
       onSuccess();
       onClose();
     } catch (err) {
@@ -84,6 +141,9 @@ export default function EditMemberModal({ isOpen, onClose, member, onSuccess }) 
   const inputClass = "w-full bg-white/[0.03] border border-(--border-color) rounded-[6px] px-4 py-3 text-base text-(--text-primary) placeholder-gym-text-muted focus:outline-none focus:border-gym-orange transition-all duration-200";
   const labelClass = "text-[11px] font-bold text-(--text-muted) uppercase tracking-wider";
   const selectTriggerClass = "w-full bg-white/[0.03] border border-(--border-color) rounded-[6px] px-4 py-3 h-auto text-base text-(--text-primary) cursor-pointer hover:border-(--border-color-hover) focus:border-gym-orange transition-all duration-200";
+
+  const existingPhoto = member?.profilePicture && !profilePreview && !removeProfile ? member.profilePicture : null;
+  const displayPhoto = profilePreview || existingPhoto;
 
   return (
     <AnimatePresence>
@@ -127,6 +187,49 @@ export default function EditMemberModal({ isOpen, onClose, member, onSuccess }) 
                 <span className="text-[13px]">{error}</span>
               </div>
             )}
+
+            {/* Profile Photo */}
+            <div className="flex flex-col items-center gap-2">
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="group relative w-20 h-20 rounded-full overflow-hidden border-2 border-dashed border-(--border-color) hover:border-gym-orange transition-all duration-200 cursor-pointer"
+                >
+                  {displayPhoto ? (
+                    <img
+                      src={displayPhoto}
+                      alt="Profile"
+                      className="w-full h-full object-cover cursor-pointer"
+                      onClick={(e) => { e.stopPropagation(); setViewImageSrc(displayPhoto); }}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center text-(--text-muted) group-hover:text-gym-orange transition-colors duration-200">
+                      <Camera className="h-5 w-5" />
+                      <span className="text-[8px] font-mono mt-1">Photo</span>
+                    </div>
+                  )}
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleProfilePictureChange}
+                  className="hidden"
+                />
+                {displayPhoto && (
+                  <button
+                    type="button"
+                    onClick={handleRemovePhoto}
+                    className="p-2 border border-red-500/30 rounded-[6px] text-red-400 hover:bg-red-500/10 transition-all duration-200 cursor-pointer"
+                    title="Remove photo"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+              <span className="text-[10px] text-(--text-muted) font-mono">Click photo to change or remove</span>
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Full Name */}
@@ -315,6 +418,18 @@ export default function EditMemberModal({ isOpen, onClose, member, onSuccess }) 
         </motion.div>
       </motion.div>
       )}
+      <ImageViewer
+        isOpen={!!viewImageSrc}
+        onClose={() => setViewImageSrc(null)}
+        src={viewImageSrc}
+        alt="Profile photo"
+      />
+      <CropImageModal
+        isOpen={!!cropImageSrc}
+        onClose={() => { setCropImageSrc(null); if (fileInputRef.current) fileInputRef.current.value = ""; }}
+        imageSrc={cropImageSrc}
+        onCropComplete={handleCropComplete}
+      />
     </AnimatePresence>
   );
 }

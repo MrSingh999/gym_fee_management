@@ -10,9 +10,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { motion, AnimatePresence } from 'framer-motion';
+import ImageViewer from '@/components/ImageViewer';
 
 export default function MemberList() {
   const { openEditModal, openRenewModal, openHistoryModal, refreshTrigger } = useApp();
+  const [viewImage, setViewImage] = useState(null);
 
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -197,14 +199,16 @@ export default function MemberList() {
                 <SelectTrigger className={selectTriggerClass}>
                   <SelectValue>
                     {planFilter === 'all' && 'All Plans'}
-                    {planFilter === 'workout' && 'Workout'}
-                    {planFilter === 'workout + cardio' && 'Workout + Cardio'}
+                    {planFilter === 'strength training' && 'Strength Training'}
+                    {planFilter === 'strength and cardio' && 'Strength & Cardio'}
+                    {planFilter === 'personal training' && 'Personal Training'}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent className="bg-(--bg-card) border border-(--border-color-hover) rounded-[6px] shadow-2xl">
                   <SelectItem value="all">All Plans</SelectItem>
-                  <SelectItem value="workout">Workout</SelectItem>
-                  <SelectItem value="workout + cardio">Workout + Cardio</SelectItem>
+                  <SelectItem value="strength training">Strength Training</SelectItem>
+                  <SelectItem value="strength and cardio">Strength & Cardio</SelectItem>
+                  <SelectItem value="personal training">Personal Training</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -295,10 +299,21 @@ export default function MemberList() {
                         
                         {/* Member Info */}
                         <td className="py-3 px-5">
-                          <div className="font-semibold text-(--text-primary) text-[13px]">{member.name}</div>
-                          <div className="flex items-center text-xs text-(--text-muted) space-x-1.5 mt-0.5 font-mono">
-                            <Phone className="h-3 w-3" />
-                            <span>{member.phone}</span>
+                          <div className="flex items-center space-x-3">
+                            {member.profilePicture ? (
+                              <img src={member.profilePicture} alt="" className="w-8 h-8 rounded-full object-cover border border-(--border-color) shrink-0 cursor-pointer" onClick={() => setViewImage(member.profilePicture)} />
+                            ) : (
+                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gym-orange/20 to-orange-500/20 border border-(--border-color) text-gym-orange flex items-center justify-center text-[10px] font-black uppercase shrink-0">
+                                {member.name?.split(" ").map((n) => n[0]).join("").slice(0, 2)}
+                              </div>
+                            )}
+                            <div className="min-w-0">
+                              <div className="font-semibold text-(--text-primary) text-[13px] truncate">{member.name}</div>
+                              <div className="flex items-center text-xs text-(--text-muted) space-x-1.5 mt-0.5 font-mono">
+                                <Phone className="h-3 w-3 shrink-0" />
+                                <span className="truncate">{member.phone}</span>
+                              </div>
+                            </div>
                           </div>
                         </td>
 
@@ -390,12 +405,21 @@ export default function MemberList() {
                   >
                     {/* Header row: name & status */}
                     <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <h3 className="font-bold text-sm text-(--text-primary) leading-snug truncate">{member.name}</h3>
-                        <div className="flex items-center text-xs text-(--text-muted) mt-1 space-x-2">
-                          <span className="capitalize">{member.gender || '—'}</span>
-                          <span>•</span>
-                          <span className="font-mono">{member.dob ? formatDate(member.dob) : 'DOB —'}</span>
+                      <div className="flex items-center space-x-3 min-w-0">
+                        {member.profilePicture ? (
+                          <img src={member.profilePicture} alt="" className="w-9 h-9 rounded-full object-cover border border-(--border-color) shrink-0 cursor-pointer" onClick={() => setViewImage(member.profilePicture)} />
+                        ) : (
+                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-gym-orange/20 to-orange-500/20 border border-(--border-color) text-gym-orange flex items-center justify-center text-[10px] font-black uppercase shrink-0">
+                            {member.name?.split(" ").map((n) => n[0]).join("").slice(0, 2)}
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <h3 className="font-bold text-sm text-(--text-primary) leading-snug truncate">{member.name}</h3>
+                          <div className="flex items-center text-xs text-(--text-muted) mt-1 space-x-2">
+                            <span className="capitalize">{member.gender || '—'}</span>
+                            <span>•</span>
+                            <span className="font-mono">{member.dob ? formatDate(member.dob) : 'DOB —'}</span>
+                          </div>
                         </div>
                       </div>
                       <div className="shrink-0">
@@ -469,6 +493,12 @@ export default function MemberList() {
         )}
       </div>
 
+      <ImageViewer
+        isOpen={!!viewImage}
+        onClose={() => setViewImage(null)}
+        src={viewImage}
+        alt="Member profile photo"
+      />
     </div>
   );
 }

@@ -267,11 +267,11 @@ export default function Login() {
                 <div className="relative">
                   <Mail className={inputIconClass} />
                   <input
-                    type="email"
+                    type="text"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="your@email.com"
+                    placeholder="your@email.com or phone"
                     className={inputClass}
                   />
                 </div>

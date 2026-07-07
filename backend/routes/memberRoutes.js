@@ -12,6 +12,7 @@ import {
 } from "../controllers/memberController.js";
 import { protect, admin } from "../middleware/authMiddleware.js";
 import { validateRequest } from "../middleware/validator.js";
+import upload from "../middleware/upload.js";
 
 const router = express.Router();
 
@@ -25,8 +26,9 @@ router.get("/", admin, getMembers);
 
 router.post(
   "/",
+  admin,
+  upload.single("profilePicture"),
   [
-    admin,
     body("name").notEmpty().withMessage("Name is required").trim(),
     body("gender").isIn(["Male", "Female", "Other"]).withMessage("Gender must be Male, Female, or Other"),
     body("dob").isISO8601().withMessage("Please provide a valid date of birth"),
@@ -58,8 +60,9 @@ router.put(
 
 router.put(
   "/:id",
+  admin,
+  upload.single("profilePicture"),
   [
-    admin,
     body("name").optional().notEmpty().withMessage("Name cannot be empty").trim(),
     body("gender")
       .optional()

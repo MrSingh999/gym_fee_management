@@ -16,4 +16,11 @@ export const authService = {
 
   updatePassword: (currentPassword, newPassword) =>
     apiClient.put("/api/auth/update-password", { currentPassword, newPassword }),
+
+  uploadProfilePicture: (formData) =>
+    apiClient.put("/api/auth/profile-picture", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }),
 };

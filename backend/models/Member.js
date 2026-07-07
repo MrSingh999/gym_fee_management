@@ -62,6 +62,10 @@ const memberSchema = new mongoose.Schema(
       type: String,
       default: 'member123',
     },
+    profilePicture: {
+      type: String,
+      default: '',
+    },
     refreshToken: String,
   },
   {
@@ -153,19 +157,15 @@ memberSchema.methods.matchPassword = async function (enteredPassword) {
 
 // Sign JWT Access Token
 memberSchema.methods.getSignedAccessToken = function () {
-  const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET ;
-  const ACCESS_TOKEN_EXPIRE = process.env.ACCESS_TOKEN_EXPIRE ;
-  return jwt.sign({ id: this._id }, ACCESS_TOKEN_SECRET, {
-    expiresIn: ACCESS_TOKEN_EXPIRE,
+  return jwt.sign({ id: this._id }, process.env.ACCESS_TOKEN_SECRET, {
+    expiresIn: process.env.ACCESS_TOKEN_EXPIRE,
   });
 };
 
 // Sign JWT Refresh Token
 memberSchema.methods.getSignedRefreshToken = function () {
-  const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET ;
-  const REFRESH_TOKEN_EXPIRE = process.env.REFRESH_TOKEN_EXPIRE ;
-  return jwt.sign({ id: this._id }, REFRESH_TOKEN_SECRET, {
-    expiresIn: REFRESH_TOKEN_EXPIRE,
+  return jwt.sign({ id: this._id }, process.env.REFRESH_TOKEN_SECRET, {
+    expiresIn: process.env.REFRESH_TOKEN_EXPIRE,
   });
 };
 

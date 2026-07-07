@@ -17,8 +17,12 @@ export const memberService = {
   renewMember: (id, payload) =>
     apiClient.put(`${API_BASE}/${id}/renew`, payload),
 
-  updateMember: (id, memberData) =>
-    apiClient.put(`${API_BASE}/${id}`, memberData),
+  updateMember: (id, memberData) => {
+    const isFormData = memberData instanceof FormData;
+    return apiClient.put(`${API_BASE}/${id}`, memberData, {
+      headers: isFormData ? {} : undefined,
+    });
+  },
 
   deleteMember: (id) => apiClient.delete(`${API_BASE}/${id}`),
 

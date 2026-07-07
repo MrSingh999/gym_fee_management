@@ -10,15 +10,21 @@ import errorHandler from './middleware/errorHandler.js';
 // Load env variables
 dotenv.config();
 
+// Validate required JWT secrets at startup
+if (!process.env.ACCESS_TOKEN_SECRET || !process.env.REFRESH_TOKEN_SECRET) {
+  console.error('FATAL: ACCESS_TOKEN_SECRET and REFRESH_TOKEN_SECRET must be set in environment variables.');
+  process.exit(1);
+}
+
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 6000;
 
 // Connect to Database
 connectDB();
 
 // Middleware
 const corsOrigin = process.env.FRONTEND_ORIGIN
-  ? process.env.FRONTEND_ORIGIN.split(',')
+  ? process.env.FRONTEND_ORIGIN.split(',').map((o) => o.trim())
   : ['http://localhost:5173', 'http://127.0.0.1:5173'];
 
 app.use(

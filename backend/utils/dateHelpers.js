@@ -12,7 +12,7 @@ export const getDateRange = () => {
   const todayIST = new Date(istTime.getTime() - istOffset);
   
   // Calculate 7 days from today in IST, set to the very end of that day (23:59:59.999 IST)
-  const sevenDaysFromNowIST = new Date(todayIST.getTime() + 8 * 24 * 60 * 60 * 1000 - 1);
+  const sevenDaysFromNowIST = new Date(todayIST.getTime() + 7 * 24 * 60 * 60 * 1000 - 1);
   
   return { today: todayIST, sevenDaysFromNow: sevenDaysFromNowIST };
 };

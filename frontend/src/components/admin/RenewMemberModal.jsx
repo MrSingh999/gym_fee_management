@@ -17,7 +17,7 @@ export default function RenewMemberModal({
   member,
   onSuccess,
 }) {
-  const [membershipType, setMembershipType] = useState("workout");
+  const [membershipType, setMembershipType] = useState("strength training");
   const [renewalType, setRenewalType] = useState("1"); // '1', '2', '3', '6', '12', 'custom_months', 'custom_date'
   const [customMonths, setCustomMonths] = useState("");
   const [customDate, setCustomDate] = useState("");

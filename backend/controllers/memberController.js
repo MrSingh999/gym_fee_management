@@ -1,10 +1,15 @@
 import mongoose from "mongoose";
+import fs from "fs";
 import Member from "../models/Member.js";
 import Plan from "../models/Plan.js";
 import Payment from "../models/Payment.js";
+import cloudinary from "../config/cloudinary.js";
 import { getDateRange } from "../utils/dateHelpers.js";
 import asyncHandler from "../middleware/asyncHandler.js";
 import ErrorResponse from "../utils/errorResponse.js";
+
+// Escape special regex characters from user input
+const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 // @desc    Get KPI stats
 // @route   GET /api/members/dashboard/stats
@@ -105,7 +110,7 @@ const getMembers = asyncHandler(async (req, res, next) => {
   // 2. Filter by membershipType via plan name
   if (membershipType) {
     const plan = await Plan.findOne({
-      name: { $regex: new RegExp(`^${membershipType}$`, "i") },
+      name: { $regex: new RegExp(`^${escapeRegex(membershipType)}$`, "i") },
     });
     if (plan) {
       query.plan = plan._id;
@@ -164,7 +169,7 @@ const createMember = asyncHandler(async (req, res, next) => {
 
   // Resolve matching Plan doc
   let planDoc = await Plan.findOne({
-    name: { $regex: new RegExp(`^${membershipType}$`, "i") },
+    name: { $regex: new RegExp(`^${escapeRegex(membershipType)}$`, "i") },
   });
   if (!planDoc) {
     // Fallback default
@@ -189,15 +194,30 @@ const createMember = asyncHandler(async (req, res, next) => {
     name,
     gender,
     dob: new Date(dob),
-    mobile: phone, // maps to mobile
+    mobile: phone,
     email: email || undefined,
     plan: planDoc._id,
     feeStartDate: start,
     feeEndDate: end,
     status: "Active",
     lastPaymentDate: new Date(),
-    password: password || undefined, // falls back to Mongoose default if empty/undefined
+    password: password || undefined,
   });
+
+  if (req.file) {
+    try {
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: 'gym-dashboard/profile-pictures',
+        transformation: [
+          { width: 400, height: 400, crop: 'fill', gravity: 'face' }
+        ],
+      });
+      newMember.profilePicture = result.secure_url;
+      fs.unlink(req.file.path, () => {});
+    } catch (uploadErr) {
+      fs.unlink(req.file.path, () => {});
+    }
+  }
 
   const savedMember = await newMember.save();
 
@@ -244,7 +264,7 @@ const renewMember = asyncHandler(async (req, res, next) => {
   let planDoc;
   if (membershipType) {
     planDoc = await Plan.findOne({
-      name: { $regex: new RegExp(`^${membershipType}$`, "i") },
+      name: { $regex: new RegExp(`^${escapeRegex(membershipType)}$`, "i") },
     });
   }
   if (!planDoc) {
@@ -319,10 +339,31 @@ const updateMember = asyncHandler(async (req, res, next) => {
     throw new ErrorResponse("Member not found", 404);
   }
 
+  // Handle profile picture upload
+  if (req.file) {
+    try {
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: 'gym-dashboard/profile-pictures',
+        transformation: [
+          { width: 400, height: 400, crop: 'fill', gravity: 'face' }
+        ],
+      });
+      member.profilePicture = result.secure_url;
+      fs.unlink(req.file.path, () => {});
+    } catch (uploadErr) {
+      fs.unlink(req.file.path, () => {});
+    }
+  }
+
+  // Handle profile picture removal
+  if (updateData.removeProfile === "true") {
+    member.profilePicture = "";
+  }
+
   // Resolve plan updates
   if (updateData.membershipType) {
     const planDoc = await Plan.findOne({
-      name: { $regex: new RegExp(`^${updateData.membershipType}$`, "i") },
+      name: { $regex: new RegExp(`^${escapeRegex(updateData.membershipType)}$`, "i") },
     });
     if (planDoc) {
       member.plan = planDoc._id;
@@ -353,10 +394,9 @@ const updateMember = asyncHandler(async (req, res, next) => {
 
   // Apply general updates
   Object.keys(updateData).forEach((key) => {
-    // Skip mapped fields handled separately
     if (
       updateData[key] !== undefined &&
-      !["membershipType", "phone", "startDate", "endDate", "status"].includes(
+      !["membershipType", "phone", "startDate", "endDate", "status", "removeProfile"].includes(
         key,
       )
     ) {

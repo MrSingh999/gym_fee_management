@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { X, Save, AlertCircle } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { X, Save, AlertCircle, Camera } from "lucide-react";
 import { memberService } from "@/services/memberService";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -10,19 +10,26 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
+import CropImageModal from "@/components/CropImageModal";
+import ImageViewer from "@/components/ImageViewer";
 
 export default function AddMemberModal({ isOpen, onClose, onSuccess }) {
+  const fileInputRef = useRef(null);
   const [formData, setFormData] = useState({
     name: "",
     gender: "Male",
     dob: "",
     phone: "",
     email: "",
-    membershipType: "workout",
+    membershipType: "strength training",
     startDate: new Date().toISOString().split("T")[0],
     feeAmount: "700",
     password: "",
   });
+  const [profilePicture, setProfilePicture] = useState(null);
+  const [profilePreview, setProfilePreview] = useState(null);
+  const [cropImageSrc, setCropImageSrc] = useState(null);
+  const [viewImageSrc, setViewImageSrc] = useState(null);
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -39,6 +46,9 @@ export default function AddMemberModal({ isOpen, onClose, onSuccess }) {
         feeAmount: "700",
         password: "",
       });
+      setProfilePicture(null);
+      setProfilePreview(null);
+      setCropImageSrc(null);
       setError(null);
     }
   }, [isOpen]);
@@ -63,6 +73,27 @@ export default function AddMemberModal({ isOpen, onClose, onSuccess }) {
     setFormData({ ...formData, [name]: value });
   };
 
+  const handleProfilePictureChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setError("Only image files are allowed.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setError("File size must be under 5MB.");
+      return;
+    }
+    setCropImageSrc(URL.createObjectURL(file));
+    setError(null);
+  };
+
+  const handleCropComplete = (croppedFile) => {
+    setProfilePicture(croppedFile);
+    setProfilePreview(URL.createObjectURL(croppedFile));
+    setCropImageSrc(null);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
@@ -74,10 +105,17 @@ export default function AddMemberModal({ isOpen, onClose, onSuccess }) {
 
     setSubmitting(true);
     try {
-      await memberService.createMember({
-        ...formData,
-        feeAmount: Number(formData.feeAmount),
-      });
+      const payload = { ...formData, feeAmount: Number(formData.feeAmount) };
+      if (profilePicture) {
+        const formDataPayload = new FormData();
+        Object.entries(payload).forEach(([key, val]) => {
+          formDataPayload.append(key, val);
+        });
+        formDataPayload.append("profilePicture", profilePicture);
+        await memberService.createMember(formDataPayload);
+      } else {
+        await memberService.createMember(payload);
+      }
       onSuccess();
       onClose();
     } catch (err) {
@@ -134,6 +172,31 @@ export default function AddMemberModal({ isOpen, onClose, onSuccess }) {
                 <span className="text-[13px]">{error}</span>
               </div>
             )}
+
+            {/* Profile Photo Upload */}
+            <div className="flex justify-center mb-2">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="group relative w-20 h-20 rounded-full overflow-hidden border-2 border-dashed border-(--border-color) hover:border-gym-orange transition-all duration-200 cursor-pointer"
+              >
+                {profilePreview ? (
+                  <img src={profilePreview} alt="Preview" className="w-full h-full object-cover cursor-pointer" onClick={(e) => { e.stopPropagation(); setViewImageSrc(profilePreview); }} />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center text-(--text-muted) group-hover:text-gym-orange transition-colors duration-200">
+                    <Camera className="h-5 w-5" />
+                    <span className="text-[8px] font-mono mt-1">Photo</span>
+                  </div>
+                )}
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleProfilePictureChange}
+                className="hidden"
+              />
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Full Name */}
@@ -291,6 +354,20 @@ export default function AddMemberModal({ isOpen, onClose, onSuccess }) {
         </motion.div>
       </motion.div>
       )}
+      {profilePreview && (
+        <ImageViewer
+          isOpen={!!viewImageSrc}
+          onClose={() => setViewImageSrc(null)}
+          src={viewImageSrc}
+          alt="Profile photo preview"
+        />
+      )}
+      <CropImageModal
+        isOpen={!!cropImageSrc}
+        onClose={() => { setCropImageSrc(null); fileInputRef.current.value = ""; }}
+        imageSrc={cropImageSrc}
+        onCropComplete={handleCropComplete}
+      />
     </AnimatePresence>
   );
 }

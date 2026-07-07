@@ -11,6 +11,10 @@ import RenewMemberModal from '@/components/admin/RenewMemberModal';
 import PaymentHistoryModal from '@/components/admin/PaymentHistoryModal';
 import Login from '@/pages/Login';
 import MemberPortal from '@/pages/MemberPortal';
+import Overview from '@/pages/member/Overview';
+import Workouts from '@/pages/member/Workouts';
+import Billing from '@/pages/member/Billing';
+import Security from '@/pages/member/Security';
 import { useAuth } from '@/context/AuthContext';
 import { useApp } from '@/context/AppContext';
 import Logo from '@/components/ui/Logo';
@@ -150,7 +154,7 @@ export default function App() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setMinLoadTimeElapsed(true);
-    }, 3000);
+    }, 2000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -167,11 +171,18 @@ export default function App() {
         element={!user ? <Login /> : <Navigate to="/" replace />} 
       />
       
-      {/* Member portal route */}
+      {/* Member portal route with nested tabs */}
       <Route 
         path="/member-portal" 
-        element={user && user.role === 'member' ? <MemberPortal /> : <Navigate to="/login" replace />} 
-      />
+        element={user && user.role === 'member' ? <MemberPortal /> : <Navigate to="/login" replace />}
+      >
+        <Route index element={<Navigate to="overview" replace />} />
+        <Route path="overview" element={<Overview />} />
+        <Route path="workouts" element={<Workouts />} />
+        <Route path="billing" element={<Billing />} />
+        <Route path="security" element={<Security />} />
+        <Route path="*" element={<Navigate to="overview" replace />} />
+      </Route>
 
       {/* Root redirect depending on role */}
       <Route 

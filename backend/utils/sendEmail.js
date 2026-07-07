@@ -29,7 +29,7 @@ const sendEmail = async (options) => {
 
   // Define email parameters
   const message = {
-    from: `${process.env.FROM_NAME || 'APEX FITNESS'} <${process.env.FROM_EMAIL || 'noreply@apexfit.com'}>`,
+    from: `${process.env.FROM_NAME || 'HEAVEN\'S ARENA'} <${process.env.FROM_EMAIL || 'noreply@heavensarena.com'}>`,
     to: options.email,
     subject: options.subject,
     text: options.message,

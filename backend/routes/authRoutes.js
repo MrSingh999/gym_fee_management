@@ -1,4 +1,5 @@
 import express from 'express';
+import rateLimit from 'express-rate-limit';
 import { body } from 'express-validator';
 import {
   loginUser,
@@ -8,14 +9,34 @@ import {
   forgotPassword,
   resetPassword,
   updatePassword,
+  uploadProfilePicture,
 } from '../controllers/authController.js';
 import { protect } from '../middleware/authMiddleware.js';
 import { validateRequest } from '../middleware/validator.js';
+import upload from '../middleware/upload.js';
 
 const router = express.Router();
 
+// Rate limiters for auth endpoints
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10,                    // 10 attempts per window
+  message: { message: 'Too many attempts, please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const forgotLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 3,
+  message: { message: 'Too many password reset requests, please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 router.post(
   '/login',
+  authLimiter,
   [
     body('email').notEmpty().withMessage('Please provide email or phone number'),
     body('password').notEmpty().withMessage('Please provide a password'),
@@ -29,6 +50,7 @@ router.post('/refresh', refreshTokens);
 
 router.post(
   '/forgot-password',
+  forgotLimiter,
   [
     body('email').isEmail().withMessage('Please enter a valid email address'),
     validateRequest,
@@ -38,6 +60,7 @@ router.post(
 
 router.put(
   '/reset-password/:token',
+  authLimiter,
   [
     body('password')
       .isLength({ min: 6 })
@@ -61,5 +84,7 @@ router.put(
   ],
   updatePassword
 );
+
+router.put('/profile-picture', protect, upload.single('image'), uploadProfilePicture);
 
 export default router;

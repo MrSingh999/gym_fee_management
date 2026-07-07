@@ -34,3 +34,7 @@ logs
 *.sln
 *.sw?
 *.local
+
+# Temporary uploads
+backend/uploads/*
+!backend/uploads/.gitkeep

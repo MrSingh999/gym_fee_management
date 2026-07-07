@@ -19,8 +19,7 @@ const protect = asyncHandler(async (req, res, next) => {
   }
 
   // Verify token (failures automatically captured by asyncHandler -> errorHandler)
-  const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET || 'apexfit_access_token_secret_key_12345';
-  const decoded = jwt.verify(token, ACCESS_TOKEN_SECRET);
+  const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
 
   // Get user from database, excluding password field
   let currentUser = await Admin.findById(decoded.id).select('-password');

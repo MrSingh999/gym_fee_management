@@ -49,11 +49,9 @@ export default function Navbar() {
             to="/dashboard"
             className="flex items-center space-x-3 cursor-pointer group decoration-none" 
           >
-            <div className="relative bg-(--text-primary) text-(--bg-canvas) p-2 rounded-[6px] shadow-sm transition-transform duration-200 group-hover:scale-102">
-              <Logo className="h-4.5 w-4.5" />
-            </div>
+            <Logo className="h-9 w-9 text-(--text-primary)" />
             <span className="font-bold text-lg tracking-tight text-(--text-primary)">
-              APEX<span className="text-(--text-secondary) font-normal ml-0.5">DASHBOARD</span>
+              HEAVEN'S<span className="text-(--text-secondary) font-normal ml-0.5">ARENA</span>
             </span>
           </Link>
 

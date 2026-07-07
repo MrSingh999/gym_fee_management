@@ -1,10 +1,12 @@
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
+import fs from 'fs';
 import Admin from '../models/Admin.js';
 import Member from '../models/Member.js';
 import sendEmail from '../utils/sendEmail.js';
 import asyncHandler from '../middleware/asyncHandler.js';
 import ErrorResponse from '../utils/errorResponse.js';
+import cloudinary from '../config/cloudinary.js';
 
 // Helper to sign JWT and send cookie
 const sendTokenResponse = async (user, statusCode, res) => {
@@ -33,7 +35,9 @@ const sendTokenResponse = async (user, statusCode, res) => {
 
   if (process.env.NODE_ENV === 'production') {
     accessTokenCookieOptions.secure = true;
+    accessTokenCookieOptions.sameSite = 'none';
     refreshTokenCookieOptions.secure = true;
+    refreshTokenCookieOptions.sameSite = 'none';
   }
 
   res
@@ -48,6 +52,7 @@ const sendTokenResponse = async (user, statusCode, res) => {
         email: user.email,
         mobile: user.mobile,
         role: user.role || 'member',
+        profilePicture: user.profilePicture || '',
       },
     });
 };
@@ -103,8 +108,7 @@ const logoutUser = asyncHandler(async (req, res, next) => {
 
   if (token) {
     try {
-      const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET || 'apexfit_access_token_secret_key_12345';
-      const decoded = jwt.verify(token, ACCESS_TOKEN_SECRET);
+      const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
       
       let user = await Admin.findById(decoded.id);
       if (!user) {
@@ -120,16 +124,26 @@ const logoutUser = asyncHandler(async (req, res, next) => {
     }
   }
 
-  res.cookie('accessToken', 'none', {
+  const cookieOptions = {
     expires: new Date(Date.now() + 10 * 1000),
     httpOnly: true,
-  });
+  };
 
-  res.cookie('refreshToken', 'none', {
+  const refreshCookieOptions = {
     expires: new Date(Date.now() + 10 * 1000),
     httpOnly: true,
     path: '/api/auth',
-  });
+  };
+
+  if (process.env.NODE_ENV === 'production') {
+    cookieOptions.secure = true;
+    cookieOptions.sameSite = 'none';
+    refreshCookieOptions.secure = true;
+    refreshCookieOptions.sameSite = 'none';
+  }
+
+  res.cookie('accessToken', 'none', cookieOptions);
+  res.cookie('refreshToken', 'none', refreshCookieOptions);
 
   res.json({ success: true, message: 'Logged out successfully' });
 });
@@ -149,8 +163,7 @@ const refreshTokens = asyncHandler(async (req, res, next) => {
   }
 
   try {
-    const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || 'apexfit_refresh_token_secret_key_67890';
-    const decoded = jwt.verify(refreshToken, REFRESH_TOKEN_SECRET);
+    const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
 
     // Find user in DB
     let user = await Admin.findById(decoded.id);
@@ -173,6 +186,7 @@ const refreshTokens = asyncHandler(async (req, res, next) => {
 
     if (process.env.NODE_ENV === 'production') {
       accessTokenCookieOptions.secure = true;
+      accessTokenCookieOptions.sameSite = 'none';
     }
 
     res
@@ -186,19 +200,31 @@ const refreshTokens = asyncHandler(async (req, res, next) => {
           email: user.email,
           mobile: user.mobile,
           role: user.role || 'member',
+          profilePicture: user.profilePicture || '',
         },
       });
   } catch (err) {
     // Clear cookies if refresh token is expired or invalid
-    res.cookie('accessToken', 'none', {
+    const cookieOptions = {
       expires: new Date(Date.now() + 10 * 1000),
       httpOnly: true,
-    });
-    res.cookie('refreshToken', 'none', {
+    };
+
+    const refreshCookieOptions = {
       expires: new Date(Date.now() + 10 * 1000),
       httpOnly: true,
       path: '/api/auth',
-    });
+    };
+
+    if (process.env.NODE_ENV === 'production') {
+      cookieOptions.secure = true;
+      cookieOptions.sameSite = 'none';
+      refreshCookieOptions.secure = true;
+      refreshCookieOptions.sameSite = 'none';
+    }
+
+    res.cookie('accessToken', 'none', cookieOptions);
+    res.cookie('refreshToken', 'none', refreshCookieOptions);
     throw new ErrorResponse('Invalid or expired refresh token. Please log in again.', 401);
   }
 });
@@ -219,7 +245,7 @@ const getMe = asyncHandler(async (req, res, next) => {
 const forgotPassword = asyncHandler(async (req, res, next) => {
   const { email } = req.body;
 
-  const user = await Admin.findOne({ email });
+  const user = await Admin.findOne({ email: email.toLowerCase() });
   if (!user) {
     throw new ErrorResponse('No admin account found with that email address', 404);
   }
@@ -230,21 +256,19 @@ const forgotPassword = asyncHandler(async (req, res, next) => {
   // Save token to database user record
   await user.save({ validateBeforeSave: false });
 
-  // Create reset URL (matches react frontend routing query)
-  const resetUrl = `${req.protocol}://${req.get('host')}/?resetToken=${resetToken}`;
-  
-  // In dev env, frontend runs on 5173 but backend runs on 5000. So adjust link port to frontend dev port 5173
-  const frontendUrl = resetUrl.replace(':5000', ':5173');
+  // Create reset URL (uses configured FRONTEND_URL to prevent Host Header injection)
+  const frontendOrigin = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const frontendUrl = `${frontendOrigin}/?resetToken=${resetToken}`;
 
-  const message = `You are receiving this email because a password reset request was made for your APEX FITNESS Admin dashboard account.\n\nPlease proceed to this link to reset your password:\n\n${frontendUrl}\n\nThis reset link will expire in 10 minutes. If you did not request this, please ignore this email.`;
+  const message = `You are receiving this email because a password reset request was made for your HEAVEN'S ARENA Admin dashboard account.\n\nPlease proceed to this link to reset your password:\n\n${frontendUrl}\n\nThis reset link will expire in 10 minutes. If you did not request this, please ignore this email.`;
 
   try {
     await sendEmail({
       email: user.email,
-      subject: 'APEX FITNESS Dashboard - Password Reset Link',
+      subject: 'HEAVEN\'S ARENA Dashboard - Password Reset Link',
       message,
       html: `
-        <h3>APEX FITNESS Admin Console</h3>
+        <h3>HEAVEN'S ARENA Admin Console</h3>
         <p>You requested a password reset for your gym membership dashboard account.</p>
         <p>Please click the button below to reset your password within 10 minutes:</p>
         <a href="${frontendUrl}" style="background-color: #ff5722; color: white; padding: 10px 18px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">Reset Password</a>
@@ -331,6 +355,70 @@ const updatePassword = asyncHandler(async (req, res, next) => {
   });
 });
 
+// @desc    Upload profile picture
+// @route   PUT /api/auth/profile-picture
+// @access  Private
+const uploadProfilePicture = asyncHandler(async (req, res, next) => {
+  if (!req.file) {
+    throw new ErrorResponse('Please upload an image file.', 400);
+  }
+
+  const localFilePath = req.file.path;
+
+  try {
+    // Upload local file to Cloudinary
+    const result = await cloudinary.uploader.upload(localFilePath, {
+      folder: 'gym-dashboard/profile-pictures',
+      transformation: [
+        { width: 400, height: 400, crop: 'fill', gravity: 'face' }
+      ],
+    });
+
+    // Remove local file
+    fs.unlink(localFilePath, (err) => {
+      if (err) console.error('Failed to delete temporary local upload:', err);
+    });
+
+    const imageUrl = result.secure_url;
+
+    // Update user in Database depending on role
+    let updatedUser;
+    if (req.user.role === 'admin') {
+      updatedUser = await Admin.findByIdAndUpdate(
+        req.user._id,
+        { profilePicture: imageUrl },
+        { new: true, runValidators: true }
+      ).select('-password');
+    } else {
+      updatedUser = await Member.findByIdAndUpdate(
+        req.user._id,
+        { profilePicture: imageUrl },
+        { new: true, runValidators: true }
+      ).populate('plan').select('-password');
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Profile picture uploaded successfully',
+      profilePicture: imageUrl,
+      user: {
+        id: updatedUser._id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        mobile: updatedUser.mobile,
+        role: updatedUser.role || 'member',
+        profilePicture: updatedUser.profilePicture || '',
+      }
+    });
+  } catch (err) {
+    // Cleanup local file on error
+    fs.unlink(localFilePath, (unlinkErr) => {
+      if (unlinkErr) console.error('Failed to clean up temporary local file after upload error:', unlinkErr);
+    });
+    throw new ErrorResponse(`Upload failed: ${err.message}`, 500);
+  }
+});
+
 // Grouped exports at the bottom
 export {
   loginUser,
@@ -340,4 +428,5 @@ export {
   forgotPassword,
   resetPassword,
   updatePassword,
+  uploadProfilePicture,
 };

@@ -26,6 +26,10 @@ const adminSchema = new mongoose.Schema(
       type: String,
       default: 'admin',
     },
+    profilePicture: {
+      type: String,
+      default: '',
+    },
     resetPasswordToken: String,
     resetPasswordExpire: Date,
     refreshToken: String,
@@ -74,19 +78,15 @@ adminSchema.methods.getResetPasswordToken = function () {
 
 // Sign JWT Access Token
 adminSchema.methods.getSignedAccessToken = function () {
-  const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET || 'apexfit_access_token_secret_key_12345';
-  const ACCESS_TOKEN_EXPIRE = process.env.ACCESS_TOKEN_EXPIRE || '15m';
-  return jwt.sign({ id: this._id }, ACCESS_TOKEN_SECRET, {
-    expiresIn: ACCESS_TOKEN_EXPIRE,
+  return jwt.sign({ id: this._id }, process.env.ACCESS_TOKEN_SECRET, {
+    expiresIn: process.env.ACCESS_TOKEN_EXPIRE,
   });
 };
 
 // Sign JWT Refresh Token
 adminSchema.methods.getSignedRefreshToken = function () {
-  const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || 'apexfit_refresh_token_secret_key_67890';
-  const REFRESH_TOKEN_EXPIRE = process.env.REFRESH_TOKEN_EXPIRE || '7d';
-  return jwt.sign({ id: this._id }, REFRESH_TOKEN_SECRET, {
-    expiresIn: REFRESH_TOKEN_EXPIRE,
+  return jwt.sign({ id: this._id }, process.env.REFRESH_TOKEN_SECRET, {
+    expiresIn: process.env.REFRESH_TOKEN_EXPIRE,
   });
 };
 
