@@ -165,6 +165,7 @@ const createMember = asyncHandler(async (req, res, next) => {
     startDate,
     feeAmount,
     password,
+    address,
   } = req.body;
 
   // Resolve matching Plan doc
@@ -202,6 +203,7 @@ const createMember = asyncHandler(async (req, res, next) => {
     status: "Active",
     lastPaymentDate: new Date(),
     password: password || undefined,
+    address: address || '',
   });
 
   if (req.file) {

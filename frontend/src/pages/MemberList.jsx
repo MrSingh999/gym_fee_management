@@ -318,6 +318,11 @@ export default function MemberList() {
                                 <Phone className="h-3 w-3 shrink-0" />
                                 <span className="truncate">{member.phone || member.mobile}</span>
                               </div>
+                              {member.address && (
+                                <div className="text-[10px] text-(--text-muted) truncate mt-0.5 max-w-[180px]" title={member.address}>
+                                  {member.address}
+                                </div>
+                              )}
                             </div>
                           </div>
                         </td>
@@ -448,6 +453,12 @@ export default function MemberList() {
                           {formatDate(member.startDate || member.feeStartDate)} → {formatDate(member.endDate || member.feeEndDate)}
                         </p>
                       </div>
+                      {member.address && (
+                        <div className="space-y-1 col-span-2 pt-2 border-t border-(--border-color)/20">
+                          <p className="text-[10px] text-(--text-muted) font-bold uppercase tracking-wider font-mono">Address</p>
+                          <p className="text-(--text-secondary) font-medium">{member.address}</p>
+                        </div>
+                      )}
                     </div>
 
                     {/* Actions & Contact */}

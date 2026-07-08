@@ -67,6 +67,11 @@ const memberSchema = new mongoose.Schema(
     refreshToken: String,
     resetPasswordToken: String,
     resetPasswordExpire: Date,
+    address: {
+      type: String,
+      trim: true,
+      default: '',
+    },
   },
   {
     timestamps: true,

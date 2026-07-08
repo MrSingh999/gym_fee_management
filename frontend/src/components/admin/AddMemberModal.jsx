@@ -28,6 +28,7 @@ export default function AddMemberModal() {
     startDate: new Date().toISOString().split("T")[0],
     feeAmount: "700",
     password: "",
+    address: "",
   });
   const [profilePicture, setProfilePicture] = useState(null);
   const [profilePreview, setProfilePreview] = useState(null);
@@ -48,6 +49,7 @@ export default function AddMemberModal() {
         startDate: new Date().toISOString().split("T")[0],
         feeAmount: "700",
         password: "",
+        address: "",
       });
       setProfilePicture(null);
       setProfilePreview(null);
@@ -325,6 +327,19 @@ export default function AddMemberModal() {
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="Default: member123"
+                  className={inputClass}
+                />
+              </div>
+
+              {/* Address */}
+              <div className="space-y-1.5 col-span-1 md:col-span-2">
+                <label className={labelClass}>Address</label>
+                <input
+                  type="text"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleChange}
+                  placeholder="Street address, City, State, ZIP"
                   className={inputClass}
                 />
               </div>

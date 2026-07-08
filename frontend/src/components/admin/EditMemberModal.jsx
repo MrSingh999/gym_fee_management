@@ -30,6 +30,7 @@ export default function EditMemberModal() {
     feeAmount: "",
     status: "active",
     password: "",
+    address: "",
   });
   const [profilePicture, setProfilePicture] = useState(null);
   const [profilePreview, setProfilePreview] = useState(null);
@@ -62,6 +63,7 @@ export default function EditMemberModal() {
         feeAmount: member.feeAmount || "",
         status: member.status || "active",
         password: "",
+        address: member.address || "",
       });
       setProfilePicture(null);
       setProfilePreview(null);
@@ -395,6 +397,19 @@ export default function EditMemberModal() {
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="Leave empty to keep unchanged"
+                  className={inputClass}
+                />
+              </div>
+
+              {/* Address */}
+              <div className="space-y-1.5 col-span-1 md:col-span-2">
+                <label className={labelClass}>Address</label>
+                <input
+                  type="text"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleChange}
+                  placeholder="Street address, City, State, ZIP"
                   className={inputClass}
                 />
               </div>
