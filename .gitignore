@@ -18,9 +18,11 @@ logs
 
 # Environment variables / secrets (Crucial to prevent uploading credentials like Atlas MongoDB URIs)
 .env
+.env.*
 .env.local
 .env.*.local
 **/.env
+**/.env.*
 **/.env.local
 **/.env.*.local
 
