@@ -22,7 +22,6 @@ const memberSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Phone number is required'],
       trim: true,
-      alias: 'phone',
     },
     email: {
       type: String,
@@ -43,12 +42,10 @@ const memberSchema = new mongoose.Schema(
     feeStartDate: {
       type: Date,
       required: [true, 'Fee start date is required'],
-      alias: 'startDate',
     },
     feeEndDate: {
       type: Date,
       required: [true, 'Fee end date is required'],
-      alias: 'endDate',
     },
     status: {
       type: String,
@@ -77,6 +74,30 @@ const memberSchema = new mongoose.Schema(
 memberSchema.virtual('membershipType').get(function () {
   return this.plan && typeof this.plan === 'object' ? this.plan.name : '';
 });
+
+memberSchema.virtual('startDate')
+  .get(function () {
+    return this.feeStartDate;
+  })
+  .set(function (val) {
+    this.feeStartDate = val;
+  });
+
+memberSchema.virtual('endDate')
+  .get(function () {
+    return this.feeEndDate;
+  })
+  .set(function (val) {
+    this.feeEndDate = val;
+  });
+
+memberSchema.virtual('phone')
+  .get(function () {
+    return this.mobile;
+  })
+  .set(function (val) {
+    this.mobile = val;
+  });
 
 memberSchema.virtual('feeAmount').get(function () {
   return this.plan && typeof this.plan === 'object' ? this.plan.price : 0;

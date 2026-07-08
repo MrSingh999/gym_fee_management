@@ -58,6 +58,7 @@ export default function Dashboard() {
   const formatDate = (dateStr) => {
     if (!dateStr) return "";
     const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return "";
     return date.toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
@@ -369,7 +370,7 @@ export default function Dashboard() {
 
                 return (
                   <motion.div
-                    key={member._id}
+                    key={member._id || idx}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.2, delay: idx * 0.02 }}
@@ -390,8 +391,8 @@ export default function Dashboard() {
                             <span
                               className={`inline-flex items-center space-x-1 text-[9px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full ${
                                 isOverdue
-                                  ? "bg-red-500/10 text-red-400"
-                                  : "bg-amber-500/10 text-amber-400"
+                                  ? "bg-red-500/10 text-red-600 dark:text-red-400"
+                                  : "bg-amber-500/10 text-amber-600 dark:text-amber-400"
                               }`}
                             >
                               <span
@@ -436,11 +437,11 @@ export default function Dashboard() {
 
                         <div className="mt-0 sm:mt-2 text-right">
                           {isOverdue ? (
-                            <p className="text-[10px] text-red-400 font-semibold mb-1.5 font-mono">
+                            <p className="text-[10px] text-red-600 dark:text-red-400 font-semibold mb-1.5 font-mono">
                               Overdue by {Math.abs(daysDiff)}d
                             </p>
                           ) : (
-                            <p className="text-[10px] text-amber-400 font-semibold mb-1.5 font-mono">
+                            <p className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold mb-1.5 font-mono">
                               Expires in {daysDiff}d
                             </p>
                           )}

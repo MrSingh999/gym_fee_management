@@ -247,13 +247,13 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .status-dot-active {
-  background: #ffffff;
-  box-shadow: 0 0 6px rgba(255, 255, 255, 0.4);
+  background: #10b981;
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.4);
 }
 
 .light .status-dot-active {
-  background: #000000;
-  box-shadow: 0 0 6px rgba(0, 0, 0, 0.2);
+  background: #059669;
+  box-shadow: 0 0 6px rgba(5, 150, 105, 0.3);
 }
 
 .status-dot-overdue {
@@ -261,9 +261,19 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: 0 0 6px rgba(239, 68, 68, 0.4);
 }
 
+.light .status-dot-overdue {
+  background: #dc2626;
+  box-shadow: 0 0 6px rgba(220, 38, 38, 0.3);
+}
+
 .status-dot-due {
   background: #eab308;
   box-shadow: 0 0 6px rgba(234, 179, 8, 0.4);
+}
+
+.light .status-dot-due {
+  background: #d97706;
+  box-shadow: 0 0 6px rgba(217, 119, 6, 0.3);
 }
 
 /* ─── MODAL BACKDROP ─── */

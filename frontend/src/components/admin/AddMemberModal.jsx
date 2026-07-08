@@ -13,7 +13,10 @@ import { DatePicker } from "@/components/ui/date-picker";
 import CropImageModal from "@/components/CropImageModal";
 import ImageViewer from "@/components/ImageViewer";
 
-export default function AddMemberModal({ isOpen, onClose, onSuccess }) {
+import { useApp } from "@/context/AppContext";
+
+export default function AddMemberModal() {
+  const { isAddModalOpen: isOpen, closeAddModal: onClose, triggerRefresh: onSuccess } = useApp();
   const fileInputRef = useRef(null);
   const [formData, setFormData] = useState({
     name: "",
@@ -277,11 +280,7 @@ export default function AddMemberModal({ isOpen, onClose, onSuccess }) {
                   onValueChange={handleTypeChange}
                 >
                   <SelectTrigger className={selectTriggerClass}>
-                    <SelectValue>
-                      {formData.membershipType === 'strength training' && 'Strength Training'}
-                      {formData.membershipType === 'strength and cardio' && 'Strength & Cardio'}
-                      {formData.membershipType === 'personal training' && 'Personal Training'}
-                    </SelectValue>
+                    <SelectValue placeholder="Select Plan" />
                   </SelectTrigger>
                   <SelectContent className="bg-(--bg-card) backdrop-blur-xl border border-(--border-color-hover) rounded-[6px] shadow-2xl">
                     <SelectItem value="strength training">Strength Training</SelectItem>

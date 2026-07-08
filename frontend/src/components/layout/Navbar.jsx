@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
 import { Users, LayoutDashboard, UserPlus, LogOut, Sun, Moon } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
@@ -6,21 +6,32 @@ import { useAuth } from '@/context/AuthContext';
 import { useApp } from '@/context/AppContext';
 import Logo from '@/components/ui/Logo';
 import { motion } from 'framer-motion';
+import {
+  AlertDialog,
+  AlertDialogPortal,
+  AlertDialogBackdrop,
+  AlertDialogPopup,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from '@/components/ui/alert-dialog';
 
 export default function Navbar() {
   const { theme, toggleTheme } = useTheme();
   const { logout } = useAuth();
   const { openAddModal } = useApp();
   const navigate = useNavigate();
+  const [showLogoutAlert, setShowLogoutAlert] = useState(false);
 
-  const handleLogout = async () => {
-    if (window.confirm('Are you sure you want to log out of the admin console?')) {
-      try {
-        await logout();
-        navigate('/login');
-      } catch (err) {
-        console.error('Logout error:', err);
-      }
+  const confirmLogout = async () => {
+    try {
+      await logout();
+      navigate('/login');
+    } catch (err) {
+      console.error('Logout error:', err);
     }
   };
 
@@ -110,7 +121,7 @@ export default function Navbar() {
             
             {/* Logout */}
             <button
-              onClick={handleLogout}
+              onClick={() => setShowLogoutAlert(true)}
               title="Log Out"
               className="flex items-center justify-center w-8 h-8 rounded-[6px] border border-(--border-color) text-(--text-secondary) hover:text-red-500 hover:bg-red-500/10 hover:border-red-500/20 transition-all duration-200 cursor-pointer"
             >
@@ -185,7 +196,7 @@ export default function Navbar() {
 
         {/* Logout Action */}
         <button
-          onClick={handleLogout}
+          onClick={() => setShowLogoutAlert(true)}
           aria-label="Log Out"
           className="flex flex-col items-center justify-center flex-1 py-1 text-(--text-secondary) hover:text-red-500 transition-all duration-200 cursor-pointer"
         >
@@ -194,6 +205,26 @@ export default function Navbar() {
         </button>
 
       </div>
+
+      <AlertDialog open={showLogoutAlert} onOpenChange={setShowLogoutAlert}>
+        <AlertDialogPortal>
+          <AlertDialogBackdrop />
+          <AlertDialogPopup>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Admin Logout</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to log out of the admin console?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction variant="destructive" onClick={confirmLogout}>
+                Logout
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogPopup>
+        </AlertDialogPortal>
+      </AlertDialog>
     </>
   );
 }

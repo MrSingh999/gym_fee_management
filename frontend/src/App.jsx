@@ -16,7 +16,6 @@ import Workouts from '@/pages/member/Workouts';
 import Billing from '@/pages/member/Billing';
 import Security from '@/pages/member/Security';
 import { useAuth } from '@/context/AuthContext';
-import { useApp } from '@/context/AppContext';
 import Logo from '@/components/ui/Logo';
 
 const BootLoader = () => {
@@ -86,21 +85,6 @@ const BootLoader = () => {
 };
 
 function AdminLayout({ children }) {
-  const {
-    isAddModalOpen,
-    isEditModalOpen,
-    isRenewModalOpen,
-    isHistoryModalOpen,
-    memberToEdit,
-    memberToRenew,
-    memberToViewHistory,
-    triggerRefresh,
-    closeAddModal,
-    closeEditModal,
-    closeRenewModal,
-    closeHistoryModal
-  } = useApp();
-
   return (
     <div className="min-h-screen flex flex-col bg-gym-dark text-slate-800 dark:text-gray-100">
       {/* Navigation */}
@@ -115,51 +99,54 @@ function AdminLayout({ children }) {
       <Footer />
 
       {/* Add Modal */}
-      <AddMemberModal 
-        isOpen={isAddModalOpen}
-        onClose={closeAddModal}
-        onSuccess={triggerRefresh}
-      />
+      <AddMemberModal />
 
       {/* Edit Modal */}
-      <EditMemberModal 
-        isOpen={isEditModalOpen}
-        onClose={closeEditModal}
-        member={memberToEdit}
-        onSuccess={triggerRefresh}
-      />
+      <EditMemberModal />
 
       {/* Renew Modal */}
-      <RenewMemberModal 
-        isOpen={isRenewModalOpen}
-        onClose={closeRenewModal}
-        member={memberToRenew}
-        onSuccess={triggerRefresh}
-      />
+      <RenewMemberModal />
 
       {/* Payment History Modal */}
-      <PaymentHistoryModal 
-        isOpen={isHistoryModalOpen}
-        onClose={closeHistoryModal}
-        member={memberToViewHistory}
-      />
+      <PaymentHistoryModal />
     </div>
   );
 }
 
 export default function App() {
   const { user, checkingAuth } = useAuth();
-  const [minLoadTimeElapsed, setMinLoadTimeElapsed] = useState(false);
+  const [minLoadTimeElapsed, setMinLoadTimeElapsed] = useState(() => {
+    try {
+      return !!sessionStorage.getItem('firstLoadDone');
+    } catch (e) {
+      return false;
+    }
+  });
 
   useEffect(() => {
-    const timer = setTimeout(() => {
+    try {
+      if (!sessionStorage.getItem('firstLoadDone')) {
+        const timer = setTimeout(() => {
+          setMinLoadTimeElapsed(true);
+          try {
+            sessionStorage.setItem('firstLoadDone', 'true');
+          } catch (e) {}
+        }, 2000);
+        return () => clearTimeout(timer);
+      }
+    } catch (e) {
       setMinLoadTimeElapsed(true);
-    }, 2000);
-    return () => clearTimeout(timer);
+    }
   }, []);
 
-  // 1. Loading state on boot session restore or minimum 3s loader
-  if (checkingAuth || !minLoadTimeElapsed) {
+  // 1. Loading state on boot session restore, or minimum 2s loader on first website entry
+  if (checkingAuth || (!minLoadTimeElapsed && !(() => {
+    try {
+      return sessionStorage.getItem('firstLoadDone');
+    } catch (e) {
+      return false;
+    }
+  })())) {
     return <BootLoader />;
   }
 

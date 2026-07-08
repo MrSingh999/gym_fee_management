@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { Flame } from "lucide-react";
 
 const ROUTINES = {
   personal: [
@@ -32,10 +34,48 @@ const pickRoutine = (planName) => {
   return ROUTINES.strength;
 };
 
+const isStructured = (text) => {
+  return /\(\d+x/i.test(text) || /\d+\s*mins/i.test(text) || /press|squats|deadlift|curls|extensions|raises|pulldowns|rows|fly/i.test(text);
+};
+
+const parseRoutineText = (text) => {
+  if (!text) return { exercises: [], finisher: null };
+
+  const finisherIdx = text.toLowerCase().indexOf("finisher:");
+  let exercisesStr = text;
+  let finisher = null;
+
+  if (finisherIdx !== -1) {
+    exercisesStr = text.slice(0, finisherIdx).trim();
+    finisher = text.slice(finisherIdx + 9).trim();
+    if (exercisesStr.endsWith(".")) {
+      exercisesStr = exercisesStr.slice(0, -1);
+    }
+  }
+
+  const exercises = exercisesStr
+    .split(/[,.;]/)
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0);
+
+  return { exercises, finisher };
+};
+
 export default function Workouts() {
   const { user } = useAuth();
   const today = new Date();
   const routine = pickRoutine(user.plan?.name);
+
+  // Active day index (defaults to today's day of week mapped: Mon=0, Sun=6)
+  const [activeDayIdx, setActiveDayIdx] = useState(() => {
+    const day = today.getDay();
+    return day === 0 ? routine.length - 1 : Math.min(day - 1, routine.length - 1);
+  });
+
+  const selectedRoutine = routine[activeDayIdx] || routine[0];
+  const parsed = parseRoutineText(selectedRoutine.routine);
+  const selectedDayOfWeek = today.getDay();
+  const isSelectedDayToday = selectedDayOfWeek === (activeDayIdx === 6 ? 0 : activeDayIdx + 1);
 
   return (
     <div className="space-y-4 sm:space-y-6 animate-fade-in">
@@ -65,7 +105,80 @@ export default function Workouts() {
       {/* Weekly Split */}
       <div className="space-y-3">
         <h3 className="font-bold text-base text-(--text-primary) pl-1">Weekly Training Schedule</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-3">
+
+        {/* Mobile Pills Day Selector */}
+        <div className="flex md:hidden space-x-1.5 overflow-x-auto pb-2 hide-scrollbar">
+          {routine.map((item, idx) => {
+            const isSelected = activeDayIdx === idx;
+            const dayOfWeek = today.getDay();
+            const isToday = dayOfWeek === (idx === 6 ? 0 : idx + 1);
+            return (
+              <button
+                key={item.day}
+                onClick={() => setActiveDayIdx(idx)}
+                className={`px-3.5 py-2 rounded-[6px] text-[11px] font-bold whitespace-nowrap transition-all duration-200 cursor-pointer border ${
+                  isSelected
+                    ? "bg-gym-orange text-white border-gym-orange shadow-md shadow-gym-orange/10"
+                    : "bg-gym-dark/45 border-(--border-color) text-(--text-secondary) hover:text-(--text-primary)"
+                }`}
+              >
+                {item.day.split(" ")[0]} {isToday && "•"}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Mobile Single Day Focused View */}
+        <div className="md:hidden glass-panel p-4 rounded-[12px] border border-(--border-color-hover) space-y-4">
+          <div className="flex justify-between items-center pb-2.5 border-b border-(--border-color)/40">
+            <div>
+              <span className="font-bold text-[10px] uppercase tracking-wider text-(--text-muted) font-mono">
+                {selectedRoutine.day}
+              </span>
+              <h3 className="font-bold text-sm text-(--text-primary) mt-0.5">{selectedRoutine.focus}</h3>
+            </div>
+            {isSelectedDayToday && (
+              <span className="bg-gym-orange text-white text-[9px] font-bold px-2 py-0.5 rounded-[4px] uppercase tracking-wider shadow-sm">
+                Today
+              </span>
+            )}
+          </div>
+
+          {isStructured(selectedRoutine.routine) ? (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <h4 className="text-[10px] text-(--text-muted) font-bold uppercase tracking-wider font-mono">Exercises</h4>
+                <div className="space-y-2">
+                  {parsed.exercises.map((ex, i) => (
+                    <label key={i} className="flex items-start space-x-3 bg-gym-dark/20 border border-(--border-color)/30 p-3 rounded-[6px] cursor-pointer transition-all duration-200 hover:bg-gym-dark/30 select-none">
+                      <input type="checkbox" className="mt-0.5 h-4 w-4 rounded border-(--border-color) text-gym-orange focus:ring-gym-orange cursor-pointer" />
+                      <span className="text-xs text-(--text-primary) font-medium leading-tight">{ex}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {parsed.finisher && (
+                <div className="bg-gym-orange/[0.02] border border-gym-orange/15 rounded-[6px] p-3 space-y-1.5">
+                  <div className="flex items-center space-x-1.5 text-gym-orange">
+                    <Flame className="h-4 w-4" />
+                    <h4 className="font-bold text-[10px] uppercase tracking-wider">Finisher Block</h4>
+                  </div>
+                  <p className="text-xs text-(--text-secondary) leading-relaxed">{parsed.finisher}</p>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="bg-gym-dark/20 border border-(--border-color)/30 p-3.5 rounded-[6px]">
+              <p className="text-xs text-(--text-secondary) leading-relaxed">
+                {selectedRoutine.routine}
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Desktop 7-Column Grid view */}
+        <div className="hidden md:grid grid-cols-2 lg:grid-cols-7 gap-3">
           {routine.map((item, idx) => {
             const dayOfWeek = today.getDay();
             const isToday = dayOfWeek === (idx === 6 ? 0 : idx + 1);

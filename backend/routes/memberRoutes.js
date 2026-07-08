@@ -35,7 +35,7 @@ router.post(
     body("phone").notEmpty().withMessage("Phone number is required").trim(),
     body("email").optional({ checkFalsy: true }).isEmail().withMessage("Please provide a valid email address"),
     body("membershipType").notEmpty().withMessage("Membership plan type is required").trim(),
-    body("startDate").optional().isISO8601().withMessage("Please provide a valid start date"),
+    body("startDate").optional({ checkFalsy: true }).isISO8601().withMessage("Please provide a valid start date"),
     validateRequest,
   ],
   createMember
@@ -47,12 +47,12 @@ router.put(
     admin,
     body("renewalType")
       .optional()
-      .isIn(["standard", "custom"])
-      .withMessage("Renewal type must be standard or custom"),
-    body("customDate").optional().isISO8601().withMessage("Please provide a valid custom end date"),
+      .isIn(["standard", "custom", "months"])
+      .withMessage("Renewal type must be standard, custom, or months"),
+    body("customDate").optional({ checkFalsy: true }).isISO8601().withMessage("Please provide a valid custom end date"),
     body("months").optional().isNumeric().withMessage("Months must be a number"),
     body("membershipType").optional().trim(),
-    body("startDate").optional().isISO8601().withMessage("Please provide a valid start date"),
+    body("startDate").optional({ checkFalsy: true }).isISO8601().withMessage("Please provide a valid start date"),
     validateRequest,
   ],
   renewMember
@@ -72,11 +72,11 @@ router.put(
     body("phone").optional().notEmpty().withMessage("Phone number cannot be empty").trim(),
     body("email").optional({ checkFalsy: true }).isEmail().withMessage("Please provide a valid email address"),
     body("membershipType").optional().notEmpty().withMessage("Membership plan type cannot be empty").trim(),
-    body("startDate").optional().isISO8601().withMessage("Please provide a valid start date"),
-    body("endDate").optional().isISO8601().withMessage("Please provide a valid end date"),
+    body("startDate").optional({ checkFalsy: true }).isISO8601().withMessage("Please provide a valid start date"),
+    body("endDate").optional({ checkFalsy: true }).isISO8601().withMessage("Please provide a valid end date"),
     body("status")
       .optional()
-      .isIn(["Active", "Expired", "Inactive", "active", "expired", "inactive"])
+      .isIn(["Active", "Expired", "Inactive", "active", "expired", "inactive", "due", "overdue", "Due", "Overdue"])
       .withMessage("Invalid status value"),
     validateRequest,
   ],

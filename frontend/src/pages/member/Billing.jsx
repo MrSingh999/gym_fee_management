@@ -66,8 +66,8 @@ export default function Billing() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-(--border-color)/30">
-                {payments.map((p) => (
-                  <tr key={p._id} className="table-row-hover hover:bg-(--bg-elevated)/20 text-(--text-secondary)">
+                {payments.map((p, idx) => (
+                  <tr key={p._id || idx} className="table-row-hover hover:bg-(--bg-elevated)/20 text-(--text-secondary)">
                     <td className="p-4 font-semibold text-(--text-primary) font-mono">{formatDate(p.paymentDate || p.createdAt)}</td>
                     <td className="p-4 capitalize font-mono">{p.plan?.name || "Workout"}</td>
                     <td className="p-4 font-mono">{formatDate(p.startDate)} — {formatDate(p.endDate)}</td>
@@ -83,22 +83,42 @@ export default function Billing() {
           </div>
 
           {/* Mobile Cards */}
-          <div className="sm:hidden space-y-3">
-            {payments.map((p) => (
-              <div key={p._id} className="p-3 border border-(--border-color)/40 bg-white/[0.01] rounded-[8px] space-y-2 text-xs">
-                <div className="flex items-center justify-between">
-                  <span className="text-(--text-muted) font-medium font-mono">{formatDate(p.paymentDate || p.createdAt)}</span>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded bg-gym-dark/50 border border-(--border-color) text-[9px] font-semibold uppercase tracking-wide font-mono">{p.paymentMethod || "Cash"}</span>
+          <div className="sm:hidden space-y-3.5">
+            {payments.map((p, idx) => (
+              <div key={p._id || idx} className="p-4 border border-(--border-color)/60 bg-gym-dark/25 rounded-[12px] space-y-3 text-xs shadow-sm hover:border-(--border-color-hover) transition-all duration-200">
+                <div className="flex items-center justify-between border-b border-(--border-color)/30 pb-2.5">
+                  <div className="flex flex-col">
+                    <span className="text-[9px] uppercase tracking-wider text-(--text-muted) font-mono">Payment Date</span>
+                    <span className="text-(--text-primary) font-semibold font-mono mt-0.5">{formatDate(p.paymentDate || p.createdAt)}</span>
+                  </div>
+                  <span className="inline-flex items-center px-2 py-0.75 rounded-[4px] bg-gym-dark/60 border border-(--border-color) text-[9px] font-bold uppercase tracking-wider text-(--text-secondary) font-mono">{p.paymentMethod || "Cash"}</span>
                 </div>
-                <div className="flex justify-between items-center gap-2">
-                  <span className="font-semibold text-(--text-primary) capitalize truncate">{p.plan?.name || "Workout"}</span>
-                  <span className="font-bold text-gym-orange text-sm tabular-nums shrink-0 font-mono">₹{p.amount.toLocaleString()}</span>
+                
+                <div className="grid grid-cols-2 gap-2.5">
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-[9px] uppercase tracking-wider text-(--text-muted) font-mono">Training Plan</span>
+                    <span className="font-bold text-(--text-primary) capitalize truncate mt-0.5">{p.plan?.name || "Workout"}</span>
+                  </div>
+                  <div className="flex flex-col items-end">
+                    <span className="text-[9px] uppercase tracking-wider text-(--text-muted) font-mono">Amount Paid</span>
+                    <span className="font-black text-gym-orange text-sm tabular-nums mt-0.5 font-mono">₹{p.amount.toLocaleString()}</span>
+                  </div>
                 </div>
-                <div className="flex items-center space-x-1.5 text-[10px] text-(--text-secondary) mt-1 border-t border-(--border-color)/10 pt-2 font-mono">
-                  <Calendar className="h-3.5 w-3.5 text-(--text-muted) shrink-0" />
-                  <span>{formatDate(p.startDate)} — {formatDate(p.endDate)}</span>
+
+                <div className="flex flex-col space-y-1 bg-gym-dark/40 border border-(--border-color)/20 p-2.5 rounded-[6px] font-mono">
+                  <span className="text-[9px] uppercase tracking-wider text-(--text-muted) font-mono">Billing Cycle</span>
+                  <div className="flex items-center space-x-1.5 text-[10px] text-(--text-secondary) mt-0.5">
+                    <Calendar className="h-3.5 w-3.5 text-(--text-muted) shrink-0" />
+                    <span>{formatDate(p.startDate)} — {formatDate(p.endDate)}</span>
+                  </div>
                 </div>
-                {p.remarks && <p className="text-[10px] text-(--text-muted) italic border-l-2 border-(--border-color-hover) pl-2 mt-1.5 font-mono">{p.remarks}</p>}
+
+                {p.remarks && (
+                  <div className="flex flex-col space-y-0.5">
+                    <span className="text-[9px] uppercase tracking-wider text-(--text-muted) font-mono">Remarks</span>
+                    <p className="text-[10px] text-(--text-muted) italic border-l-2 border-gym-orange/30 pl-2 mt-0.5 font-mono">{p.remarks}</p>
+                  </div>
+                )}
               </div>
             ))}
           </div>

@@ -11,12 +11,10 @@ import {
 } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
 
-export default function RenewMemberModal({
-  isOpen,
-  onClose,
-  member,
-  onSuccess,
-}) {
+import { useApp } from "@/context/AppContext";
+
+export default function RenewMemberModal() {
+  const { isRenewModalOpen: isOpen, closeRenewModal: onClose, memberToRenew: member, triggerRefresh: onSuccess } = useApp();
   const [membershipType, setMembershipType] = useState("strength training");
   const [renewalType, setRenewalType] = useState("1"); // '1', '2', '3', '6', '12', 'custom_months', 'custom_date'
   const [customMonths, setCustomMonths] = useState("");
@@ -334,8 +332,10 @@ export default function RenewMemberModal({
     }
   };
 
-  const formatDate = (date) => {
-    if (!date) return "";
+  const formatDate = (dateVal) => {
+    if (!dateVal) return "";
+    const date = new Date(dateVal);
+    if (isNaN(date.getTime())) return "";
     return date.toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
@@ -411,7 +411,7 @@ export default function RenewMemberModal({
                 <div>
                   <span className="text-(--text-muted)">End Date:</span>
                   <p className="text-(--text-primary) font-semibold mt-0.5">
-                    {formatDate(new Date(member.endDate))}
+                    {formatDate(member.endDate || member.feeEndDate)}
                   </p>
                 </div>
               </div>
@@ -465,15 +465,7 @@ export default function RenewMemberModal({
                   onValueChange={handleDurationChange}
                 >
                   <SelectTrigger className={selectTriggerClass}>
-                    <SelectValue>
-                      {renewalType === '1' && '1 Month'}
-                      {renewalType === '2' && '2 Months'}
-                      {renewalType === '3' && '3 Months'}
-                      {renewalType === '6' && '6 Months'}
-                      {renewalType === '12' && '12 Months (1 Year)'}
-                      {renewalType === 'custom_months' && 'Custom Months'}
-                      {renewalType === 'custom_date' && 'Custom Date'}
-                    </SelectValue>
+                    <SelectValue placeholder="Select Term" />
                   </SelectTrigger>
                   <SelectContent className="bg-(--bg-card) backdrop-blur-xl border border-(--border-color-hover) rounded-[6px] shadow-2xl">
                     <SelectItem value="1">1 Month</SelectItem>

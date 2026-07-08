@@ -3,7 +3,10 @@ import { X, Receipt, Calendar, AlertCircle, RefreshCw, CreditCard, Wallet, Landm
 import { memberService } from "@/services/memberService";
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function PaymentHistoryModal({ isOpen, onClose, member }) {
+import { useApp } from "@/context/AppContext";
+
+export default function PaymentHistoryModal() {
+  const { isHistoryModalOpen: isOpen, closeHistoryModal: onClose, memberToViewHistory: member } = useApp();
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -31,6 +34,7 @@ export default function PaymentHistoryModal({ isOpen, onClose, member }) {
   const formatDate = (dateStr) => {
     if (!dateStr) return "";
     const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return "";
     return date.toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
@@ -150,8 +154,8 @@ export default function PaymentHistoryModal({ isOpen, onClose, member }) {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gym-border/30 text-(--text-secondary)">
-                      {payments.map((p) => (
-                        <tr key={p._id} className="hover:bg-white/[0.02] transition-colors">
+                      {payments.map((p, idx) => (
+                        <tr key={p._id || idx} className="hover:bg-white/[0.02] transition-colors">
                           <td className="py-3 px-4 font-medium tabular-nums">{formatDate(p.paymentDate)}</td>
                           <td className="py-3 px-4 font-bold text-(--text-primary) tabular-nums">
                             ₹{p.amount.toLocaleString()}
@@ -176,8 +180,8 @@ export default function PaymentHistoryModal({ isOpen, onClose, member }) {
 
                 {/* Mobile View Cards */}
                 <div className="sm:hidden space-y-3">
-                  {payments.map((p) => (
-                    <div key={p._id} className="p-3 border border-(--border-color)/40 bg-white/[0.01] rounded-[6px] space-y-2 text-xs">
+                  {payments.map((p, idx) => (
+                    <div key={p._id || idx} className="p-3 border border-(--border-color)/40 bg-white/[0.01] rounded-[6px] space-y-2 text-xs">
                       <div className="flex items-center justify-between">
                         <span className="text-(--text-muted) font-medium tabular-nums">{formatDate(p.paymentDate)}</span>
                         {getMethodBadge(p.paymentMethod)}

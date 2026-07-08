@@ -11,6 +11,18 @@ import {
 } from "@/components/ui/select";
 import { motion, AnimatePresence } from 'framer-motion';
 import ImageViewer from '@/components/ImageViewer';
+import {
+  AlertDialog,
+  AlertDialogPortal,
+  AlertDialogBackdrop,
+  AlertDialogPopup,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from '@/components/ui/alert-dialog';
 
 export default function MemberList() {
   const { openEditModal, openRenewModal, openHistoryModal, refreshTrigger } = useApp();
@@ -19,6 +31,8 @@ export default function MemberList() {
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [deleteMemberTarget, setDeleteMemberTarget] = useState(null);
+  const [errorMessage, setErrorMessage] = useState(null);
 
   // Filters state
   const [searchTerm, setSearchTerm] = useState('');
@@ -57,21 +71,28 @@ export default function MemberList() {
     }
   };
 
-  const handleDelete = async (id, name) => {
-    if (window.confirm(`Are you sure you want to delete member: "${name}"? This action cannot be undone.`)) {
-      try {
-        await memberService.deleteMember(id);
-        fetchMembers(); // refresh
-      } catch (err) {
-        console.error(err);
-        alert('Failed to delete member.');
-      }
+  const handleDelete = (id, name) => {
+    setDeleteMemberTarget({ id, name });
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteMemberTarget) return;
+    const { id } = deleteMemberTarget;
+    try {
+      await memberService.deleteMember(id);
+      fetchMembers(); // refresh
+    } catch (err) {
+      console.error(err);
+      setErrorMessage('Failed to delete member. Please try again.');
+    } finally {
+      setDeleteMemberTarget(null);
     }
   };
 
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
     const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return '';
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
   };
 
@@ -80,17 +101,17 @@ export default function MemberList() {
       active: {
         label: 'Active',
         dotClass: 'status-dot-active',
-        badgeClass: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/15',
+        badgeClass: 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20 dark:border-emerald-500/15',
       },
       due: {
         label: 'Due Soon',
         dotClass: 'status-dot-due',
-        badgeClass: 'text-amber-400 bg-amber-500/10 border-amber-500/15',
+        badgeClass: 'text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-500/20 dark:border-amber-500/15',
       },
       overdue: {
         label: 'Overdue',
         dotClass: 'status-dot-overdue',
-        badgeClass: 'text-red-400 bg-red-500/10 border-red-500/15',
+        badgeClass: 'text-red-600 dark:text-red-400 bg-red-500/10 border-red-500/20 dark:border-red-500/15',
       },
       inactive: {
         label: 'Inactive',
@@ -168,13 +189,7 @@ export default function MemberList() {
                 onValueChange={setStatusFilter}
               >
                 <SelectTrigger className={selectTriggerClass}>
-                  <SelectValue>
-                    {statusFilter === 'all' && 'All Statuses'}
-                    {statusFilter === 'active' && 'Active'}
-                    {statusFilter === 'due' && 'Due Soon'}
-                    {statusFilter === 'overdue' && 'Overdue'}
-                    {statusFilter === 'inactive' && 'Inactive'}
-                  </SelectValue>
+                  <SelectValue placeholder="All Statuses" />
                 </SelectTrigger>
                 <SelectContent className="bg-(--bg-card) border border-(--border-color-hover) rounded-[6px] shadow-2xl">
                   <SelectItem value="all">All Statuses</SelectItem>
@@ -197,12 +212,7 @@ export default function MemberList() {
                 onValueChange={setPlanFilter}
               >
                 <SelectTrigger className={selectTriggerClass}>
-                  <SelectValue>
-                    {planFilter === 'all' && 'All Plans'}
-                    {planFilter === 'strength training' && 'Strength Training'}
-                    {planFilter === 'strength and cardio' && 'Strength & Cardio'}
-                    {planFilter === 'personal training' && 'Personal Training'}
-                  </SelectValue>
+                  <SelectValue placeholder="All Plans" />
                 </SelectTrigger>
                 <SelectContent className="bg-(--bg-card) border border-(--border-color-hover) rounded-[6px] shadow-2xl">
                   <SelectItem value="all">All Plans</SelectItem>
@@ -224,12 +234,7 @@ export default function MemberList() {
                 onValueChange={setSortOption}
               >
                 <SelectTrigger className={selectTriggerClass}>
-                  <SelectValue>
-                    {sortOption === 'joining-desc' && 'Joining: Newest'}
-                    {sortOption === 'joining-asc' && 'Joining: Oldest'}
-                    {sortOption === 'expiry-desc' && 'Expiry: Latest'}
-                    {sortOption === 'expiry-asc' && 'Expiry: Earliest'}
-                  </SelectValue>
+                  <SelectValue placeholder="Sort Timeline" />
                 </SelectTrigger>
                 <SelectContent className="bg-(--bg-card) border border-(--border-color-hover) rounded-[6px] shadow-2xl">
                   <SelectItem value="joining-desc">Joining: Newest First</SelectItem>
@@ -290,7 +295,7 @@ export default function MemberList() {
                   <AnimatePresence>
                     {sortedMembers.map((member, idx) => (
                       <motion.tr 
-                        key={member._id} 
+                        key={member._id || idx} 
                         initial={{ opacity: 0, y: 4 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.15, delay: idx * 0.01 }}
@@ -311,7 +316,7 @@ export default function MemberList() {
                               <div className="font-semibold text-(--text-primary) text-[13px] truncate">{member.name}</div>
                               <div className="flex items-center text-xs text-(--text-muted) space-x-1.5 mt-0.5 font-mono">
                                 <Phone className="h-3 w-3 shrink-0" />
-                                <span className="truncate">{member.phone}</span>
+                                <span className="truncate">{member.phone || member.mobile}</span>
                               </div>
                             </div>
                           </div>
@@ -327,7 +332,7 @@ export default function MemberList() {
 
                         {/* Subscription Plan */}
                         <td className="py-3 px-5">
-                          <span className="text-(--text-secondary) font-medium capitalize text-[13px] font-mono">{member.membershipType}</span>
+                          <span className="text-(--text-secondary) font-medium capitalize text-[13px] font-mono">{member.membershipType || (member.plan && typeof member.plan === 'object' ? member.plan.name : '')}</span>
                         </td>
 
                         {/* Timeline Details */}
@@ -335,7 +340,7 @@ export default function MemberList() {
                           <div className="flex items-center text-xs text-(--text-secondary) space-x-1 font-mono">
                             <Calendar className="h-3 w-3 text-(--text-muted) shrink-0" />
                             <span className="tabular-nums">
-                              {formatDate(member.startDate)} → {formatDate(member.endDate)}
+                              {formatDate(member.startDate || member.feeStartDate)} → {formatDate(member.endDate || member.feeEndDate)}
                             </span>
                           </div>
                         </td>
@@ -397,7 +402,7 @@ export default function MemberList() {
               <AnimatePresence>
                 {sortedMembers.map((member, idx) => (
                   <motion.div 
-                    key={member._id}
+                    key={member._id || idx}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.2, delay: idx * 0.02 }}
@@ -440,7 +445,7 @@ export default function MemberList() {
                       <div className="space-y-1 col-span-2 pt-2 border-t border-(--border-color)/20">
                         <p className="text-[10px] text-(--text-muted) font-bold uppercase tracking-wider font-mono">Timeline</p>
                         <p className="text-(--text-secondary) font-medium tabular-nums font-mono">
-                          {formatDate(member.startDate)} → {formatDate(member.endDate)}
+                          {formatDate(member.startDate || member.feeStartDate)} → {formatDate(member.endDate || member.feeEndDate)}
                         </p>
                       </div>
                     </div>
@@ -448,11 +453,11 @@ export default function MemberList() {
                     {/* Actions & Contact */}
                     <div className="flex items-center justify-between pt-1">
                       <a
-                        href={`tel:${member.phone}`}
+                        href={`tel:${member.phone || member.mobile}`}
                         className="flex items-center space-x-1.5 text-xs text-(--text-primary) hover:opacity-80 font-bold transition-all duration-200 h-9 px-1 rounded-[6px] font-mono"
                       >
                         <Phone className="h-3.5 w-3.5" />
-                        <span className="tabular-nums">{member.phone}</span>
+                        <span className="tabular-nums">{member.phone || member.mobile}</span>
                       </a>
                       
                       <div className="flex items-center space-x-2">
@@ -499,6 +504,45 @@ export default function MemberList() {
         src={viewImage}
         alt="Member profile photo"
       />
+
+      <AlertDialog open={!!deleteMemberTarget} onOpenChange={(open) => !open && setDeleteMemberTarget(null)}>
+        <AlertDialogPortal>
+          <AlertDialogBackdrop />
+          <AlertDialogPopup>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Member</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete member: <strong className="text-(--text-primary)">"{deleteMemberTarget?.name}"</strong>? This action cannot be undone and will remove all their records from the system.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction variant="destructive" onClick={confirmDelete}>
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogPopup>
+        </AlertDialogPortal>
+      </AlertDialog>
+
+      <AlertDialog open={!!errorMessage} onOpenChange={(open) => !open && setErrorMessage(null)}>
+        <AlertDialogPortal>
+          <AlertDialogBackdrop />
+          <AlertDialogPopup>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-red-500">Operation Failed</AlertDialogTitle>
+              <AlertDialogDescription>
+                {errorMessage}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogAction onClick={() => setErrorMessage(null)}>
+                Close
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogPopup>
+        </AlertDialogPortal>
+      </AlertDialog>
     </div>
   );
 }

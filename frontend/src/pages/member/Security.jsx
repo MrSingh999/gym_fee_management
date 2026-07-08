@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Lock, AlertTriangle, CheckCircle } from "lucide-react";
+import { Lock, AlertTriangle, CheckCircle, Eye, EyeOff } from "lucide-react";
 import { authService } from "@/services/authService";
 
 export default function Security() {
@@ -7,6 +7,10 @@ export default function Security() {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -32,6 +36,9 @@ export default function Security() {
       await authService.updatePassword(currentPassword, newPassword);
       setSuccess("Password updated successfully.");
       setForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
+      setShowCurrent(false);
+      setShowNew(false);
+      setShowConfirm(false);
     } catch (err) {
       console.error(err);
       setError(err.message || "Failed to update password.");
@@ -40,7 +47,7 @@ export default function Security() {
     }
   };
 
-  const inputClass = "w-full bg-white/[0.03] border border-(--border-color) rounded-[6px] px-4 py-3 text-sm text-(--text-primary) placeholder-gym-text-muted focus:outline-none focus:border-gym-orange transition-all duration-200";
+  const inputClass = "w-full bg-white/[0.03] border border-(--border-color) rounded-[6px] pl-4 pr-11 py-3 text-sm text-(--text-primary) placeholder-gym-text-muted focus:outline-none focus:border-gym-orange transition-all duration-200";
 
   return (
     <div className="glass-panel p-4 sm:p-6 rounded-[16px] border border-(--border-color-hover) max-w-xl mx-auto space-y-4 sm:space-y-6 animate-fade-in">
@@ -70,15 +77,30 @@ export default function Security() {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-1.5">
           <label className="text-[11px] font-bold text-(--text-muted) uppercase tracking-wider">Current Password</label>
-          <input type="password" required value={form.currentPassword} onChange={(e) => setForm({ ...form, currentPassword: e.target.value })} placeholder="Enter current password" className={inputClass} />
+          <div className="relative">
+            <input type={showCurrent ? "text" : "password"} required value={form.currentPassword} onChange={(e) => setForm({ ...form, currentPassword: e.target.value })} placeholder="Enter current password" className={inputClass} />
+            <button type="button" onClick={() => setShowCurrent(!showCurrent)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-(--text-muted) hover:text-(--text-primary) transition-colors cursor-pointer select-none">
+              {showCurrent ? <EyeOff className="h-4.5 w-4.5" /> : <Eye className="h-4.5 w-4.5" />}
+            </button>
+          </div>
         </div>
         <div className="space-y-1.5">
           <label className="text-[11px] font-bold text-(--text-muted) uppercase tracking-wider">New Password</label>
-          <input type="password" required minLength="6" value={form.newPassword} onChange={(e) => setForm({ ...form, newPassword: e.target.value })} placeholder="Minimum 6 characters" className={inputClass} />
+          <div className="relative">
+            <input type={showNew ? "text" : "password"} required minLength="6" value={form.newPassword} onChange={(e) => setForm({ ...form, newPassword: e.target.value })} placeholder="Minimum 6 characters" className={inputClass} />
+            <button type="button" onClick={() => setShowNew(!showNew)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-(--text-muted) hover:text-(--text-primary) transition-colors cursor-pointer select-none">
+              {showNew ? <EyeOff className="h-4.5 w-4.5" /> : <Eye className="h-4.5 w-4.5" />}
+            </button>
+          </div>
         </div>
         <div className="space-y-1.5">
           <label className="text-[11px] font-bold text-(--text-muted) uppercase tracking-wider">Confirm New Password</label>
-          <input type="password" required value={form.confirmPassword} onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })} placeholder="Repeat new password" className={inputClass} />
+          <div className="relative">
+            <input type={showConfirm ? "text" : "password"} required value={form.confirmPassword} onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })} placeholder="Repeat new password" className={inputClass} />
+            <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-(--text-muted) hover:text-(--text-primary) transition-colors cursor-pointer select-none">
+              {showConfirm ? <EyeOff className="h-4.5 w-4.5" /> : <Eye className="h-4.5 w-4.5" />}
+            </button>
+          </div>
         </div>
         <div className="pt-2">
           <button type="submit" disabled={submitting}

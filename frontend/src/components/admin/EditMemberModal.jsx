@@ -13,7 +13,10 @@ import { DatePicker } from "@/components/ui/date-picker";
 import CropImageModal from "@/components/CropImageModal";
 import ImageViewer from "@/components/ImageViewer";
 
-export default function EditMemberModal({ isOpen, onClose, member, onSuccess }) {
+import { useApp } from "@/context/AppContext";
+
+export default function EditMemberModal() {
+  const { isEditModalOpen: isOpen, closeEditModal: onClose, memberToEdit: member, triggerRefresh: onSuccess } = useApp();
   const fileInputRef = useRef(null);
   const [formData, setFormData] = useState({
     name: "",
@@ -38,15 +41,24 @@ export default function EditMemberModal({ isOpen, onClose, member, onSuccess }) 
 
   useEffect(() => {
     if (member && isOpen) {
+      const getFormattedDate = (val) => {
+        if (!val) return "";
+        try {
+          return new Date(val).toISOString().split("T")[0];
+        } catch (e) {
+          return "";
+        }
+      };
+
       setFormData({
         name: member.name || "",
         gender: member.gender || "Male",
-        dob: member.dob ? new Date(member.dob).toISOString().split("T")[0] : "",
-        phone: member.phone || "",
+        dob: getFormattedDate(member.dob),
+        phone: member.phone || member.mobile || "",
         email: member.email || "",
-        membershipType: member.membershipType || "workout",
-        startDate: member.startDate ? new Date(member.startDate).toISOString().split("T")[0] : "",
-        endDate: member.endDate ? new Date(member.endDate).toISOString().split("T")[0] : "",
+        membershipType: member.membershipType || (member.plan && typeof member.plan === "object" ? member.plan.name : "workout"),
+        startDate: getFormattedDate(member.startDate || member.feeStartDate),
+        endDate: getFormattedDate(member.endDate || member.feeEndDate),
         feeAmount: member.feeAmount || "",
         status: member.status || "active",
         password: "",
@@ -310,11 +322,7 @@ export default function EditMemberModal({ isOpen, onClose, member, onSuccess }) 
                   onValueChange={(val) => setFormData({ ...formData, membershipType: val })}
                 >
                   <SelectTrigger className={selectTriggerClass}>
-                    <SelectValue>
-                      {formData.membershipType === 'strength training' && 'Strength Training'}
-                      {formData.membershipType === 'strength and cardio' && 'Strength & Cardio'}
-                      {formData.membershipType === 'personal training' && 'Personal Training'}
-                    </SelectValue>
+                    <SelectValue placeholder="Select Plan" />
                   </SelectTrigger>
                   <SelectContent className="bg-(--bg-card) backdrop-blur-xl border border-(--border-color-hover) rounded-[6px] shadow-2xl">
                     <SelectItem value="strength training">Strength Training</SelectItem>
@@ -369,10 +377,7 @@ export default function EditMemberModal({ isOpen, onClose, member, onSuccess }) 
                   onValueChange={(val) => setFormData({ ...formData, status: val })}
                 >
                   <SelectTrigger className={selectTriggerClass}>
-                    <SelectValue>
-                      {formData.status === 'active' && 'Active'}
-                      {formData.status === 'inactive' && 'Inactive (Cancelled / Paused)'}
-                    </SelectValue>
+                    <SelectValue placeholder="Select Status" />
                   </SelectTrigger>
                   <SelectContent className="bg-(--bg-card) backdrop-blur-xl border border-(--border-color-hover) rounded-[6px] shadow-2xl">
                     <SelectItem value="active">Active</SelectItem>

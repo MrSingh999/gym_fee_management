@@ -1,14 +1,16 @@
+import React, { useState } from "react";
 import { User, Activity, Clock, Dumbbell, Calendar, FileText } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { formatDate, calculateAge, calcMembership } from "@/lib/memberHelpers";
-import AvatarUpload from "@/components/member/AvatarUpload";
 import ProgressRing from "@/components/member/ProgressRing";
 import ProfileDetailCard from "@/components/member/ProfileDetailCard";
 import ExpiryAlert from "@/components/member/ExpiryAlert";
+import ImageViewer from "@/components/ImageViewer";
 
 export default function Overview() {
   const { user } = useAuth();
   const { remainingDays, percentRemaining, isDisabled } = calcMembership(user);
+  const [viewImage, setViewImage] = useState(null);
 
   const profileItems = [
     { icon: User, label: "Full Name", value: user.name },
@@ -45,12 +47,27 @@ export default function Overview() {
 
       {/* Profile Details */}
       <div className="glass-panel p-4 sm:p-6 rounded-[16px] space-y-4 sm:space-y-6 lg:col-span-2 border border-(--border-color-hover)">
-        <div className="border-b border-(--border-color) pb-4">
-          <h3 className="font-bold text-lg text-(--text-primary)">Profile Overview</h3>
-          <p className="text-xs text-(--text-secondary)">Your registered personal and member details.</p>
+        <div className="border-b border-(--border-color) pb-4 flex items-center justify-between gap-4">
+          <div>
+            <h3 className="font-bold text-lg text-(--text-primary)">Profile Overview</h3>
+            <p className="text-xs text-(--text-secondary)">Your registered personal and member details.</p>
+          </div>
+          {/* Profile Picture (Non-editable) */}
+          <div className="h-12 w-12 rounded-full overflow-hidden border border-(--border-color-hover) bg-zinc-950 shrink-0 shadow-sm">
+            {user.profilePicture ? (
+              <img
+                src={user.profilePicture}
+                alt="Profile"
+                className="h-full w-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                onClick={() => setViewImage(user.profilePicture)}
+              />
+            ) : (
+              <div className="h-full w-full flex items-center justify-center text-zinc-500">
+                <User className="h-6 w-6" />
+              </div>
+            )}
+          </div>
         </div>
-
-        <AvatarUpload />
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           {profileItems.map((item) => (
@@ -60,6 +77,13 @@ export default function Overview() {
 
         <ExpiryAlert isDisabled={isDisabled} remainingDays={remainingDays} />
       </div>
+
+      <ImageViewer
+        isOpen={!!viewImage}
+        onClose={() => setViewImage(null)}
+        src={viewImage}
+        alt="Profile picture"
+      />
     </div>
   );
 }
