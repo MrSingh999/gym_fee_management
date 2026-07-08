@@ -35,8 +35,10 @@ const PORT = process.env.PORT || 6000;
 connectDB();
 
 // Middleware
-const corsOrigin = process.env.FRONTEND_ORIGIN
-  ? process.env.FRONTEND_ORIGIN.split(',').map((o) => o.trim())
+const corsOrigin = (process.env.FRONTEND_ORIGIN || process.env.FRONTEND_URL || process.env.ORIGIN)
+  ? (process.env.FRONTEND_ORIGIN || process.env.FRONTEND_URL || process.env.ORIGIN)
+      .split(',')
+      .map((o) => o.trim().replace(/\/$/, ''))
   : ['http://localhost:5173', 'http://127.0.0.1:5173'];
 
 app.use(
