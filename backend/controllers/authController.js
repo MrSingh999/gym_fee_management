@@ -245,71 +245,89 @@ const getMe = asyncHandler(async (req, res, next) => {
 const forgotPassword = asyncHandler(async (req, res, next) => {
   const { email } = req.body;
 
-  const user = await Admin.findOne({ email: email.toLowerCase() });
+  let user = await Admin.findOne({ email: email.toLowerCase() });
+  let role = 'admin';
   if (!user) {
-    throw new ErrorResponse('No admin account found with that email address', 404);
+    user = await Member.findOne({ email: email.toLowerCase() });
+    role = 'member';
   }
 
-  // Generate reset token
+  if (!user) {
+    throw new ErrorResponse('No account found with that email address', 404);
+  }
+
+  // Generate 6-digit OTP
   const resetToken = user.getResetPasswordToken();
 
   // Save token to database user record
   await user.save({ validateBeforeSave: false });
 
-  // Create reset URL (uses configured FRONTEND_URL to prevent Host Header injection)
-  const frontendOrigin = process.env.FRONTEND_URL || 'http://localhost:5173';
-  const frontendUrl = `${frontendOrigin}/?resetToken=${resetToken}`;
+  const message = `Your HEAVEN'S ARENA ${role === 'admin' ? 'Admin' : 'Member'} dashboard password reset OTP code is: ${resetToken}\n\nThis OTP code will expire in 10 minutes. If you did not request this, please ignore this email.`;
 
-  const message = `You are receiving this email because a password reset request was made for your HEAVEN'S ARENA Admin dashboard account.\n\nPlease proceed to this link to reset your password:\n\n${frontendUrl}\n\nThis reset link will expire in 10 minutes. If you did not request this, please ignore this email.`;
+  const html = `
+    <div style="font-family: sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; border: 1px solid #e4e4e7; border-radius: 8px;">
+      <h2 style="color: #ff5722; text-align: center;">HEAVEN'S ARENA</h2>
+      <p>You requested a password reset for your gym membership dashboard ${role === 'admin' ? 'admin' : 'member'} account.</p>
+      <p>Use the following 6-digit One-Time Password (OTP) to reset your password:</p>
+      <div style="background-color: #f4f4f5; text-align: center; font-size: 32px; font-weight: bold; letter-spacing: 5px; padding: 15px; border-radius: 6px; margin: 20px 0; color: #09090b;">
+        ${resetToken}
+      </div>
+      <p style="color: #71717a; font-size: 13px;">This OTP code will expire in 10 minutes. If you did not request this, please ignore this email.</p>
+    </div>
+  `;
 
   try {
     await sendEmail({
       email: user.email,
-      subject: 'HEAVEN\'S ARENA Dashboard - Password Reset Link',
+      subject: 'HEAVEN\'S ARENA Team - Password Reset OTP Code',
       message,
-      html: `
-        <h3>HEAVEN'S ARENA Admin Console</h3>
-        <p>You requested a password reset for your gym membership dashboard account.</p>
-        <p>Please click the button below to reset your password within 10 minutes:</p>
-        <a href="${frontendUrl}" style="background-color: #ff5722; color: white; padding: 10px 18px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">Reset Password</a>
-        <br /><br />
-        <p>If you cannot click the button, copy and paste this link in your browser:</p>
-        <p>${frontendUrl}</p>
-      `,
+      html,
     });
 
-    res.json({ success: true, message: 'Password reset link sent to your email.' });
+    res.json({ success: true, message: 'Password reset OTP code sent to your email.' });
   } catch (err) {
     console.error(err);
     user.resetPasswordToken = undefined;
     user.resetPasswordExpire = undefined;
     await user.save({ validateBeforeSave: false });
 
-    throw new ErrorResponse('Reset email could not be sent. Please check system SMTP configs.', 500);
+    throw new ErrorResponse('Reset OTP email could not be sent.', 500);
   }
 });
 
 // @desc    Update password with reset token
-// @route   PUT /api/auth/reset-password/:token
+// @route   PUT /api/auth/reset-password
 // @access  Public
 const resetPassword = asyncHandler(async (req, res, next) => {
-  const { token } = req.params;
-  const { password } = req.body;
+  const { email, otp, password } = req.body;
 
-  // Hash the input token to match stored version
+  if (!email || !otp || !password) {
+    throw new ErrorResponse('Please provide email, OTP code, and new password', 400);
+  }
+
+  // Hash the input OTP code to match stored version
   const hashedToken = crypto
     .createHash('sha256')
-    .update(token)
+    .update(otp.trim())
     .digest('hex');
 
-  // Find admin with matching token and unexpired timer
-  const user = await Admin.findOne({
+  // Find user in Admin or Member with matching email, token and unexpired timer
+  let user = await Admin.findOne({
+    email: email.toLowerCase(),
     resetPasswordToken: hashedToken,
     resetPasswordExpire: { $gt: Date.now() },
   });
 
   if (!user) {
-    throw new ErrorResponse('Invalid or expired reset token.', 400);
+    user = await Member.findOne({
+      email: email.toLowerCase(),
+      resetPasswordToken: hashedToken,
+      resetPasswordExpire: { $gt: Date.now() },
+    });
+  }
+
+  if (!user) {
+    throw new ErrorResponse('Invalid or expired OTP code.', 400);
   }
 
   // Set new password (will be hashed automatically by user Schema save hook)

@@ -343,7 +343,7 @@ export default function AddMemberModal() {
             <button
               type="submit"
               disabled={submitting}
-              className="flex items-center space-x-2 bg-gym-orange hover:bg-gym-orange-hover disabled:opacity-50 text-white px-5 py-2.5 rounded-[6px] text-sm font-semibold transition-all duration-200 shadow-lg shadow-gym-orange/15 cursor-pointer"
+              className="flex items-center space-x-2 bg-gym-orange hover:bg-gym-orange-hover disabled:opacity-50 text-gym-action-text px-5 py-2.5 rounded-[6px] text-sm font-semibold transition-all duration-200 shadow-lg shadow-gym-orange/15 cursor-pointer"
             >
               <Save className="h-4 w-4" />
               <span>{submitting ? "Registering..." : "Register Member"}</span>

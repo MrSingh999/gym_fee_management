@@ -142,7 +142,7 @@ export default function CropImageModal({ isOpen, onClose, imageSrc, onCropComple
               <button
                 onClick={handleConfirm}
                 disabled={processing}
-                className="flex items-center space-x-1.5 bg-gym-orange hover:bg-gym-orange-hover disabled:opacity-50 text-white px-4 py-2 rounded-[6px] text-sm font-semibold transition-all duration-200 shadow-lg shadow-gym-orange/15 cursor-pointer"
+                className="flex items-center space-x-1.5 bg-gym-orange hover:bg-gym-orange-hover disabled:opacity-50 text-gym-action-text px-4 py-2 rounded-[6px] text-sm font-semibold transition-all duration-200 shadow-lg shadow-gym-orange/15 cursor-pointer"
               >
                 <Check className="h-4 w-4" />
                 <span>{processing ? "Processing..." : "Apply"}</span>

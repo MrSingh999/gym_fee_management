@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 
 const memberSchema = new mongoose.Schema(
   {
@@ -64,6 +65,8 @@ const memberSchema = new mongoose.Schema(
       default: '',
     },
     refreshToken: String,
+    resetPasswordToken: String,
+    resetPasswordExpire: Date,
   },
   {
     timestamps: true,
@@ -188,6 +191,23 @@ memberSchema.methods.getSignedRefreshToken = function () {
   return jwt.sign({ id: this._id }, process.env.REFRESH_TOKEN_SECRET, {
     expiresIn: process.env.REFRESH_TOKEN_EXPIRE,
   });
+};
+
+// Generate and hash password reset token
+memberSchema.methods.getResetPasswordToken = function () {
+  // Generate random 6-digit OTP
+  const resetToken = Math.floor(100000 + Math.random() * 900000).toString();
+
+  // Hash token and set to resetPasswordToken field on member
+  this.resetPasswordToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+
+  // Set expiration (10 minutes from now)
+  this.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
+
+  return resetToken;
 };
 
 const Member = mongoose.model('Member', memberSchema);

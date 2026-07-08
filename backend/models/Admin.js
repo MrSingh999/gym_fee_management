@@ -61,8 +61,8 @@ adminSchema.methods.matchPassword = async function (enteredPassword) {
 
 // Generate and hash password reset token
 adminSchema.methods.getResetPasswordToken = function () {
-  // Generate random bytes as token
-  const resetToken = crypto.randomBytes(20).toString('hex');
+  // Generate random 6-digit OTP
+  const resetToken = Math.floor(100000 + Math.random() * 900000).toString();
 
   // Hash token and set to resetPasswordToken field on admin
   this.resetPasswordToken = crypto

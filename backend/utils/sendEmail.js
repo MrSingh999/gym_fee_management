@@ -7,7 +7,9 @@ const sendEmail = async (options) => {
     process.env.SMTP_USER && 
     process.env.SMTP_PASS;
 
-  if (!isSmtpConfigured) {
+  const isResendConfigured = !!process.env.RESEND_API_KEY;
+
+  if (!isResendConfigured && !isSmtpConfigured) {
     console.log('\n=================== MOCK EMAIL SERVICE ===================');
     console.log(`To: ${options.email}`);
     console.log(`Subject: ${options.subject}`);
@@ -17,19 +19,34 @@ const sendEmail = async (options) => {
     return { success: true, mock: true };
   }
 
-  // Create transporter
-  const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: process.env.SMTP_PORT,
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-  });
+  let transporter;
+
+  if (isResendConfigured) {
+    // Configure nodemailer with Resend SMTP relay
+    transporter = nodemailer.createTransport({
+      host: 'smtp.resend.com',
+      port: 465,
+      secure: true, // true for port 465
+      auth: {
+        user: 'resend',
+        pass: process.env.RESEND_API_KEY,
+      },
+    });
+  } else {
+    // Configure nodemailer with custom SMTP transporter
+    transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: process.env.SMTP_PORT,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    });
+  }
 
   // Define email parameters
   const message = {
-    from: `${process.env.FROM_NAME || 'HEAVEN\'S ARENA'} <${process.env.FROM_EMAIL || 'noreply@heavensarena.com'}>`,
+    from: `${process.env.FROM_NAME || "HEAVEN'S ARENA"} <${process.env.FROM_EMAIL || 'onboarding@resend.dev'}>`,
     to: options.email,
     subject: options.subject,
     text: options.message,

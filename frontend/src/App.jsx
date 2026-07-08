@@ -152,10 +152,18 @@ export default function App() {
 
   return (
     <Routes>
-      {/* Unauthenticated route */}
+      {/* Unauthenticated routes */}
       <Route 
         path="/login" 
-        element={!user ? <Login /> : <Navigate to="/" replace />} 
+        element={!user ? <Login defaultView="login" /> : <Navigate to="/" replace />} 
+      />
+      <Route 
+        path="/forgot-password" 
+        element={!user ? <Login defaultView="forgot" /> : <Navigate to="/" replace />} 
+      />
+      <Route 
+        path="/reset-password" 
+        element={!user ? <Login defaultView="reset" /> : <Navigate to="/" replace />} 
       />
       
       {/* Member portal route with nested tabs */}

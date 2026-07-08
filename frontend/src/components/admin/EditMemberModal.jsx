@@ -413,7 +413,7 @@ export default function EditMemberModal() {
             <button
               type="submit"
               disabled={submitting}
-              className="flex items-center space-x-2 bg-gym-orange hover:bg-gym-orange-hover disabled:opacity-50 text-white px-5 py-3 rounded-[6px] text-sm font-bold transition-all duration-250 shadow-lg shadow-gym-orange/15 cursor-pointer h-11"
+              className="flex items-center space-x-2 bg-gym-orange hover:bg-gym-orange-hover disabled:opacity-50 text-gym-action-text px-5 py-3 rounded-[6px] text-sm font-bold transition-all duration-250 shadow-lg shadow-gym-orange/15 cursor-pointer h-11"
             >
               <Save className="h-4 w-4" />
               <span>{submitting ? "Saving..." : "Save Changes"}</span>

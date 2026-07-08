@@ -140,9 +140,9 @@ export default function Security() {
             whileTap={{ scale: 0.995 }}
             type="submit" 
             disabled={submitting}
-            className="w-full bg-gym-orange hover:bg-gym-orange-hover disabled:opacity-50 text-white py-2.5 rounded-[6px] font-bold text-sm transition-all duration-200 shadow-lg shadow-gym-orange/15 hover:shadow-gym-orange/25 flex items-center justify-center space-x-2 cursor-pointer h-11 font-mono uppercase tracking-wider"
+            className="w-full bg-gym-orange hover:bg-gym-orange-hover disabled:opacity-50 text-gym-action-text py-2.5 rounded-[6px] font-bold text-sm transition-all duration-200 shadow-lg shadow-gym-orange/15 hover:shadow-gym-orange/25 flex items-center justify-center space-x-2 cursor-pointer h-11 font-mono uppercase tracking-wider"
           >
-            {submitting ? <div className="animate-spin rounded-full h-5 w-5 border-2 border-white/30 border-t-white"></div> : <span>Update Password</span>}
+            {submitting ? <div className="animate-spin rounded-full h-5 w-5 border-2 border-gym-action-text/30 border-t-gym-action-text"></div> : <span>Update Password</span>}
           </motion.button>
         </motion.div>
       </form>

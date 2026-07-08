@@ -424,7 +424,7 @@ export default function RenewMemberModal() {
                 onClick={() => handleTabChange("standard")}
                 className={`flex-1 py-2 text-[11px] uppercase tracking-wider font-bold transition-all duration-200 rounded-[6px] cursor-pointer ${
                   activeTab === "standard"
-                    ? "bg-gym-orange text-white shadow-sm"
+                    ? "bg-gym-orange text-gym-action-text shadow-sm"
                     : "text-(--text-secondary) hover:text-(--text-primary)"
                 }`}
               >
@@ -435,7 +435,7 @@ export default function RenewMemberModal() {
                 onClick={() => handleTabChange("future")}
                 className={`flex-1 py-2 text-[11px] uppercase tracking-wider font-bold transition-all duration-200 rounded-[6px] cursor-pointer ${
                   activeTab === "future"
-                    ? "bg-gym-orange text-white shadow-sm"
+                    ? "bg-gym-orange text-gym-action-text shadow-sm"
                     : "text-(--text-secondary) hover:text-(--text-primary)"
                 }`}
               >
@@ -561,7 +561,7 @@ export default function RenewMemberModal() {
             <button
               type="submit"
               disabled={submitting}
-              className="flex items-center space-x-2 bg-gym-orange hover:bg-gym-orange-hover disabled:opacity-50 text-white px-5 py-3 rounded-[6px] text-sm font-bold transition-all duration-250 shadow-lg shadow-gym-orange/15 cursor-pointer h-11"
+              className="flex items-center space-x-2 bg-gym-orange hover:bg-gym-orange-hover disabled:opacity-50 text-gym-action-text px-5 py-3 rounded-[6px] text-sm font-bold transition-all duration-250 shadow-lg shadow-gym-orange/15 cursor-pointer h-11"
             >
               <span>{submitting ? "Processing..." : "Confirm Renewal"}</span>
             </button>

@@ -11,8 +11,8 @@ export const authService = {
   forgotPassword: (email) =>
     apiClient.post("/api/auth/forgot-password", { email }),
 
-  resetPassword: (token, password) =>
-    apiClient.put(`/api/auth/reset-password/${token}`, { password }),
+  resetPassword: (email, otp, password) =>
+    apiClient.put("/api/auth/reset-password", { email, otp, password }),
 
   updatePassword: (currentPassword, newPassword) =>
     apiClient.put("/api/auth/update-password", { currentPassword, newPassword }),

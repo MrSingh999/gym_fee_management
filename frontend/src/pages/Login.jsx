@@ -9,6 +9,7 @@ import {
   EyeOff,
   Sun,
   Moon,
+  Key,
 } from "lucide-react";
 import { authService } from "@/services/authService";
 import { useAuth } from "@/context/AuthContext";
@@ -16,6 +17,7 @@ import { useTheme } from "@/context/ThemeContext";
 import bgVideo from "../assets/cbum-workout-compressed.mp4";
 import Logo from "@/components/ui/Logo";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 const BackgroundVideo = React.memo(() => {
   return (
@@ -38,11 +40,12 @@ const BackgroundVideo = React.memo(() => {
   );
 });
 
-export default function Login() {
+export default function Login({ defaultView = "login" }) {
   const { login, setUser } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const navigate = useNavigate();
 
-  const [view, setView] = useState("login"); // 'login', 'forgot', 'reset'
+  const [view, setView] = useState(defaultView); // 'login', 'forgot', 'reset'
   const [resetToken, setResetToken] = useState("");
 
   // Input fields
@@ -56,15 +59,10 @@ export default function Login() {
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
-  // Check URL query parameters for resetToken on load
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get("resetToken");
-    if (token) {
-      setResetToken(token);
-      setView("reset");
-    }
-  }, []);
+    setView(defaultView);
+    clearMessages();
+  }, [defaultView]);
 
   const clearMessages = () => {
     setError("");
@@ -105,8 +103,12 @@ export default function Login() {
       const data = await authService.forgotPassword(email);
       setSuccessMessage(
         data.message ||
-          "Password reset link sent to your email. Check your inbox (or console fallback logs).",
+          "OTP code sent to your email.",
       );
+      // Clean previous token state when requesting new OTP
+      setResetToken("");
+      // Transition to reset view automatically
+      navigate("/reset-password");
     } catch (err) {
       console.error(err);
       setError(err.message || "Forgot password request failed.");
@@ -115,9 +117,28 @@ export default function Login() {
     }
   };
 
+  const handleResendOTP = async () => {
+    clearMessages();
+    setLoading(true);
+    try {
+      await authService.forgotPassword(email);
+      setSuccessMessage("A new 6-digit OTP code has been sent to your email.");
+    } catch (err) {
+      console.error(err);
+      setError(err.message || "Failed to resend OTP code.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleResetPassword = async (e) => {
     e.preventDefault();
     clearMessages();
+
+    if (!resetToken || resetToken.length !== 6) {
+      setError("Please enter the 6-digit OTP code.");
+      return;
+    }
 
     if (!password || !confirmPassword) {
       setError("Please fill in all fields.");
@@ -136,9 +157,9 @@ export default function Login() {
 
     setLoading(true);
     try {
-      const data = await authService.resetPassword(resetToken, password);
+      const data = await authService.resetPassword(email, resetToken, password);
 
-      // Clear the query parameter from address bar
+      // Clear the query parameter from address bar if present
       window.history.replaceState({}, document.title, window.location.pathname);
 
       setSuccessMessage("Password reset successfully! Logging you in...");
@@ -286,8 +307,7 @@ export default function Login() {
                   <button
                     type="button"
                     onClick={() => {
-                      setView("forgot");
-                      clearMessages();
+                      navigate("/forgot-password");
                     }}
                     className={`text-[10px] text-zinc-400 font-semibold transition font-mono cursor-pointer ${theme === "dark" ? "hover:text-white" : "hover:text-black"}`}
                   >
@@ -386,8 +406,7 @@ export default function Login() {
               <button
                 type="button"
                 onClick={() => {
-                  setView("login");
-                  clearMessages();
+                  navigate("/login");
                 }}
                 className={`w-full border py-2 rounded-[6px] font-semibold text-xs transition-all duration-200 flex items-center justify-center space-x-1.5 cursor-pointer font-mono ${
                   theme === "dark"
@@ -406,10 +425,56 @@ export default function Login() {
         {view === "reset" && (
           <form onSubmit={handleResetPassword} className="space-y-4">
             <p className="text-xs text-zinc-400 text-center leading-relaxed font-mono">
-              Configure a new password for your account.
+              Enter the OTP code sent to your email to reset password.
             </p>
 
             <div className="space-y-3">
+              {/* Email Address */}
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider font-mono">
+                  Email Address
+                </label>
+                <div className="relative">
+                  <Mail className={inputIconClass} />
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="your@email.com"
+                    className={inputClass}
+                  />
+                </div>
+              </div>
+              {/* OTP Code */}
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider font-mono">
+                  6-Digit OTP Code
+                </label>
+                <div className="relative">
+                  <Key className={inputIconClass} />
+                  <input
+                    type="text"
+                    required
+                    maxLength="6"
+                    pattern="[0-9]{6}"
+                    value={resetToken}
+                    onChange={(e) => setResetToken(e.target.value.replace(/\D/g, ""))}
+                    placeholder="Enter 6-digit code"
+                    className={inputClass}
+                  />
+                </div>
+                <div className="flex justify-end pt-1">
+                  <button
+                    type="button"
+                    onClick={handleResendOTP}
+                    className="text-[10px] font-bold text-gym-orange hover:underline font-mono uppercase tracking-wider cursor-pointer"
+                  >
+                    Resend Code
+                  </button>
+                </div>
+              </div>
+
               {/* New Password */}
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider font-mono">
@@ -448,21 +513,38 @@ export default function Login() {
               </div>
             </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className={`w-full disabled:opacity-50 py-2.5 rounded-[6px] font-bold text-sm transition-all duration-200 flex items-center justify-center space-x-2 cursor-pointer font-mono ${
-                theme === "dark"
-                  ? "bg-[#ffffff] hover:bg-[#e4e4e7] text-black"
-                  : "bg-[#09090b] hover:bg-[#27272a] text-white"
-              }`}
-            >
-              {loading ? (
-                <div className="animate-spin rounded-full h-4 w-4 border-2 border-black/30 border-t-black"></div>
-              ) : (
-                <span>Save Password</span>
-              )}
-            </button>
+            <div className="space-y-2">
+              <button
+                type="submit"
+                disabled={loading}
+                className={`w-full disabled:opacity-50 py-2.5 rounded-[6px] font-bold text-sm transition-all duration-200 flex items-center justify-center space-x-2 cursor-pointer font-mono ${
+                  theme === "dark"
+                    ? "bg-[#ffffff] hover:bg-[#e4e4e7] text-black"
+                    : "bg-[#09090b] hover:bg-[#27272a] text-white"
+                }`}
+              >
+                {loading ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-black/30 border-t-black"></div>
+                ) : (
+                  <span>Save Password</span>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  navigate("/forgot-password");
+                }}
+                className={`w-full border py-2 rounded-[6px] font-semibold text-xs transition-all duration-200 flex items-center justify-center space-x-1.5 cursor-pointer font-mono ${
+                  theme === "dark"
+                    ? "border-zinc-800 hover:bg-zinc-900 text-zinc-400 hover:text-white"
+                    : "border-zinc-200 hover:bg-zinc-50 text-zinc-600 hover:text-black"
+                }`}
+              >
+                <ArrowLeft className="h-3.5 w-3.5" />
+                <span>Back</span>
+              </button>
+            </div>
           </form>
         )}
       </motion.div>

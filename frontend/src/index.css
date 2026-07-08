@@ -128,6 +128,7 @@
   --color-gym-card-hover: var(--bg-card-hover);
   --color-gym-orange: var(--action-bg);
   --color-gym-orange-hover: var(--action-bg-hover);
+  --color-gym-action-text: var(--action-text);
   --color-gym-border: var(--border-color);
   --color-gym-border-hover: var(--border-color-hover);
   --color-gym-elevated: var(--bg-elevated);

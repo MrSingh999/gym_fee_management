@@ -149,7 +149,7 @@ export default function Workouts() {
                 onClick={() => setActiveDayIdx(idx)}
                 className={`px-3.5 py-2 rounded-[6px] text-[11px] font-bold whitespace-nowrap transition-all duration-200 cursor-pointer border ${
                   isSelected
-                    ? "bg-gym-orange text-white border-gym-orange shadow-md shadow-gym-orange/10"
+                    ? "bg-gym-orange text-gym-action-text border-gym-orange shadow-md shadow-gym-orange/10"
                     : "bg-gym-dark/45 border-(--border-color) text-(--text-secondary) hover:text-(--text-primary)"
                 }`}
               >
@@ -169,7 +169,7 @@ export default function Workouts() {
               <h3 className="font-bold text-sm text-(--text-primary) mt-0.5 font-mono">{selectedRoutine.focus}</h3>
             </div>
             {isSelectedDayToday && (
-              <span className="bg-gym-orange text-white text-[9px] font-bold px-2 py-0.5 rounded-[4px] uppercase tracking-wider shadow-sm font-mono">
+              <span className="bg-gym-orange text-gym-action-text text-[9px] font-bold px-2 py-0.5 rounded-[4px] uppercase tracking-wider shadow-sm font-mono">
                 Today
               </span>
             )}
