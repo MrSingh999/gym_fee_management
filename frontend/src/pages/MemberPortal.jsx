@@ -40,7 +40,7 @@ export default function MemberPortal() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gym-dark text-slate-800 dark:text-gray-100">
+    <div className="min-h-screen flex flex-col bg-gym-dark text-(--text-primary)">
       {/* Navbar */}
       <nav className="glass-panel gradient-border-bottom sticky top-0 z-50 px-4 md:px-6 py-3">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -66,10 +66,10 @@ export default function MemberPortal() {
 
       {/* Main Content */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 md:px-6 pt-6 pb-28 md:pb-8 space-y-6">
-        {/* Welcome */}
+        {/* Welcome Banner styled to match Dashboard */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 animate-fade-in">
           <div className="flex items-center space-x-3.5 sm:space-x-4">
-            <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-full overflow-hidden border border-(--border-color-hover) bg-zinc-950 shrink-0 shadow-md">
+            <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-full overflow-hidden border border-(--border-color-hover) bg-zinc-950 shrink-0 shadow-md">
               {user.profilePicture ? (
                 <img
                   src={user.profilePicture}
@@ -79,15 +79,17 @@ export default function MemberPortal() {
                 />
               ) : (
                 <div className="h-full w-full flex items-center justify-center text-zinc-500">
-                  <User className="h-7 w-7" />
+                  <User className="h-6 w-6" />
                 </div>
               )}
             </div>
             <div>
-              <h1 className="font-bold text-2xl sm:text-3xl md:text-4xl text-(--text-primary) tracking-tight">
-                Hey, <span className="gradient-text">{user.name}</span>!
+              <h1 className="font-bold text-2xl text-(--text-primary) tracking-tight">
+                Member <span className="text-(--text-secondary) font-normal ml-0.5">Portal</span>
               </h1>
-              <p className="text-(--text-secondary) mt-1.5 text-xs sm:text-sm">Welcome back to your fitness portal. Track your progress below.</p>
+              <p className="text-(--text-secondary) mt-1 text-xs font-mono">
+                Welcome back, <strong className="text-(--text-primary) font-semibold">{user.name}</strong>. Track your progress below.
+              </p>
             </div>
           </div>
           <StatusBadge isOverdue={isOverdue} isInactive={isInactive} remainingDays={remainingDays} />
@@ -128,18 +130,19 @@ export default function MemberPortal() {
       </main>
 
       {/* Mobile Tab Bar Navigation */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-gym-dark/90 backdrop-blur-md border-t border-(--border-color) px-2 py-2 flex justify-around items-center safe-bottom shadow-lg">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-(--bg-canvas)/95 backdrop-blur-xl border-t border-(--border-color) px-2 py-2 pb-safe flex justify-around items-center shadow-lg">
         {TABS.map((tab) => {
           const Icon = tab.icon;
           return (
             <NavLink key={tab.id} to={`/member-portal/${tab.id}`}
-              className={({ isActive }) =>
-                `flex-1 flex flex-col items-center justify-center py-1 gap-1 text-[10px] font-bold transition-all duration-200 cursor-pointer select-none ${
-                  isActive ? "text-black dark:text-white" : "text-(--text-muted) hover:text-(--text-secondary)"
-                }`
-              }>
+              className={({ isActive }) => `flex flex-col items-center justify-center flex-1 py-1 gap-1 cursor-pointer select-none transition-all duration-200 ${
+                isActive
+                  ? 'text-(--text-primary) font-bold scale-105'
+                  : 'text-(--text-secondary) hover:text-(--text-primary)'
+              }`}
+            >
               <Icon className="h-5 w-5 shrink-0" />
-              <span>{tab.label}</span>
+              <span className="text-[10px] tracking-wide font-mono uppercase">{tab.label}</span>
             </NavLink>
           );
         })}

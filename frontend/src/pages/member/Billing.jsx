@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { CreditCard, Calendar, AlertTriangle, Loader2 } from "lucide-react";
+import { CreditCard, Calendar, AlertTriangle, Loader2, CheckCircle } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { memberService } from "@/services/memberService";
 import { formatDate } from "@/lib/memberHelpers";
+import { motion } from "framer-motion";
 
 export default function Billing() {
   const { user } = useAuth();
@@ -29,29 +30,75 @@ export default function Billing() {
     fetchPayments();
   }, [user]);
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.05
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 15 },
+    show: { 
+      opacity: 1, 
+      y: 0, 
+      transition: { 
+        type: "spring", 
+        stiffness: 260, 
+        damping: 22 
+      } 
+    }
+  };
+
   return (
-    <div className="glass-panel p-4 sm:p-6 rounded-[16px] border border-(--border-color-hover) space-y-4 sm:space-y-6 animate-fade-in">
-      <div className="border-b border-(--border-color) pb-4 flex justify-between items-center">
+    <motion.div 
+      variants={containerVariants}
+      initial="hidden"
+      animate="show"
+      className="glass-panel p-4 sm:p-6 rounded-[16px] border border-(--border-color-hover) space-y-4 sm:space-y-6"
+    >
+      <motion.div variants={itemVariants} className="border-b border-(--border-color) pb-4 flex justify-between items-center">
         <div>
-          <h3 className="font-bold text-lg text-(--text-primary)">Billing History</h3>
+          <h3 className="font-bold text-lg text-(--text-primary) font-mono">Billing History</h3>
           <p className="text-xs text-(--text-secondary)">Overview of all subscription invoices and renewals.</p>
         </div>
         <div className="p-2.5 bg-gym-dark/50 border border-(--border-color) rounded-[6px]">
           <CreditCard className="h-5 w-5 text-gym-orange" />
         </div>
-      </div>
-
+      </motion.div>
       {loading ? (
-        <div className="text-center py-10">
-          <Loader2 className="h-8 w-8 border-2 border-(--border-color) border-t-gym-orange animate-spin mx-auto" />
-          <p className="text-xs text-(--text-muted) mt-3">Loading billing data...</p>
+        <div className="flex flex-col items-center justify-center py-14 space-y-4">
+          <div className="relative">
+            <div className="animate-spin rounded-full h-8 w-8 border-2 border-(--border-color) border-t-(--text-primary)"></div>
+          </div>
+          <p className="text-(--text-muted) font-mono text-xs uppercase tracking-wider">
+            Loading billing data...
+          </p>
         </div>
       ) : error ? (
-        <div className="text-center py-8 text-red-400 text-xs">{error}</div>
+        <div className="text-center py-14">
+          <div className="w-12 h-12 bg-red-500/10 rounded-[16px] flex items-center justify-center mx-auto mb-4">
+            <AlertTriangle className="h-6 w-6 text-red-400" />
+          </div>
+          <p className="text-red-400 text-sm mb-4 font-mono">{error}</p>
+        </div>
       ) : payments.length === 0 ? (
-        <div className="text-center py-10 text-(--text-muted) text-xs">No payment invoices found.</div>
+        <motion.div variants={itemVariants} className="text-center py-14">
+          <div className="w-12 h-12 border border-(--border-color) rounded-[8px] flex items-center justify-center mx-auto mb-4 text-(--text-secondary)">
+            <CheckCircle className="h-5 w-5" />
+          </div>
+          <h3 className="text-sm font-bold text-(--text-primary) mb-1 font-mono">
+            Billing Clear
+          </h3>
+          <p className="text-(--text-secondary) text-xs max-w-sm mx-auto font-mono">
+            No subscription invoices or pending billing details were found for your account.
+          </p>
+        </motion.div>
       ) : (
-        <>
+        <motion.div variants={itemVariants} className="space-y-4">
           {/* Desktop Table */}
           <div className="hidden sm:block overflow-x-auto rounded-[6px] border border-(--border-color) bg-gym-dark/20">
             <table className="w-full text-left text-xs border-collapse">
@@ -97,7 +144,7 @@ export default function Billing() {
                 <div className="grid grid-cols-2 gap-2.5">
                   <div className="flex flex-col min-w-0">
                     <span className="text-[9px] uppercase tracking-wider text-(--text-muted) font-mono">Training Plan</span>
-                    <span className="font-bold text-(--text-primary) capitalize truncate mt-0.5">{p.plan?.name || "Workout"}</span>
+                    <span className="font-bold text-(--text-primary) capitalize truncate mt-0.5 font-mono">{p.plan?.name || "Workout"}</span>
                   </div>
                   <div className="flex flex-col items-end">
                     <span className="text-[9px] uppercase tracking-wider text-(--text-muted) font-mono">Amount Paid</span>
@@ -122,8 +169,8 @@ export default function Billing() {
               </div>
             ))}
           </div>
-        </>
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 }

@@ -205,7 +205,7 @@ export default function Dashboard() {
       </div>
 
       {/* KPI Cards Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
         {kpiCards.map((card, index) => {
           const Icon = card.icon;
           const isSelected = card.clickable && filterType === card.filterKey;
@@ -224,7 +224,7 @@ export default function Dashboard() {
                   ? "cursor-pointer hover:scale-[1.01] active:scale-[0.99]"
                   : ""
               } ${isSelected ? "ring-1 ring-(--text-primary)/40" : ""} ${
-                index === 4 ? "col-span-2 lg:col-span-1" : ""
+                index === 4 ? "col-span-2 md:col-span-1 lg:col-span-1" : ""
               }`}
             >
               <div className="flex items-start space-x-2">
@@ -447,15 +447,15 @@ export default function Dashboard() {
                           )}
 
                           <button
-                            onClick={() => openRenewModal(member)}
-                            className={`text-[11px] font-bold px-3 py-1.5 rounded-[4px] transition-colors duration-150 cursor-pointer ${
-                              isOverdue
-                                ? "bg-red-500 hover:bg-red-400 text-white"
-                                : "bg-amber-500 hover:bg-amber-400 text-white"
-                            }`}
-                          >
-                            Renew Dues
-                          </button>
+                             onClick={() => openRenewModal(member)}
+                             className={`text-[11px] font-bold px-4 py-2 sm:py-1.5 sm:px-3 rounded-[4px] min-h-[38px] transition-all duration-150 cursor-pointer hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center ${
+                               isOverdue
+                                 ? "bg-red-500 hover:bg-red-400 text-white"
+                                 : "bg-amber-500 hover:bg-amber-400 text-white"
+                             }`}
+                           >
+                             Renew Dues
+                           </button>
                         </div>
                       </div>
                     </div>

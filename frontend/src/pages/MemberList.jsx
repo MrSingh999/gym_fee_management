@@ -162,7 +162,7 @@ export default function MemberList() {
 
       {/* Search & Filter Header Panel */}
       <div className="glass-panel p-4 md:p-5 rounded-[16px] animate-fade-in" style={{ animationDelay: '80ms', animationFillMode: 'both' }}>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           
           {/* Search bar */}
           <div className="space-y-1.5">
@@ -454,7 +454,7 @@ export default function MemberList() {
                     <div className="flex items-center justify-between pt-1">
                       <a
                         href={`tel:${member.phone || member.mobile}`}
-                        className="flex items-center space-x-1.5 text-xs text-(--text-primary) hover:opacity-80 font-bold transition-all duration-200 h-9 px-1 rounded-[6px] font-mono"
+                        className="flex items-center space-x-1.5 text-xs text-(--text-primary) hover:opacity-80 font-bold transition-all duration-200 h-10 px-1 rounded-[6px] font-mono"
                       >
                         <Phone className="h-3.5 w-3.5" />
                         <span className="tabular-nums">{member.phone || member.mobile}</span>
@@ -463,28 +463,28 @@ export default function MemberList() {
                       <div className="flex items-center space-x-2">
                         <button
                           onClick={() => openRenewModal(member)}
-                          className="bg-(--text-primary) text-(--bg-canvas) px-3 py-1.5 rounded-[4px] text-xs font-bold transition-all duration-200 cursor-pointer h-9"
+                          className="bg-(--text-primary) text-(--bg-canvas) px-4 py-2 sm:px-3 sm:py-1.5 rounded-[4px] text-xs font-bold transition-all duration-200 cursor-pointer h-10 flex items-center justify-center hover:scale-[1.01] active:scale-[0.99]"
                         >
                           Renew
                         </button>
                         <button
                           onClick={() => openHistoryModal(member)}
                           aria-label="Payment History"
-                          className="p-2 border border-(--border-color) rounded-[4px] text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--bg-elevated) transition-all duration-200 cursor-pointer h-9 w-9 flex items-center justify-center"
+                          className="p-2.5 border border-(--border-color) rounded-[4px] text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--bg-elevated) transition-all duration-200 cursor-pointer h-10 w-10 flex items-center justify-center"
                         >
                           <History className="h-3.5 w-3.5" />
                         </button>
                         <button
                           onClick={() => openEditModal(member)}
                           aria-label="Edit Member"
-                          className="p-2 border border-(--border-color) rounded-[4px] text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--bg-elevated) transition-all duration-200 cursor-pointer h-9 w-9 flex items-center justify-center"
+                          className="p-2.5 border border-(--border-color) rounded-[4px] text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--bg-elevated) transition-all duration-200 cursor-pointer h-10 w-10 flex items-center justify-center"
                         >
                           <Edit className="h-3.5 w-3.5" />
                         </button>
                         <button
                           onClick={() => handleDelete(member._id, member.name)}
                           aria-label="Delete Member"
-                          className="p-2 border border-(--border-color) rounded-[4px] text-(--text-secondary) hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/20 transition-all duration-200 cursor-pointer h-9 w-9 flex items-center justify-center"
+                          className="p-2.5 border border-(--border-color) rounded-[4px] text-(--text-secondary) hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/20 transition-all duration-200 cursor-pointer h-10 w-10 flex items-center justify-center"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>

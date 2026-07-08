@@ -6,6 +6,7 @@ import ProgressRing from "@/components/member/ProgressRing";
 import ProfileDetailCard from "@/components/member/ProfileDetailCard";
 import ExpiryAlert from "@/components/member/ExpiryAlert";
 import ImageViewer from "@/components/ImageViewer";
+import { motion } from "framer-motion";
 
 export default function Overview() {
   const { user } = useAuth();
@@ -21,11 +22,42 @@ export default function Overview() {
     { icon: FileText, label: "Member Since", value: formatDate(user.joiningDate) },
   ];
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.05
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 15 },
+    show: { 
+      opacity: 1, 
+      y: 0, 
+      transition: { 
+        type: "spring", 
+        stiffness: 260, 
+        damping: 22 
+      } 
+    }
+  };
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 animate-fade-in">
+    <motion.div 
+      variants={containerVariants}
+      initial="hidden"
+      animate="show"
+      className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6"
+    >
       {/* Progress Ring Card */}
-      <div className="glass-panel p-4 sm:p-6 rounded-[16px] flex flex-col items-center justify-center text-center space-y-5 border border-(--border-color-hover) lg:col-span-1">
-        <h3 className="text-xs font-bold text-(--text-muted) uppercase tracking-wider">Membership Validity</h3>
+      <motion.div 
+        variants={itemVariants}
+        className="glass-panel p-4 sm:p-6 rounded-[16px] flex flex-col items-center justify-center text-center space-y-5 border border-(--border-color-hover) lg:col-span-1"
+      >
+        <h3 className="text-[10px] font-bold text-(--text-muted) uppercase tracking-wider font-mono">Membership Validity</h3>
         <ProgressRing remainingDays={remainingDays} percentRemaining={percentRemaining} />
         <div className="space-y-1.5 w-full">
           <div className="flex justify-between text-xs text-(--text-secondary) font-mono">
@@ -43,13 +75,16 @@ export default function Overview() {
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Profile Details */}
-      <div className="glass-panel p-4 sm:p-6 rounded-[16px] space-y-4 sm:space-y-6 lg:col-span-2 border border-(--border-color-hover)">
+      <motion.div 
+        variants={itemVariants}
+        className="glass-panel p-4 sm:p-6 rounded-[16px] space-y-4 sm:space-y-6 lg:col-span-2 border border-(--border-color-hover)"
+      >
         <div className="border-b border-(--border-color) pb-4 flex items-center justify-between gap-4">
           <div>
-            <h3 className="font-bold text-lg text-(--text-primary)">Profile Overview</h3>
+            <h3 className="font-bold text-lg text-(--text-primary) font-mono">Profile Overview</h3>
             <p className="text-xs text-(--text-secondary)">Your registered personal and member details.</p>
           </div>
           {/* Profile Picture (Non-editable) */}
@@ -76,7 +111,7 @@ export default function Overview() {
         </div>
 
         <ExpiryAlert isDisabled={isDisabled} remainingDays={remainingDays} />
-      </div>
+      </motion.div>
 
       <ImageViewer
         isOpen={!!viewImage}
@@ -84,6 +119,6 @@ export default function Overview() {
         src={viewImage}
         alt="Profile picture"
       />
-    </div>
+    </motion.div>
   );
 }

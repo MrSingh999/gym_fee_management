@@ -1,8 +1,5 @@
+import './loadEnv.js';
 import { v2 as cloudinary } from 'cloudinary';
-import dotenv from 'dotenv';
-
-// Load env variables
-dotenv.config();
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,

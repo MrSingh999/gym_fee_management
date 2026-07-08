@@ -1,7 +1,9 @@
 import axios from 'axios';
 
+const apiBaseURL = import.meta.env.VITE_API_URL || '';
+
 const apiClient = axios.create({
-  baseURL: '',
+  baseURL: apiBaseURL,
   withCredentials: true,
 });
 
@@ -24,7 +26,7 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true;
       try {
         // Request token refresh
-        await axios.post('/api/auth/refresh', {}, { withCredentials: true });
+        await axios.post(`${apiBaseURL}/api/auth/refresh`, {}, { withCredentials: true });
         
         // Retry original request
         return apiClient(originalRequest);
