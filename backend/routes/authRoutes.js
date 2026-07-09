@@ -10,6 +10,8 @@ import {
   resetPassword,
   updatePassword,
   uploadProfilePicture,
+  updateAdminProfile,
+  logoutAllDevices,
 } from '../controllers/authController.js';
 import { protect } from '../middleware/authMiddleware.js';
 import { validateRequest } from '../middleware/validator.js';
@@ -88,5 +90,18 @@ router.put(
 );
 
 router.put('/profile-picture', protect, upload.single('image'), uploadProfilePicture);
+
+router.put(
+  '/profile',
+  [
+    protect,
+    body('name').optional().notEmpty().withMessage('Name cannot be empty').trim(),
+    body('email').optional().isEmail().withMessage('Please enter a valid email address').trim(),
+    validateRequest,
+  ],
+  updateAdminProfile
+);
+
+router.post('/logout-all', protect, logoutAllDevices);
 
 export default router;

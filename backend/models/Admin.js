@@ -32,7 +32,14 @@ const adminSchema = new mongoose.Schema(
     },
     resetPasswordToken: String,
     resetPasswordExpire: Date,
-    refreshToken: String,
+    refreshTokens: {
+      type: [String],
+      default: [],
+    },
+    tokenVersion: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,
@@ -78,16 +85,24 @@ adminSchema.methods.getResetPasswordToken = function () {
 
 // Sign JWT Access Token
 adminSchema.methods.getSignedAccessToken = function () {
-  return jwt.sign({ id: this._id }, process.env.ACCESS_TOKEN_SECRET, {
-    expiresIn: process.env.ACCESS_TOKEN_EXPIRE,
-  });
+  return jwt.sign(
+    { id: this._id, tokenVersion: this.tokenVersion || 0 },
+    process.env.ACCESS_TOKEN_SECRET,
+    {
+      expiresIn: process.env.ACCESS_TOKEN_EXPIRE,
+    }
+  );
 };
 
 // Sign JWT Refresh Token
 adminSchema.methods.getSignedRefreshToken = function () {
-  return jwt.sign({ id: this._id }, process.env.REFRESH_TOKEN_SECRET, {
-    expiresIn: process.env.REFRESH_TOKEN_EXPIRE,
-  });
+  return jwt.sign(
+    { id: this._id, tokenVersion: this.tokenVersion || 0 },
+    process.env.REFRESH_TOKEN_SECRET,
+    {
+      expiresIn: process.env.REFRESH_TOKEN_EXPIRE,
+    }
+  );
 };
 
 const Admin = mongoose.model('Admin', adminSchema);

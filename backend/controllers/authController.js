@@ -14,8 +14,15 @@ const sendTokenResponse = async (user, statusCode, res) => {
   const accessToken = user.getSignedAccessToken();
   const refreshToken = user.getSignedRefreshToken();
 
-  // Save refresh token to user document in the DB
-  user.refreshToken = refreshToken;
+  // Save refresh token to user's refreshTokens array (capped at 5 to avoid database array bloating)
+  if (!user.refreshTokens) {
+    user.refreshTokens = [];
+  }
+  user.refreshTokens.push(refreshToken);
+  if (user.refreshTokens.length > 5) {
+    user.refreshTokens.shift();
+  }
+  
   await user.save({ validateBeforeSave: false });
 
   // Access token cookie options (15 minutes)
@@ -35,9 +42,9 @@ const sendTokenResponse = async (user, statusCode, res) => {
 
   if (process.env.NODE_ENV === 'production') {
     accessTokenCookieOptions.secure = true;
-    accessTokenCookieOptions.sameSite = 'none';
+    accessTokenCookieOptions.sameSite = 'lax'; // Tightened cookie security for same-origin proxy
     refreshTokenCookieOptions.secure = true;
-    refreshTokenCookieOptions.sameSite = 'none';
+    refreshTokenCookieOptions.sameSite = 'lax';
   }
 
   res
@@ -101,22 +108,23 @@ const loginUser = asyncHandler(async (req, res, next) => {
 // @route   POST /api/auth/logout
 // @access  Public
 const logoutUser = asyncHandler(async (req, res, next) => {
-  let token;
-  if (req.cookies && req.cookies.accessToken) {
-    token = req.cookies.accessToken;
+  let refreshToken;
+  if (req.cookies && req.cookies.refreshToken) {
+    refreshToken = req.cookies.refreshToken;
   }
 
-  if (token) {
+  if (refreshToken && refreshToken !== 'none') {
     try {
-      const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+      const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
       
       let user = await Admin.findById(decoded.id);
       if (!user) {
         user = await Member.findById(decoded.id);
       }
       
-      if (user) {
-        user.refreshToken = undefined;
+      if (user && user.refreshTokens) {
+        // Remove the specific refresh token from active list
+        user.refreshTokens = user.refreshTokens.filter((token) => token !== refreshToken);
         await user.save({ validateBeforeSave: false });
       }
     } catch (err) {
@@ -137,9 +145,9 @@ const logoutUser = asyncHandler(async (req, res, next) => {
 
   if (process.env.NODE_ENV === 'production') {
     cookieOptions.secure = true;
-    cookieOptions.sameSite = 'none';
+    cookieOptions.sameSite = 'lax';
     refreshCookieOptions.secure = true;
-    refreshCookieOptions.sameSite = 'none';
+    refreshCookieOptions.sameSite = 'lax';
   }
 
   res.cookie('accessToken', 'none', cookieOptions);
@@ -152,18 +160,18 @@ const logoutUser = asyncHandler(async (req, res, next) => {
 // @route   POST /api/auth/refresh
 // @access  Public
 const refreshTokens = asyncHandler(async (req, res, next) => {
-  let refreshToken;
+  let oldRefreshToken;
   
   if (req.cookies && req.cookies.refreshToken) {
-    refreshToken = req.cookies.refreshToken;
+    oldRefreshToken = req.cookies.refreshToken;
   }
 
-  if (!refreshToken || refreshToken === 'none') {
+  if (!oldRefreshToken || oldRefreshToken === 'none') {
     throw new ErrorResponse('No refresh token provided. Please log in.', 401);
   }
 
   try {
-    const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+    const decoded = jwt.verify(oldRefreshToken, process.env.REFRESH_TOKEN_SECRET);
 
     // Find user in DB
     let user = await Admin.findById(decoded.id);
@@ -171,12 +179,31 @@ const refreshTokens = asyncHandler(async (req, res, next) => {
       user = await Member.findById(decoded.id);
     }
 
-    if (!user || user.refreshToken !== refreshToken) {
+    // Reuse detection / validation
+    if (!user || !user.refreshTokens || !user.refreshTokens.includes(oldRefreshToken)) {
+      if (user) {
+        // Potential token theft: invalidate all sessions as precaution
+        user.refreshTokens = [];
+        await user.save({ validateBeforeSave: false });
+      }
       throw new ErrorResponse('Session is invalid or expired. Please log in again.', 401);
     }
 
-    // Generate a new access token using model method
-    const accessToken = user.getSignedAccessToken();
+    // Check token version matching
+    if (decoded.tokenVersion !== user.tokenVersion) {
+      user.refreshTokens = [];
+      await user.save({ validateBeforeSave: false });
+      throw new ErrorResponse('Session has expired due to credentials change. Please log in again.', 401);
+    }
+
+    // Rotate refresh token
+    const newRefreshToken = user.getSignedRefreshToken();
+    const newAccessToken = user.getSignedAccessToken();
+
+    // Swap old refresh token for the new rotated token
+    user.refreshTokens = user.refreshTokens.filter((token) => token !== oldRefreshToken);
+    user.refreshTokens.push(newRefreshToken);
+    await user.save({ validateBeforeSave: false });
 
     const accessTokenCookieOptions = {
       expires: new Date(Date.now() + 15 * 60 * 1000),
@@ -184,14 +211,24 @@ const refreshTokens = asyncHandler(async (req, res, next) => {
       sameSite: 'lax',
     };
 
+    const refreshTokenCookieOptions = {
+      expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      httpOnly: true,
+      sameSite: 'lax',
+      path: '/api/auth',
+    };
+
     if (process.env.NODE_ENV === 'production') {
       accessTokenCookieOptions.secure = true;
-      accessTokenCookieOptions.sameSite = 'none';
+      accessTokenCookieOptions.sameSite = 'lax';
+      refreshTokenCookieOptions.secure = true;
+      refreshTokenCookieOptions.sameSite = 'lax';
     }
 
     res
       .status(200)
-      .cookie('accessToken', accessToken, accessTokenCookieOptions)
+      .cookie('accessToken', newAccessToken, accessTokenCookieOptions)
+      .cookie('refreshToken', newRefreshToken, refreshTokenCookieOptions)
       .json({
         success: true,
         user: {
@@ -218,9 +255,9 @@ const refreshTokens = asyncHandler(async (req, res, next) => {
 
     if (process.env.NODE_ENV === 'production') {
       cookieOptions.secure = true;
-      cookieOptions.sameSite = 'none';
+      cookieOptions.sameSite = 'lax';
       refreshCookieOptions.secure = true;
-      refreshCookieOptions.sameSite = 'none';
+      refreshCookieOptions.sameSite = 'lax';
     }
 
     res.cookie('accessToken', 'none', cookieOptions);
@@ -363,13 +400,37 @@ const updatePassword = asyncHandler(async (req, res, next) => {
     throw new ErrorResponse('Incorrect current password', 401);
   }
 
-  // Set new password (hashed automatically on save)
+  // Set new password (hashed automatically on save) and invalidate active sessions
   user.password = newPassword;
+  user.tokenVersion = (user.tokenVersion || 0) + 1;
+  user.refreshTokens = [];
   await user.save();
+
+  // Clear client cookies to enforce re-authentication
+  const cookieOptions = {
+    expires: new Date(Date.now() + 10 * 1000),
+    httpOnly: true,
+  };
+
+  const refreshCookieOptions = {
+    expires: new Date(Date.now() + 10 * 1000),
+    httpOnly: true,
+    path: '/api/auth',
+  };
+
+  if (process.env.NODE_ENV === 'production') {
+    cookieOptions.secure = true;
+    cookieOptions.sameSite = 'lax';
+    refreshCookieOptions.secure = true;
+    refreshCookieOptions.sameSite = 'lax';
+  }
+
+  res.cookie('accessToken', 'none', cookieOptions);
+  res.cookie('refreshToken', 'none', refreshCookieOptions);
 
   res.json({
     success: true,
-    message: 'Password updated successfully'
+    message: 'Password updated successfully. Please log in again on all devices.'
   });
 });
 
@@ -437,6 +498,97 @@ const uploadProfilePicture = asyncHandler(async (req, res, next) => {
   }
 });
 
+// @desc    Update admin profile details
+// @route   PUT /api/auth/profile
+// @access  Private (Admin Only)
+const updateAdminProfile = asyncHandler(async (req, res, next) => {
+  const { name, email } = req.body;
+
+  if (req.user.role !== 'admin') {
+    throw new ErrorResponse('Not authorized as an admin. Access denied.', 403);
+  }
+
+  const adminUser = await Admin.findById(req.user._id);
+  if (!adminUser) {
+    throw new ErrorResponse('Admin profile not found.', 404);
+  }
+
+  if (name) {
+    adminUser.name = name;
+  }
+
+  if (email && email.toLowerCase() !== adminUser.email.toLowerCase()) {
+    const cleanEmail = email.toLowerCase();
+    
+    // Check if email exists in Admin or Member
+    const emailExistsAdmin = await Admin.findOne({ email: cleanEmail });
+    if (emailExistsAdmin) {
+      throw new ErrorResponse('Email address is already in use by another admin.', 400);
+    }
+    const emailExistsMember = await Member.findOne({ email: cleanEmail });
+    if (emailExistsMember) {
+      throw new ErrorResponse('Email address is already in use by a member.', 400);
+    }
+
+    adminUser.email = cleanEmail;
+    
+    // Force session refresh across devices on email change
+    adminUser.tokenVersion = (adminUser.tokenVersion || 0) + 1;
+    adminUser.refreshTokens = [];
+  }
+
+  await adminUser.save();
+  await sendTokenResponse(adminUser, 200, res);
+});
+
+// @desc    Logout from all devices (invalidate all tokens)
+// @route   POST /api/auth/logout-all
+// @access  Private
+const logoutAllDevices = asyncHandler(async (req, res, next) => {
+  let user;
+  if (req.user.role === 'admin') {
+    user = await Admin.findById(req.user._id);
+  } else {
+    user = await Member.findById(req.user._id);
+  }
+
+  if (!user) {
+    throw new ErrorResponse('User record not found.', 404);
+  }
+
+  // Increment version to invalidate existing access tokens, and clear refresh tokens
+  user.tokenVersion = (user.tokenVersion || 0) + 1;
+  user.refreshTokens = [];
+  await user.save();
+
+  // Clear client cookies
+  const cookieOptions = {
+    expires: new Date(Date.now() + 10 * 1000),
+    httpOnly: true,
+  };
+
+  const refreshCookieOptions = {
+    expires: new Date(Date.now() + 10 * 1000),
+    httpOnly: true,
+    path: '/api/auth',
+  };
+
+  if (process.env.NODE_ENV === 'production') {
+    cookieOptions.secure = true;
+    cookieOptions.sameSite = 'lax';
+    refreshCookieOptions.secure = true;
+    refreshCookieOptions.sameSite = 'lax';
+  }
+
+  res.cookie('accessToken', 'none', cookieOptions);
+  res.cookie('refreshToken', 'none', refreshCookieOptions);
+
+  res.json({
+    success: true,
+    message: 'Successfully logged out from all devices.'
+  });
+});
+
 // Grouped exports at the bottom
 export {
   loginUser,
@@ -447,4 +599,6 @@ export {
   resetPassword,
   updatePassword,
   uploadProfilePicture,
+  updateAdminProfile,
+  logoutAllDevices,
 };

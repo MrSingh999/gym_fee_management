@@ -31,6 +31,9 @@ if (!process.env.ACCESS_TOKEN_SECRET || !process.env.REFRESH_TOKEN_SECRET) {
 const app = express();
 const PORT = process.env.PORT || 6000;
 
+// Trust reverse proxy for correct client IP in rate limiting
+app.set('trust proxy', 1);
+
 // Connect to Database
 connectDB();
 

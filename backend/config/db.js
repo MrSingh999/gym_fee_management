@@ -14,13 +14,17 @@ const connectDB = async () => {
     const adminCount = await Admin.countDocuments();
     if (adminCount === 0) {
       console.log('No admins found in database. Seeding default system admin...');
+      const adminName = process.env.DEFAULT_ADMIN_NAME || 'System Admin';
+      const adminEmail = process.env.DEFAULT_ADMIN_EMAIL || 'admin@admin.com';
+      const adminPassword = process.env.DEFAULT_ADMIN_PASSWORD || 'admin123';
+
       await Admin.create({
-        name: 'System Admin',
-        email: 'admin@admin.com',
-        password: 'admin123', // This will be hashed automatically by pre-save Admin hook
+        name: adminName,
+        email: adminEmail.toLowerCase(),
+        password: adminPassword, // This will be hashed automatically by pre-save Admin hook
         role: 'admin',
       });
-      console.log('Default system admin seeded successfully: admin@admin.com / admin123');
+      console.log(`Default system admin seeded successfully: ${adminEmail}`);
     }
 
     // Seed and/or update standard plans in database

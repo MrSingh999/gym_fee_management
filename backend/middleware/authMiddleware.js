@@ -31,6 +31,11 @@ const protect = asyncHandler(async (req, res, next) => {
     throw new ErrorResponse('User session no longer exists. Please log in again.', 401);
   }
 
+  // Verify that the token version matches the database record
+  if (decoded.tokenVersion !== currentUser.tokenVersion) {
+    throw new ErrorResponse('Session has expired due to a security update. Please log in again.', 401);
+  }
+
   req.user = currentUser;
   next();
 });

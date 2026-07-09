@@ -64,7 +64,14 @@ const memberSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
-    refreshToken: String,
+    refreshTokens: {
+      type: [String],
+      default: [],
+    },
+    tokenVersion: {
+      type: Number,
+      default: 0,
+    },
     resetPasswordToken: String,
     resetPasswordExpire: Date,
     address: {
@@ -186,16 +193,24 @@ memberSchema.methods.matchPassword = async function (enteredPassword) {
 
 // Sign JWT Access Token
 memberSchema.methods.getSignedAccessToken = function () {
-  return jwt.sign({ id: this._id }, process.env.ACCESS_TOKEN_SECRET, {
-    expiresIn: process.env.ACCESS_TOKEN_EXPIRE,
-  });
+  return jwt.sign(
+    { id: this._id, tokenVersion: this.tokenVersion || 0 },
+    process.env.ACCESS_TOKEN_SECRET,
+    {
+      expiresIn: process.env.ACCESS_TOKEN_EXPIRE,
+    }
+  );
 };
 
 // Sign JWT Refresh Token
 memberSchema.methods.getSignedRefreshToken = function () {
-  return jwt.sign({ id: this._id }, process.env.REFRESH_TOKEN_SECRET, {
-    expiresIn: process.env.REFRESH_TOKEN_EXPIRE,
-  });
+  return jwt.sign(
+    { id: this._id, tokenVersion: this.tokenVersion || 0 },
+    process.env.REFRESH_TOKEN_SECRET,
+    {
+      expiresIn: process.env.REFRESH_TOKEN_EXPIRE,
+    }
+  );
 };
 
 // Generate and hash password reset token
