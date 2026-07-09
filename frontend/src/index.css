@@ -136,6 +136,22 @@
   --color-gym-text-muted: var(--text-muted);
 }
 
+/* ─── SMOOTH THEME TRANSITION ───
+   Applied only when `theme-transitioning` class is on <html>.
+   This avoids permanent transition overhead on every element. */
+.theme-transitioning,
+.theme-transitioning *,
+.theme-transitioning *::before,
+.theme-transitioning *::after {
+  transition: background-color 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              color 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              fill 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              stroke 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
 /* ─── GLOBAL STYLES ─── */
 body {
   background-color: var(--bg-canvas);
@@ -146,7 +162,6 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ─── HEADING TYPOGRAPHY ─── */
@@ -417,3 +432,16 @@ button:focus-visible {
 /* Hide scrollbar for mobile tab bar */
 .hide-scrollbar::-webkit-scrollbar { display: none; }
 .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ─── MOBILE SAFE AREA UTILITIES ─── */
+.pb-safe {
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0.5rem));
+}
+
+/* ─── MOBILE TOUCH TARGET BASELINE ─── */
+@media (pointer: coarse) {
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}

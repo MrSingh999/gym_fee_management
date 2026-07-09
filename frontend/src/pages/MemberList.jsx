@@ -154,7 +154,7 @@ export default function MemberList() {
       
       {/* Title */}
       <div className="animate-fade-in">
-        <h1 className="font-bold text-2xl text-(--text-primary) tracking-tight">
+        <h1 className="font-bold text-xl sm:text-2xl text-(--text-primary) tracking-tight">
           Members <span className="text-(--text-secondary) font-normal ml-0.5">Directory</span>
         </h1>
         <p className="text-(--text-secondary) mt-1 text-xs font-mono">Registry list of active and inactive gym members.</p>
@@ -474,30 +474,30 @@ export default function MemberList() {
                       <div className="flex items-center space-x-2">
                         <button
                           onClick={() => openRenewModal(member)}
-                          className="bg-(--text-primary) text-(--bg-canvas) px-4 py-2 sm:px-3 sm:py-1.5 rounded-[4px] text-xs font-bold transition-all duration-200 cursor-pointer h-10 flex items-center justify-center hover:scale-[1.01] active:scale-[0.99]"
+                          className="bg-(--text-primary) text-(--bg-canvas) px-4 py-2.5 rounded-[6px] text-xs font-bold transition-colors duration-200 cursor-pointer min-h-[44px] flex-1 flex items-center justify-center active:scale-[0.97]"
                         >
                           Renew
                         </button>
                         <button
                           onClick={() => openHistoryModal(member)}
                           aria-label="Payment History"
-                          className="p-2.5 border border-(--border-color) rounded-[4px] text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--bg-elevated) transition-all duration-200 cursor-pointer h-10 w-10 flex items-center justify-center"
+                          className="p-2.5 border border-(--border-color) rounded-[6px] text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--bg-elevated) transition-colors duration-200 cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center active:scale-95"
                         >
-                          <History className="h-3.5 w-3.5" />
+                          <History className="h-4 w-4" />
                         </button>
                         <button
                           onClick={() => openEditModal(member)}
                           aria-label="Edit Member"
-                          className="p-2.5 border border-(--border-color) rounded-[4px] text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--bg-elevated) transition-all duration-200 cursor-pointer h-10 w-10 flex items-center justify-center"
+                          className="p-2.5 border border-(--border-color) rounded-[6px] text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--bg-elevated) transition-colors duration-200 cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center active:scale-95"
                         >
-                          <Edit className="h-3.5 w-3.5" />
+                          <Edit className="h-4 w-4" />
                         </button>
                         <button
                           onClick={() => handleDelete(member._id, member.name)}
                           aria-label="Delete Member"
-                          className="p-2.5 border border-(--border-color) rounded-[4px] text-(--text-secondary) hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/20 transition-all duration-200 cursor-pointer h-10 w-10 flex items-center justify-center"
+                          className="p-2.5 border border-(--border-color) rounded-[6px] text-(--text-secondary) hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/20 transition-colors duration-200 cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center active:scale-95"
                         >
-                          <Trash2 className="h-3.5 w-3.5" />
+                          <Trash2 className="h-4 w-4" />
                         </button>
                       </div>
                     </div>

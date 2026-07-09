@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Dumbbell, Plus, Trash2, Edit, Users, UserPlus, Check, X, 
-  ChevronDown, ChevronUp, Play, Image, ExternalLink, RefreshCw, MoreVertical
+  ChevronDown, ChevronUp, Play, Image, ExternalLink, RefreshCw, MoreVertical, ArrowLeft
 } from 'lucide-react';
 import { workoutService } from '@/services/workoutService';
 import { memberService } from '@/services/memberService';
@@ -401,7 +401,7 @@ export default function WorkoutManagement() {
       {/* Title Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 animate-fade-in">
         <div>
-          <h1 className="font-bold text-2xl text-(--text-primary) tracking-tight">
+          <h1 className="font-bold text-xl sm:text-2xl text-(--text-primary) tracking-tight">
             Workout <span className="text-(--text-secondary) font-normal ml-0.5">Management</span>
           </h1>
           <p className="text-(--text-secondary) mt-1 text-xs font-mono">
@@ -410,7 +410,7 @@ export default function WorkoutManagement() {
         </div>
         <button
           onClick={openNewProgramModal}
-          className="flex items-center space-x-2 bg-(--text-primary) text-(--bg-canvas) hover:opacity-90 px-4 py-2 rounded-[6px] font-semibold text-sm transition-all duration-200 cursor-pointer border border-(--border-color-hover)"
+          className="flex items-center space-x-2 bg-(--text-primary) text-(--bg-canvas) hover:opacity-90 px-4 py-2.5 sm:py-2 rounded-[6px] font-semibold text-sm transition-all duration-200 cursor-pointer border border-(--border-color-hover) min-h-[44px] sm:min-h-0 w-full sm:w-auto justify-center sm:justify-start active:scale-[0.98]"
         >
           <Plus className="h-4 w-4" />
           <span>New Program</span>
@@ -448,8 +448,8 @@ export default function WorkoutManagement() {
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* LEFT SIDE: Programs List */}
-          <div className="lg:col-span-4 space-y-3 animate-fade-in" style={{ animationDelay: '80ms', animationFillMode: 'both' }}>
+          {/* LEFT SIDE: Programs List — hidden on mobile when a program is selected */}
+          <div className={`lg:col-span-4 space-y-3 animate-fade-in ${selectedWorkout ? 'hidden lg:block' : 'block'}`} style={{ animationDelay: '80ms', animationFillMode: 'both' }}>
             <h3 className="font-bold text-sm text-(--text-muted) font-mono uppercase tracking-wider pl-1">Workout Splits</h3>
             <div className="space-y-3 max-h-[70vh] overflow-y-auto pr-1">
               {workouts.map((program) => {
@@ -473,10 +473,10 @@ export default function WorkoutManagement() {
                       </div>
 
                       {/* Dropdown Menu actions trigger inside program card */}
-                      <div className="absolute top-3.5 right-3" onClick={e => e.stopPropagation()}>
+                      <div className="absolute top-3 right-3" onClick={e => e.stopPropagation()}>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <button className="p-1 text-zinc-500 hover:text-(--text-primary) rounded hover:bg-(--bg-elevated) transition-colors cursor-pointer outline-none">
+                            <button className="p-2 min-w-[40px] min-h-[40px] flex items-center justify-center text-zinc-500 hover:text-(--text-primary) rounded-[6px] hover:bg-(--bg-elevated) transition-colors cursor-pointer outline-none active:scale-95">
                               <MoreVertical className="h-4 w-4" />
                             </button>
                           </DropdownMenuTrigger>
@@ -501,7 +501,7 @@ export default function WorkoutManagement() {
                         </DropdownMenu>
                       </div>
 
-                      <span className={`text-[9px] font-bold px-2 py-0.5 rounded-[4px] font-mono shrink-0 uppercase tracking-wider border absolute top-3.5 right-10 group-hover:right-10 transition-all ${
+                      <span className={`text-[9px] font-bold px-2 py-0.5 rounded-[4px] font-mono shrink-0 uppercase tracking-wider border absolute top-3.5 right-12 transition-all ${
                         program.assignmentType === 'ALL'
                           ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 dark:border-emerald-500/15'
                           : 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20 dark:border-indigo-500/15'
@@ -537,8 +537,18 @@ export default function WorkoutManagement() {
             </div>
           </div>
 
-          {/* RIGHT SIDE: Selected Program Detail */}
-          <div className="lg:col-span-8 animate-fade-in" style={{ animationDelay: '160ms', animationFillMode: 'both' }}>
+          {/* RIGHT SIDE: Selected Program Detail — shown on mobile only when selected */}
+          <div className={`lg:col-span-8 animate-fade-in ${selectedWorkout ? 'block' : 'hidden lg:block'}`} style={{ animationDelay: '160ms', animationFillMode: 'both' }}>
+            {/* Mobile Back Button */}
+            {selectedWorkout && (
+              <button
+                onClick={() => setSelectedWorkout(null)}
+                className="lg:hidden flex items-center space-x-2 text-(--text-secondary) hover:text-(--text-primary) mb-4 min-h-[44px] px-1 transition-colors cursor-pointer active:scale-95"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                <span className="text-xs font-bold font-mono uppercase tracking-wider">Back to Splits</span>
+              </button>
+            )}
             {detailsLoading ? (
               <div className="glass-panel p-12 text-center rounded-[16px] border border-(--border-color-hover) min-h-[40vh] flex flex-col items-center justify-center space-y-3">
                 <RefreshCw className="h-6 w-6 text-zinc-500 animate-spin" />

@@ -52,11 +52,11 @@ export default function MemberPortal() {
           </div>
           <div className="flex items-center space-x-3">
             <button onClick={toggleTheme} title={`Switch to ${theme === "dark" ? "Light" : "Dark"} Mode`}
-              className="flex items-center justify-center w-9 h-9 rounded-[6px] border border-(--border-color) text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--bg-elevated) transition-all duration-200 cursor-pointer">
+              className="flex items-center justify-center w-10 h-10 min-w-[44px] min-h-[44px] rounded-[8px] border border-(--border-color) text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--bg-elevated) transition-colors duration-200 cursor-pointer active:scale-95">
               {theme === "dark" ? <Sun className="h-4 w-4 text-amber-400" /> : <Moon className="h-4 w-4 text-indigo-500" />}
             </button>
             <button onClick={() => setShowLogoutAlert(true)}
-              className="flex items-center space-x-1.5 border border-(--border-color) hover:border-red-500/30 text-(--text-secondary) hover:text-red-400 hover:bg-red-500/10 px-2.5 py-1.5 md:px-3 rounded-[6px] text-xs font-bold transition-all duration-200 cursor-pointer">
+              className="flex items-center space-x-1.5 border border-(--border-color) hover:border-red-500/30 text-(--text-secondary) hover:text-red-400 hover:bg-red-500/10 px-2.5 py-2 md:px-3 md:py-1.5 rounded-[6px] text-xs font-bold transition-colors duration-200 cursor-pointer min-h-[44px] md:min-h-0 active:scale-95">
               <LogOut className="h-3.5 w-3.5" />
               <span className="hidden md:inline">Sign Out</span>
             </button>
@@ -84,7 +84,7 @@ export default function MemberPortal() {
               )}
             </div>
             <div>
-              <h1 className="font-bold text-2xl text-(--text-primary) tracking-tight">
+              <h1 className="font-bold text-xl sm:text-2xl text-(--text-primary) tracking-tight">
                 Member <span className="text-(--text-secondary) font-normal ml-0.5">Portal</span>
               </h1>
               <p className="text-(--text-secondary) mt-1 text-xs font-mono">
@@ -103,14 +103,14 @@ export default function MemberPortal() {
               <NavLink key={tab.id} to={`/member-portal/${tab.id}`}
                 className={({ isActive }) =>
                   `relative flex-1 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-2.5 px-2 rounded-[6px] text-[10px] sm:text-xs font-bold transition-all duration-200 cursor-pointer z-10 whitespace-nowrap ${
-                    isActive ? "text-black dark:text-white" : "text-(--text-secondary) hover:text-(--text-primary)"
+                    isActive ? "text-(--text-primary)" : "text-(--text-secondary) hover:text-(--text-primary)"
                   }`
                 }>
                 {({ isActive }) => (
                   <>
                     {isActive && (
                       <motion.div layoutId="member-portal-active-tab"
-                        className="absolute inset-0 bg-white dark:bg-[#18181b] rounded-[6px] -z-10 border border-(--border-color-hover) shadow-sm dark:shadow-none"
+                        className="absolute inset-0 bg-(--bg-card) rounded-[6px] -z-10 border border-(--border-color-hover) shadow-sm dark:shadow-none"
                         transition={{ type: "spring", stiffness: 380, damping: 30 }}
                       />
                     )}
@@ -130,14 +130,14 @@ export default function MemberPortal() {
       </main>
 
       {/* Mobile Tab Bar Navigation */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-(--bg-canvas)/95 backdrop-blur-xl border-t border-(--border-color) px-2 py-2 pb-safe flex justify-around items-center shadow-lg">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-(--bg-canvas)/95 backdrop-blur-xl border-t border-(--border-color) px-2 pt-1.5 pb-safe flex justify-around items-center shadow-lg">
         {TABS.map((tab) => {
           const Icon = tab.icon;
           return (
             <NavLink key={tab.id} to={`/member-portal/${tab.id}`}
-              className={({ isActive }) => `flex flex-col items-center justify-center flex-1 py-1 gap-1 cursor-pointer select-none transition-all duration-200 ${
+              className={({ isActive }) => `flex flex-col items-center justify-center flex-1 py-1.5 min-h-[48px] gap-1 cursor-pointer select-none transition-colors duration-200 active:scale-95 ${
                 isActive
-                  ? 'text-(--text-primary) font-bold scale-105'
+                  ? 'text-(--text-primary) font-bold'
                   : 'text-(--text-secondary) hover:text-(--text-primary)'
               }`}
             >

@@ -38,14 +38,14 @@ export default function Navbar() {
   const navItemClass = (isActive) => 
     `relative flex items-center space-x-2 px-4 py-1.5 rounded-[4px] font-medium text-sm transition-colors duration-250 cursor-pointer z-10 ${
       isActive 
-        ? 'text-black dark:text-white font-semibold' 
+        ? 'text-(--text-primary) font-semibold' 
         : 'text-(--text-secondary) hover:text-(--text-primary)'
     }`;
 
   const renderActiveBg = () => (
     <motion.div
       layoutId="navbar-active-bg"
-      className="absolute inset-0 bg-white dark:bg-[#18181b] rounded-[4px] -z-10 border border-(--border-color-hover) shadow-[0_1px_3px_rgba(0,0,0,0.1)] dark:shadow-none"
+      className="absolute inset-0 bg-(--bg-card) rounded-[4px] -z-10 border border-(--border-color-hover) shadow-[0_1px_3px_rgba(0,0,0,0.1)] dark:shadow-none"
       transition={{ type: "spring", stiffness: 380, damping: 30 }}
     />
   );
@@ -71,12 +71,12 @@ export default function Navbar() {
             <button
               onClick={toggleTheme}
               title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
-              className="flex items-center justify-center w-8 h-8 rounded-[6px] border border-(--border-color) text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--bg-elevated) hover:border-(--border-color-hover) transition-all duration-200 cursor-pointer"
+              className="flex items-center justify-center w-10 h-10 min-w-[44px] min-h-[44px] rounded-[8px] border border-(--border-color) text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--bg-elevated) hover:border-(--border-color-hover) transition-colors duration-200 cursor-pointer active:scale-95"
             >
               {theme === 'dark' ? (
-                <Sun className="h-3.5 w-3.5 text-zinc-400" />
+                <Sun className="h-4 w-4 text-zinc-400" />
               ) : (
-                <Moon className="h-3.5 w-3.5 text-zinc-600" />
+                <Moon className="h-4 w-4 text-zinc-600" />
               )}
             </button>
           </div>
@@ -161,12 +161,12 @@ export default function Navbar() {
       </nav>
 
       {/* Mobile Bottom Navigation Bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-(--bg-canvas)/90 backdrop-blur-xl border-t border-(--border-color) px-4 py-2 pb-safe flex items-center justify-between">
+      <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-(--bg-canvas)/90 backdrop-blur-xl border-t border-(--border-color) px-2 pt-1.5 pb-safe flex items-center justify-between">
         
         {/* Dashboard Tab */}
         <NavLink
           to="/dashboard"
-          className={({ isActive }) => `flex flex-col items-center justify-center flex-1 py-1 transition-all duration-200 cursor-pointer ${
+          className={({ isActive }) => `flex flex-col items-center justify-center flex-1 py-1.5 min-h-[48px] transition-colors duration-200 cursor-pointer active:scale-95 ${
             isActive
               ? 'text-(--text-primary) font-bold'
               : 'text-(--text-secondary)'
@@ -183,7 +183,7 @@ export default function Navbar() {
         {/* Directory Tab */}
         <NavLink
           to="/members"
-          className={({ isActive }) => `flex flex-col items-center justify-center flex-1 py-1 transition-all duration-200 cursor-pointer ${
+          className={({ isActive }) => `flex flex-col items-center justify-center flex-1 py-1.5 min-h-[48px] transition-colors duration-200 cursor-pointer active:scale-95 ${
             isActive
               ? 'text-(--text-primary) font-bold'
               : 'text-(--text-secondary)'
@@ -202,7 +202,7 @@ export default function Navbar() {
           <button
             onClick={openAddModal}
             aria-label="Add New Member"
-            className="flex items-center justify-center w-12 h-12 rounded-full bg-(--text-primary) text-(--bg-canvas) shadow-md hover:scale-105 active:scale-95 transition-transform duration-150 cursor-pointer border border-(--border-color-hover)"
+            className="flex items-center justify-center w-13 h-13 rounded-full bg-(--text-primary) text-(--bg-canvas) shadow-lg hover:scale-105 active:scale-95 transition-transform duration-150 cursor-pointer border border-(--border-color-hover)"
           >
             <UserPlus className="h-5 w-5" />
           </button>
@@ -211,7 +211,7 @@ export default function Navbar() {
         {/* Workouts Tab */}
         <NavLink
           to="/workouts"
-          className={({ isActive }) => `flex flex-col items-center justify-center flex-1 py-1 transition-all duration-200 cursor-pointer ${
+          className={({ isActive }) => `flex flex-col items-center justify-center flex-1 py-1.5 min-h-[48px] transition-colors duration-200 cursor-pointer active:scale-95 ${
             isActive
               ? 'text-(--text-primary) font-bold'
               : 'text-(--text-secondary)'
@@ -229,7 +229,7 @@ export default function Navbar() {
         <button
           onClick={() => setShowLogoutAlert(true)}
           aria-label="Log Out"
-          className="flex flex-col items-center justify-center flex-1 py-1 text-(--text-secondary) hover:text-red-500 transition-all duration-200 cursor-pointer"
+          className="flex flex-col items-center justify-center flex-1 py-1.5 min-h-[48px] text-(--text-secondary) hover:text-red-500 transition-colors duration-200 cursor-pointer active:scale-95"
         >
           <LogOut className="h-5 w-5" />
           <span className="text-[10px] mt-1 tracking-wide">Logout</span>

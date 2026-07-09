@@ -185,10 +185,10 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Welcome Title */}
+      {/* Title */}
       <div className="animate-fade-in flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="font-bold text-2xl text-(--text-primary) tracking-tight">
+          <h1 className="font-bold text-xl sm:text-2xl text-(--text-primary) tracking-tight">
             Console <span className="text-(--text-secondary) font-normal ml-0.5">Overview</span>
           </h1>
           <p className="text-(--text-secondary) mt-1 text-xs font-mono">
@@ -197,7 +197,7 @@ export default function Dashboard() {
         </div>
         <button
           onClick={openAddModal}
-          className="bg-(--text-primary) text-(--bg-canvas) hover:opacity-90 px-4 py-2 rounded-[6px] font-semibold text-xs transition-opacity duration-150 cursor-pointer border border-(--border-color-hover) flex items-center space-x-2"
+          className="bg-(--text-primary) text-(--bg-canvas) hover:opacity-90 px-4 py-2.5 sm:py-2 rounded-[6px] font-semibold text-xs transition-opacity duration-150 cursor-pointer border border-(--border-color-hover) flex items-center space-x-2 min-h-[44px] sm:min-h-0 w-full sm:w-auto justify-center sm:justify-start active:scale-[0.98]"
         >
           <UserPlus className="h-3.5 w-3.5" />
           <span>Register Member</span>
@@ -261,8 +261,8 @@ export default function Dashboard() {
 
             {/* Timeframe selector pills */}
             {filterType !== "overdue" && (
-              <div className="flex items-center space-x-2 pt-1">
-                <span className="text-[10px] text-(--text-muted) font-bold uppercase tracking-wider font-mono">
+              <div className="flex items-center space-x-2 pt-1 overflow-x-auto hide-scrollbar">
+                <span className="text-[10px] text-(--text-muted) font-bold uppercase tracking-wider font-mono shrink-0">
                   Timeframe:
                 </span>
                 <div className="flex bg-(--bg-canvas) border border-(--border-color) p-0.5 rounded-[6px]">
@@ -446,9 +446,9 @@ export default function Dashboard() {
                             </p>
                           )}
 
-                          <button
+                           <button
                              onClick={() => openRenewModal(member)}
-                             className={`text-[11px] font-bold px-4 py-2 sm:py-1.5 sm:px-3 rounded-[4px] min-h-[38px] transition-all duration-150 cursor-pointer hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center ${
+                             className={`text-[11px] font-bold px-4 py-2.5 sm:py-1.5 sm:px-3 rounded-[6px] min-h-[44px] transition-all duration-150 cursor-pointer active:scale-[0.97] flex items-center justify-center w-full sm:w-auto ${
                                isOverdue
                                  ? "bg-red-500 hover:bg-red-400 text-white"
                                  : "bg-amber-500 hover:bg-amber-400 text-white"
