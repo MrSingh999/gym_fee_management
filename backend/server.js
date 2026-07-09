@@ -6,6 +6,8 @@ import mongoose from 'mongoose';
 import connectDB from './config/db.js';
 import memberRoutes from './routes/memberRoutes.js';
 import authRoutes from './routes/authRoutes.js';
+import workoutRoutes from './routes/workoutRoutes.js';
+import myWorkoutRoutes from './routes/myWorkoutRoutes.js';
 import errorHandler from './middleware/errorHandler.js';
 
 // Global error handler: catch synchronous uncaught exceptions
@@ -64,6 +66,8 @@ app.use((req, res, next) => {
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/members', memberRoutes);
+app.use('/api/workouts', workoutRoutes);
+app.use('/api/my-workouts', myWorkoutRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {

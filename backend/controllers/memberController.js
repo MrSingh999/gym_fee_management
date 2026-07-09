@@ -3,6 +3,7 @@ import fs from "fs";
 import Member from "../models/Member.js";
 import Plan from "../models/Plan.js";
 import Payment from "../models/Payment.js";
+import MemberWorkout from "../models/MemberWorkout.js";
 import cloudinary from "../config/cloudinary.js";
 import { getDateRange } from "../utils/dateHelpers.js";
 import asyncHandler from "../middleware/asyncHandler.js";
@@ -423,8 +424,11 @@ const updateMember = asyncHandler(async (req, res, next) => {
 const deleteMember = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
 
-  // Clean payment history of this member as well
+  // Clean payment history of this member
   await Payment.deleteMany({ member: id });
+
+  // Clean custom workout assignments of this member
+  await MemberWorkout.deleteMany({ member: id });
 
   const deletedMember = await Member.findByIdAndDelete(id);
   if (!deletedMember) {

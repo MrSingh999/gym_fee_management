@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
-import { Users, LayoutDashboard, UserPlus, LogOut, Sun, Moon } from 'lucide-react';
+import { Users, LayoutDashboard, UserPlus, LogOut, Sun, Moon, Dumbbell } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
 import { useApp } from '@/context/AppContext';
@@ -66,6 +66,21 @@ export default function Navbar() {
             </span>
           </Link>
 
+          {/* Mobile Theme Toggle (Visible only on mobile) */}
+          <div className="flex items-center md:hidden">
+            <button
+              onClick={toggleTheme}
+              title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
+              className="flex items-center justify-center w-8 h-8 rounded-[6px] border border-(--border-color) text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--bg-elevated) hover:border-(--border-color-hover) transition-all duration-200 cursor-pointer"
+            >
+              {theme === 'dark' ? (
+                <Sun className="h-3.5 w-3.5 text-zinc-400" />
+              ) : (
+                <Moon className="h-3.5 w-3.5 text-zinc-600" />
+              )}
+            </button>
+          </div>
+
           {/* Navigation Tabs (Desktop) */}
           <div className="hidden md:flex items-center bg-(--bg-elevated) border border-(--border-color) rounded-[6px] p-0.5 relative">
             <NavLink
@@ -90,6 +105,19 @@ export default function Navbar() {
                   {isActive && renderActiveBg()}
                   <Users className="h-3.5 w-3.5" />
                   <span>Members</span>
+                </>
+              )}
+            </NavLink>
+
+            <NavLink
+              to="/workouts"
+              className={({ isActive }) => navItemClass(isActive)}
+            >
+              {({ isActive }) => (
+                <>
+                  {isActive && renderActiveBg()}
+                  <Dumbbell className="h-3.5 w-3.5" />
+                  <span>Workouts</span>
                 </>
               )}
             </NavLink>
@@ -180,19 +208,22 @@ export default function Navbar() {
           </button>
         </div>
 
-        {/* Theme Toggle */}
-        <button
-          onClick={toggleTheme}
-          aria-label="Toggle Theme"
-          className="flex flex-col items-center justify-center flex-1 py-1 text-(--text-secondary) hover:text-(--text-primary) transition-all duration-200 cursor-pointer"
+        {/* Workouts Tab */}
+        <NavLink
+          to="/workouts"
+          className={({ isActive }) => `flex flex-col items-center justify-center flex-1 py-1 transition-all duration-200 cursor-pointer ${
+            isActive
+              ? 'text-(--text-primary) font-bold'
+              : 'text-(--text-secondary)'
+          }`}
         >
-          {theme === 'dark' ? (
-            <Sun className="h-5 w-5 text-zinc-400" />
-          ) : (
-            <Moon className="h-5 w-5 text-zinc-600" />
+          {({ isActive }) => (
+            <>
+              <Dumbbell className={`h-5 w-5 ${isActive ? 'scale-105' : ''}`} />
+              <span className="text-[10px] mt-1 tracking-wide">Workouts</span>
+            </>
           )}
-          <span className="text-[10px] mt-1 tracking-wide">Theme</span>
-        </button>
+        </NavLink>
 
         {/* Logout Action */}
         <button

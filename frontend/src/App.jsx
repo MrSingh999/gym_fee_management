@@ -5,6 +5,7 @@ import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import Dashboard from '@/pages/Dashboard';
 import MemberList from '@/pages/MemberList';
+import WorkoutManagement from '@/pages/WorkoutManagement';
 import AddMemberModal from '@/components/admin/AddMemberModal';
 import EditMemberModal from '@/components/admin/EditMemberModal';
 import RenewMemberModal from '@/components/admin/RenewMemberModal';
@@ -216,6 +217,20 @@ export default function App() {
           user && user.role === 'admin' ? (
             <AdminLayout>
               <MemberList />
+            </AdminLayout>
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        } 
+      />
+
+      {/* Admin Workouts Management */}
+      <Route 
+        path="/workouts" 
+        element={
+          user && user.role === 'admin' ? (
+            <AdminLayout>
+              <WorkoutManagement />
             </AdminLayout>
           ) : (
             <Navigate to="/login" replace />

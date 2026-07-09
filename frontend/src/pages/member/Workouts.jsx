@@ -1,238 +1,375 @@
-import { useState } from "react";
-import { useAuth } from "@/context/AuthContext";
-import { Flame } from "lucide-react";
+import { useState, useEffect } from "react";
+import { workoutService } from "@/services/workoutService";
+import { Dumbbell, Play, ExternalLink, RefreshCw, ChevronLeft, Check } from "lucide-react";
 import { motion } from "framer-motion";
 
-const ROUTINES = {
-  personal: [
-    { day: "Monday - Saturday", focus: "1-on-1 Customized Routine", routine: "Your training schedule is fully customized by your personal trainer. Please consult with your trainer for your daily specialized routines, progress tracking, and diet plan." },
-    { day: "Sunday", focus: "Active Recovery", routine: "Relax and recover. Keep up with hydration, follow your customized nutrition plan, and ensure you get 8 hours of quality rest." },
-  ],
-  cardio: [
-    { day: "Monday", focus: "Chest & Triceps + HIIT Cardio", routine: "Bench press (4x8), Incline dumbbell press (3x10), Overhead tricep extension (3x12), Cable chest fly (3x15). Finisher: 15 mins HIIT Treadmill Sprints (30s on, 30s off)." },
-    { day: "Tuesday", focus: "Back & Biceps + LISS Cardio", routine: "Deadlift (4x6), Lat pulldowns (3x10), Seated cable row (3x12), Hammer curls (3x15), Incline bicep curl (3x12). Finisher: 20 mins LISS Stairmaster." },
-    { day: "Wednesday", focus: "Legs & Core Intensity", routine: "Barbell back squats (4x8), Leg press (3x10), Romanian deadlifts (3x12), Standing calf raises (4x15), Hanging leg raises (3x15), Plank hold (3x60s)." },
-    { day: "Thursday", focus: "Shoulders & Arms + Rowing", routine: "Military press (4x8), Lateral raises (4x12), Face pulls (3x15), Tricep pushdowns (3x12), Barbell curls (3x10). Finisher: 15 mins Rowing Machine interval." },
-    { day: "Friday", focus: "Full Body Conditioning", routine: "Kettlebell swings (4x15), Dumbbell thrusters (3x10), Pull-ups (3x max), Push-ups (3x20), Mountain climbers (3x45s). Finisher: 10 mins HIIT Elliptical." },
-    { day: "Saturday", focus: "Active Recovery & Cardio", routine: "30 mins low-intensity steady-state (LISS) jogging or cycling, followed by deep static stretching & foam rolling (20 mins)." },
-    { day: "Sunday", focus: "Rest Day (Rejuvenate)", routine: "Complete rest. Focus on hydration, high protein intake, and getting 8 hours of quality sleep." },
-  ],
-  strength: [
-    { day: "Monday", focus: "Chest & Triceps Power", routine: "Bench press (4x8), Incline dumbbell press (3x10), Cable flyes (3x12), Skull crushers (3x10), Tricep overhead extensions (3x12)." },
-    { day: "Tuesday", focus: "Back & Biceps Width", routine: "Pull-ups (4x max), Barbell rows (4x8), Lat pulldowns (3x10), Barbell bicep curls (3x10), Hammer curls (3x12)." },
-    { day: "Wednesday", focus: "Legs / Lower Body", routine: "Squats (4x8), Romanian deadlifts (3x10), Leg extensions (3x12), Lying leg curls (3x12), Standing calf raises (4x15)." },
-    { day: "Thursday", focus: "Shoulders & Trap Mass", routine: "Overhead barbell press (4x8), Dumbbell lateral raises (4x12), Bent-over rear delt flyes (3x15), Dumbbell shrugs (3x12)." },
-    { day: "Friday", focus: "Arm Day Pumps & Core", routine: "Close-grip bench press (3x10), Preacher curls (3x10), Tricep pushdowns (3x12), Incline dumbbell curls (3x12), Hanging leg raises (3x15), Crunches (3x20)." },
-    { day: "Saturday", focus: "Active Mobility & Stretch", routine: "Light cardio (15 min jog), followed by dynamic stretching, yoga poses, and functional core movements (Plank holds, Bird-dog)." },
-    { day: "Sunday", focus: "Rest Day", routine: "Allow muscle tissues to recover. Hydrate well and perform light walking." },
-  ],
-};
-
-const pickRoutine = (planName) => {
-  const name = (planName || "strength training").toLowerCase();
-  if (name.includes("personal") || name.includes("trainer")) return ROUTINES.personal;
-  if (name.includes("cardio")) return ROUTINES.cardio;
-  return ROUTINES.strength;
-};
-
-const isStructured = (text) => {
-  return /\(\d+x/i.test(text) || /\d+\s*mins/i.test(text) || /press|squats|deadlift|curls|extensions|raises|pulldowns|rows|fly/i.test(text);
-};
-
-const parseRoutineText = (text) => {
-  if (!text) return { exercises: [], finisher: null };
-
-  const finisherIdx = text.toLowerCase().indexOf("finisher:");
-  let exercisesStr = text;
-  let finisher = null;
-
-  if (finisherIdx !== -1) {
-    exercisesStr = text.slice(0, finisherIdx).trim();
-    finisher = text.slice(finisherIdx + 9).trim();
-    if (exercisesStr.endsWith(".")) {
-      exercisesStr = exercisesStr.slice(0, -1);
-    }
-  }
-
-  const exercises = exercisesStr
-    .split(/[,.;]/)
-    .map((item) => item.trim())
-    .filter((item) => item.length > 0);
-
-  return { exercises, finisher };
-};
+// Import shadcn Alert components
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export default function Workouts() {
-  const { user } = useAuth();
-  const today = new Date();
-  const routine = pickRoutine(user.plan?.name);
+  const [myWorkouts, setMyWorkouts] = useState([]);
+  const [selectedWorkout, setSelectedWorkout] = useState(null);
+  const [workoutDetails, setWorkoutDetails] = useState(null);
+  
+  const [loading, setLoading] = useState(true);
+  const [detailsLoading, setDetailsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const [activeDayIdx, setActiveDayIdx] = useState(() => {
-    const day = today.getDay();
-    return day === 0 ? routine.length - 1 : Math.min(day - 1, routine.length - 1);
-  });
+  const [activeDayIdx, setActiveDayIdx] = useState(0);
 
-  const selectedRoutine = routine[activeDayIdx] || routine[0];
-  const parsed = parseRoutineText(selectedRoutine.routine);
-  const selectedDayOfWeek = today.getDay();
-  const isSelectedDayToday = selectedDayOfWeek === (activeDayIdx === 6 ? 0 : activeDayIdx + 1);
+  // Exercise completion states for tactile user feedback
+  const [completedExercises, setCompletedExercises] = useState({});
+
+  useEffect(() => {
+    fetchMyWorkouts();
+  }, []);
+
+  const fetchMyWorkouts = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await workoutService.getMyWorkouts();
+      setMyWorkouts(data);
+      if (data.length === 1) {
+        openWorkout(data[0]);
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Failed to load your workout splits.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const openWorkout = async (workout) => {
+    setSelectedWorkout(workout);
+    setDetailsLoading(true);
+    try {
+      const details = await workoutService.getMyWorkoutById(workout._id);
+      setWorkoutDetails(details);
+      
+      // Auto select active day based on current day of week
+      const currentDayOfWeek = new Date().getDay(); // 0 is Sunday, 1 is Monday, etc.
+      const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+      const currentDayName = dayNames[currentDayOfWeek];
+      
+      const matchIdx = details.days.findIndex(d => d.dayName.toLowerCase() === currentDayName.toLowerCase());
+      if (matchIdx !== -1) {
+        setActiveDayIdx(matchIdx);
+      } else {
+        setActiveDayIdx(0);
+      }
+
+      // Reset completed exercises checklist for new split program
+      setCompletedExercises({});
+    } catch (err) {
+      console.error(err);
+      setError("Failed to load workout split details.");
+    } finally {
+      setDetailsLoading(false);
+    }
+  };
+
+  const closeWorkoutDetails = () => {
+    setSelectedWorkout(null);
+    setWorkoutDetails(null);
+  };
+
+  const toggleExerciseComplete = (id) => {
+    setCompletedExercises(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
+  };
 
   const containerVariants = {
     hidden: { opacity: 0 },
     show: {
       opacity: 1,
-      transition: {
-        staggerChildren: 0.05
-      }
+      transition: { staggerChildren: 0.05 }
     }
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 15 },
+    hidden: { opacity: 0, y: 10 },
     show: { 
       opacity: 1, 
       y: 0, 
-      transition: { 
-        type: "spring", 
-        stiffness: 260, 
-        damping: 22 
-      } 
+      transition: { type: "spring", stiffness: 280, damping: 24 } 
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-[50vh] flex flex-col items-center justify-center space-y-4">
+        <RefreshCw className="h-8 w-8 text-zinc-500 animate-spin" />
+        <p className="text-xs text-(--text-muted) font-mono uppercase tracking-wider font-semibold">Syncing workout plans</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-md mx-auto my-10 p-4">
+        <Alert variant="destructive">
+          <AlertTitle>Error Loading Workouts</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+
+  if (myWorkouts.length === 0) {
+    return (
+      <div className="max-w-md mx-auto my-10 p-4">
+        <Alert className="bg-gym-card border-(--border-color)">
+          <Dumbbell className="h-4.5 w-4.5 text-zinc-500" />
+          <AlertTitle className="font-mono">No Workouts Assigned</AlertTitle>
+          <AlertDescription className="text-xs text-(--text-secondary) mt-1">
+            You do not have any workouts assigned to you right now. 
+            Please check back later or request your gym trainer/admin to assign you a customized plan.
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+
+  // Render list of available splits to choose from
+  if (!selectedWorkout) {
+    return (
+      <motion.div 
+        variants={containerVariants}
+        initial="hidden"
+        animate="show"
+        className="space-y-4 animate-fade-in p-1 sm:p-2"
+      >
+        <div className="space-y-1">
+          <h2 className="font-bold text-xl text-(--text-primary) font-mono">My Workout Splits</h2>
+          <p className="text-xs text-(--text-secondary) font-mono">Select a program to view your training routines.</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {myWorkouts.map((workout) => (
+            <motion.div
+              key={workout._id}
+              onClick={() => openWorkout(workout)}
+              whileHover={{ scale: 1.005 }}
+              whileTap={{ scale: 0.995 }}
+              className="glass-panel p-4 sm:p-5 rounded-[16px] border border-(--border-color) hover:border-(--border-color-hover) hover:bg-gym-dark/30 transition-all duration-300 cursor-pointer flex flex-col justify-between h-40"
+            >
+              <div>
+                <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider font-mono border ${
+                  workout.assignmentType === 'ALL'
+                    ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 dark:border-emerald-500/15'
+                    : 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20 dark:border-indigo-500/15'
+                }`}>
+                  {workout.assignmentType === 'ALL' ? 'General Plan' : 'Custom split'}
+                </span>
+                <h3 className="font-bold text-base text-(--text-primary) font-mono mt-2 truncate">{workout.title}</h3>
+                <p className="text-[11px] text-(--text-secondary) mt-1 line-clamp-2 leading-relaxed">
+                  {workout.description || "General fitness training plan split configured for your membership goals."}
+                </p>
+              </div>
+
+              <div className="flex justify-between items-center pt-3 border-t border-(--border-color)/40 text-[10px] text-(--text-muted) font-mono mt-auto">
+                <span>{workout.dayCount || 0} Workout Days</span>
+                <span className="text-gym-orange hover:underline flex items-center space-x-0.5">
+                  <span>Start Routine</span>
+                  <ExternalLink className="h-2.5 w-2.5" />
+                </span>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </motion.div>
+    );
+  }
+
+  if (detailsLoading || !workoutDetails) {
+    return (
+      <div className="min-h-[50vh] flex flex-col items-center justify-center space-y-4">
+        <RefreshCw className="h-8 w-8 text-zinc-500 animate-spin" />
+        <p className="text-xs text-(--text-muted) font-mono uppercase tracking-wider">Syncing routine days</p>
+      </div>
+    );
+  }
+
+  // Active workout details day view
+  const selectedDay = workoutDetails.days[activeDayIdx] || workoutDetails.days[0];
+  const todayName = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][new Date().getDay()];
+  const isTodayActiveDay = selectedDay?.dayName.toLowerCase() === todayName.toLowerCase();
 
   return (
     <motion.div 
       variants={containerVariants}
       initial="hidden"
       animate="show"
-      className="space-y-4 sm:space-y-6"
+      className="space-y-4 sm:space-y-6 max-w-4xl mx-auto p-1 sm:p-2"
     >
-      {/* Plan Header */}
+      {/* Back to splits if multiple splits available */}
+      {myWorkouts.length > 1 && (
+        <button
+          onClick={closeWorkoutDetails}
+          className="flex items-center space-x-1 text-xs text-(--text-secondary) hover:text-(--text-primary) transition-colors font-mono cursor-pointer"
+        >
+          <ChevronLeft className="h-4 w-4" />
+          <span>Back to programs</span>
+        </button>
+      )}
+
+      {/* Program Header */}
       <motion.div 
         variants={itemVariants}
-        className="glass-panel p-4 sm:p-6 rounded-[16px] border border-(--border-color-hover) space-y-4"
+        className="glass-panel p-4 sm:p-5 rounded-[16px] border border-(--border-color-hover) space-y-4"
       >
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>
-            <span className="text-[10px] text-gym-orange bg-gym-orange/10 px-3 py-1 rounded-full font-bold uppercase tracking-wider font-mono">Current Training Plan</span>
-            <h2 className="font-bold text-xl sm:text-2xl text-(--text-primary) capitalize mt-2 font-mono">{user.plan?.name || "Workout"} Split</h2>
+            <span className={`text-[9px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider font-mono border ${
+              workoutDetails.assignmentType === 'ALL'
+                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 dark:border-emerald-500/15'
+                : 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20 dark:border-indigo-500/15'
+            }`}>
+              {workoutDetails.assignmentType === 'ALL' ? 'General Training Plan' : 'Personal Routine'}
+            </span>
+            <h2 className="font-bold text-lg sm:text-xl text-(--text-primary) capitalize mt-2 font-mono">{workoutDetails.title}</h2>
           </div>
           <div className="text-left sm:text-right shrink-0">
-            <p className="text-[10px] text-(--text-muted) uppercase font-semibold font-mono">Plan Rate</p>
-            <p className="text-xl font-bold text-(--text-primary) mt-0.5 tabular-nums font-mono">
-              ₹{(user.plan?.price || 700).toLocaleString()}{" "}
-              <span className="text-xs text-(--text-muted) font-normal font-sans">/ {user.plan?.durationDays || 30} days</span>
+            <p className="text-[9px] text-(--text-muted) uppercase font-bold font-mono">Routines split</p>
+            <p className="text-sm font-bold text-(--text-primary) mt-0.5 font-mono">
+              {workoutDetails.days.length} Days Split
             </p>
           </div>
         </div>
-        <div className="bg-gym-dark/45 border border-(--border-color) p-4 rounded-[6px]">
-          <h4 className="text-xs text-(--text-muted) font-bold uppercase tracking-wider mb-1.5 font-mono">Plan Description</h4>
-          <p className="text-sm text-(--text-secondary) leading-relaxed">
-            {user.plan?.description || "Your gym training routine configured for general muscle hypertrophy, strength, and structural fitness."}
+        
+        {workoutDetails.description && (
+          <p className="text-xs text-(--text-secondary) leading-relaxed border-t border-(--border-color)/40 pt-3">
+            {workoutDetails.description}
           </p>
-        </div>
+        )}
       </motion.div>
 
-      {/* Weekly Split */}
-      <motion.div variants={itemVariants} className="space-y-3">
-        <h3 className="font-bold text-base text-(--text-primary) font-mono pl-1">Weekly Training Schedule</h3>
-
-        {/* Mobile Pills Day Selector */}
-        <div className="flex md:hidden space-x-1.5 overflow-x-auto pb-2 hide-scrollbar">
-          {routine.map((item, idx) => {
-            const isSelected = activeDayIdx === idx;
-            const dayOfWeek = today.getDay();
-            const isToday = dayOfWeek === (idx === 6 ? 0 : idx + 1);
-            return (
-              <button
-                key={item.day}
-                onClick={() => setActiveDayIdx(idx)}
-                className={`px-3.5 py-2 rounded-[6px] text-[11px] font-bold whitespace-nowrap transition-all duration-200 cursor-pointer border ${
-                  isSelected
-                    ? "bg-gym-orange text-gym-action-text border-gym-orange shadow-md shadow-gym-orange/10"
-                    : "bg-gym-dark/45 border-(--border-color) text-(--text-secondary) hover:text-(--text-primary)"
-                }`}
-              >
-                {item.day.split(" ")[0]} {isToday && "•"}
-              </button>
-            );
-          })}
+      {workoutDetails.days.length === 0 ? (
+        <div className="glass-panel p-8 text-center rounded-[12px] border border-(--border-color) text-(--text-muted) text-xs italic">
+          There are no days configured for this workout program yet.
         </div>
+      ) : (
+        /* Weekly Split */
+        <motion.div variants={itemVariants} className="space-y-3">
+          <h3 className="font-bold text-xs sm:text-sm text-(--text-primary) font-mono uppercase tracking-wider pl-1">Routines Schedule</h3>
 
-        {/* Mobile Single Day Focused View */}
-        <div className="md:hidden glass-panel p-4 rounded-[12px] border border-(--border-color-hover) space-y-4">
-          <div className="flex justify-between items-center pb-2.5 border-b border-(--border-color)/40">
-            <div>
-              <span className="font-bold text-[10px] uppercase tracking-wider text-(--text-muted) font-mono">
-                {selectedRoutine.day}
-              </span>
-              <h3 className="font-bold text-sm text-(--text-primary) mt-0.5 font-mono">{selectedRoutine.focus}</h3>
-            </div>
-            {isSelectedDayToday && (
-              <span className="bg-gym-orange text-gym-action-text text-[9px] font-bold px-2 py-0.5 rounded-[4px] uppercase tracking-wider shadow-sm font-mono">
-                Today
-              </span>
-            )}
+          {/* edge-to-edge scroll bleed day selector */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-none select-none">
+            {workoutDetails.days.map((item, idx) => {
+              const isSelected = activeDayIdx === idx;
+              const isToday = item.dayName.toLowerCase() === todayName.toLowerCase();
+              return (
+                <button
+                  key={item._id}
+                  onClick={() => setActiveDayIdx(idx)}
+                  className={`px-3.5 py-2.5 rounded-[6px] text-xs font-bold whitespace-nowrap transition-all duration-200 cursor-pointer border ${
+                    isSelected
+                      ? "bg-gym-orange text-gym-action-text border-gym-orange shadow-md shadow-gym-orange/10 scale-95"
+                      : "bg-gym-dark/45 border-(--border-color) text-(--text-secondary) hover:text-(--text-primary)"
+                  }`}
+                >
+                  D{item.dayNumber} • {item.dayName.slice(0, 3)} {isToday && "•"}
+                </button>
+              );
+            })}
           </div>
 
-          {isStructured(selectedRoutine.routine) ? (
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <h4 className="text-[10px] text-(--text-muted) font-bold uppercase tracking-wider font-mono">Exercises</h4>
-                <div className="space-y-2">
-                  {parsed.exercises.map((ex, i) => (
-                    <motion.label 
-                      key={i} 
-                      whileHover={{ scale: 1.005 }} 
-                      whileTap={{ scale: 0.995 }}
-                      className="flex items-start space-x-3 bg-gym-dark/20 border border-(--border-color)/30 p-3.5 rounded-[6px] cursor-pointer transition-all duration-200 hover:bg-gym-dark/30 select-none min-h-[44px]"
-                    >
-                      <input type="checkbox" className="mt-0.5 h-4.5 w-4.5 rounded border-(--border-color) text-gym-orange focus:ring-gym-orange cursor-pointer" />
-                      <span className="text-xs text-(--text-primary) font-medium leading-tight font-mono">{ex}</span>
-                    </motion.label>
-                  ))}
-                </div>
+          {/* Focused Day View */}
+          <div className="glass-panel p-4 sm:p-5 rounded-[12px] border border-(--border-color-hover) space-y-4">
+            <div className="flex justify-between items-center pb-2.5 border-b border-(--border-color)/40">
+              <div className="min-w-0 pr-2">
+                <span className="font-bold text-[9px] uppercase tracking-wider text-(--text-muted) font-mono">
+                  DAY {selectedDay.dayNumber} — {selectedDay.dayName}
+                </span>
+                <h3 className="font-bold text-sm sm:text-base text-(--text-primary) mt-0.5 font-mono truncate">{selectedDay.title}</h3>
               </div>
-
-              {parsed.finisher && (
-                <div className="bg-gym-orange/[0.02] border border-gym-orange/15 rounded-[6px] p-3 space-y-1.5">
-                  <div className="flex items-center space-x-1.5 text-gym-orange">
-                    <Flame className="h-4 w-4" />
-                    <h4 className="font-bold text-[10px] uppercase tracking-wider font-mono">Finisher Block</h4>
-                  </div>
-                  <p className="text-xs text-(--text-secondary) leading-relaxed">{parsed.finisher}</p>
-                </div>
+              {isTodayActiveDay && (
+                <span className="bg-gym-orange text-gym-action-text text-[9px] font-bold px-2 py-0.5 rounded-[4px] uppercase tracking-wider shadow-sm font-mono shrink-0">
+                  Today
+                </span>
               )}
             </div>
-          ) : (
-            <div className="bg-gym-dark/20 border border-(--border-color)/30 p-3.5 rounded-[6px]">
-              <p className="text-xs text-(--text-secondary) leading-relaxed">
-                {selectedRoutine.routine}
-              </p>
-            </div>
-          )}
-        </div>
 
-        {/* Desktop 7-Column Grid view */}
-        <div className="hidden md:grid grid-cols-2 lg:grid-cols-7 gap-3">
-          {routine.map((item, idx) => {
-            const dayOfWeek = today.getDay();
-            const isToday = dayOfWeek === (idx === 6 ? 0 : idx + 1);
-            return (
-              <div key={item.day} className={`p-3 sm:p-4 rounded-[6px] border transition-all duration-300 ${isToday ? "bg-gym-orange/[0.04] border-gym-orange ring-1 ring-gym-orange/20 shadow-md shadow-gym-orange/5" : "bg-gym-dark/25 hover:bg-gym-dark/40 border-(--border-color) hover:border-(--border-color-hover)"}`}>
-                <div className="flex justify-between items-center pb-2.5 border-b border-(--border-color)/40">
-                  <span className="font-bold text-xs uppercase tracking-wider text-(--text-muted) font-mono">{item.day}</span>
-                  {isToday && <span className="bg-(--text-primary) text-(--bg-canvas) text-[9px] font-bold px-2 py-0.5 rounded-[4px] uppercase tracking-wider font-mono">Today</span>}
-                </div>
-                <div className="mt-3">
-                  <h4 className={`font-bold text-xs tracking-wide font-mono ${isToday ? "text-gym-orange" : "text-(--text-primary)"}`}>{item.focus}</h4>
-                  <p className="text-[11px] text-(--text-secondary) leading-relaxed mt-2 line-clamp-5 hover:line-clamp-none transition-all duration-300">{item.routine}</p>
-                </div>
+            {selectedDay.exercises.length === 0 ? (
+              <div className="p-8 text-center text-(--text-muted) text-xs italic">
+                Active Recovery day or Rest day. No exercises configured.
               </div>
-            );
-          })}
-        </div>
-      </motion.div>
+            ) : (
+              <div className="space-y-2.5">
+                {selectedDay.exercises.map((ex, i) => {
+                  const isCompleted = !!completedExercises[ex._id || i];
+                  return (
+                    <motion.div 
+                      key={ex._id || i} 
+                      onClick={() => toggleExerciseComplete(ex._id || i)}
+                      whileHover={{ scale: 1.002 }} 
+                      whileTap={{ scale: 0.998 }}
+                      className={`flex flex-col justify-between border p-3.5 rounded-[8px] cursor-pointer transition-all duration-300 select-none ${
+                        isCompleted 
+                          ? 'border-emerald-500/25 dark:border-emerald-500/20 bg-emerald-500/10' 
+                          : 'border-(--border-color)/30 bg-gym-dark/20'
+                      }`}
+                    >
+                      <div className="flex items-start space-x-3">
+                        <div className={`mt-0.5 h-4.5 w-4.5 rounded border flex items-center justify-center transition-all shrink-0 ${
+                          isCompleted 
+                            ? 'bg-emerald-600 dark:bg-emerald-500 border-emerald-600 dark:border-emerald-500 text-white dark:text-black font-bold' 
+                            : 'border-(--border-color) bg-gym-dark/50'
+                        }`}>
+                          {isCompleted && <Check className="h-3 w-3 stroke-[3.5]" />}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <span className={`text-xs font-semibold font-mono leading-tight block ${isCompleted ? 'text-emerald-600 dark:text-emerald-400 line-through' : 'text-(--text-primary)'}`}>
+                            {ex.name}
+                          </span>
+                          
+                          <div className="flex flex-wrap gap-x-2 text-[10px] text-(--text-muted) font-mono mt-1">
+                            <span>{ex.sets} Sets</span>
+                            <span>•</span>
+                            <span>{ex.reps} Reps</span>
+                            {ex.duration && (
+                              <>
+                                <span>•</span>
+                                <span>{ex.duration}</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {ex.notes && (
+                        <div className="text-[10px] text-(--text-secondary) leading-relaxed mt-2.5 bg-gym-dark/50 border border-(--border-color)/20 p-2 rounded-[4px] font-sans">
+                          {ex.notes}
+                        </div>
+                      )}
+
+                      {ex.videoUrl && (
+                        <div className="mt-2.5 pt-2 border-t border-(--border-color)/20 flex items-center justify-end">
+                          <a 
+                            href={ex.videoUrl} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            onClick={e => e.stopPropagation()}
+                            className="text-[9px] font-bold text-gym-orange hover:underline flex items-center space-x-0.5 font-mono cursor-pointer"
+                          >
+                            <Play className="h-2.5 w-2.5 fill-gym-orange" />
+                            <span>Watch Video demonstration</span>
+                            <ExternalLink className="h-2 w-2" />
+                          </a>
+                        </div>
+                      )}
+                    </motion.div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </motion.div>
+      )}
     </motion.div>
   );
 }
